@@ -44,7 +44,7 @@ export default function LoginForm() {
           </Link>
           <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
           <CardDescription className="text-gray-400">
-            Sign in to manage your speaker profile and connect with event organizers
+            Sign in to manage your profile and share your profile with event organizers
           </CardDescription>
         </CardHeader>
 

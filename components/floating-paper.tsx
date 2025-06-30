@@ -51,7 +51,7 @@ export function FloatingPaper({ count = 5 }) {
         >
           <div className="relative w-16 h-20 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 flex items-center justify-center transform hover:scale-110 transition-transform">
             <div className="w-8 h-8 bg-purple-400/50 rounded-full flex items-center justify-center">
-              <span className="text-xs text-white font-bold">Pro</span>
+              <span className="text-xs text-white font-bold">Kit</span>
             </div>
           </div>
         </motion.div>

@@ -41,7 +41,7 @@ export default function SignupForm() {
             <UserRoundPen className="w-8 h-8 text-purple-500" />
             <span className="text-white font-medium text-xl">SpeakerKit</span>
           </Link>
-          <CardTitle className="text-2xl font-bold text-white">Create Your Speaker Profile</CardTitle>
+          <CardTitle className="text-2xl font-bold text-white">Create Your Profile</CardTitle>
           <CardDescription className="text-gray-400">
             Join thousands of speakers managing their profiles with ease
           </CardDescription>
