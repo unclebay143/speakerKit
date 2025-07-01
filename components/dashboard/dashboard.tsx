@@ -6,17 +6,17 @@ import { motion } from "framer-motion"
 import { DashboardSidebar } from "./sidebar"
 import { DashboardHeader } from "./header"
 import { ProfilesOverview } from "./profile-overview"
+import { UsernameModal } from "../modals/username-modal"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [showUsernameModal, setShowUsernameModal] = useState(true)
 
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
         return <ProfilesOverview />
-      case "editor":
-        // return <ProfileEditor />
       case "images":
         // return <ImageGallery />
       
@@ -50,6 +50,7 @@ export default function Dashboard() {
           </main>
         </div>
       </div>
+      <UsernameModal open={showUsernameModal} onOpenChange={setShowUsernameModal}/>
     </div>
   )
 }

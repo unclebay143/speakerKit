@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button"
 import {
   LayoutDashboard,
-  User,
   ImageIcon,
   // Settings,
   LogOut,
@@ -23,7 +22,6 @@ interface SidebarProps {
 export function DashboardSidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: SidebarProps) {
   const menuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "editor", label: "Profile Editor", icon: User },
     { id: "images", label: "Image Gallery", icon: ImageIcon },
     // { id: "sharing", label: "Share & Privacy", icon: Share2 },
   ]

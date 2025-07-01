@@ -16,8 +16,15 @@ export default function LoginPage() {
         />
       </div>
 
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <LoginForm />
+       <div className="flex min-h-screen">
+      {/* Image Section  */}
+        {/* <div className="hidden lg:block lg:flex-1 relative">
+          <AuthImageSection type="login" />
+        </div> */}
+        {/* Form Section */}
+        <div className="flex-1 lg:flex-[2] flex items-center justify-center p-4 relative z-10">
+          <LoginForm />
+        </div>
       </div>
     </main>
   )

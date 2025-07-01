@@ -16,8 +16,16 @@ export default function SignupPage() {
         />
       </div>
 
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <SignupForm />
+      <div className="flex min-h-screen">
+       {/* Image Section - 1/3 */}
+        {/* <div className="hidden lg:block lg:flex-1 relative">
+          <AuthImageSection type="signup" />
+        </div> */}
+
+        {/* Form Section - 2/3 */}
+        <div className="flex-1 lg:flex-[2] flex items-center justify-center p-4 relative z-10">
+          <SignupForm />
+        </div>
       </div>
     </main>
   )

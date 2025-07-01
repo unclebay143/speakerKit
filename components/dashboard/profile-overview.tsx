@@ -1,11 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Copy,  Share, Users, FileText, ImageIcon } from "lucide-react"
+import { Edit, Trash2, Copy, Share, Users, FileText, ImageIcon } from "lucide-react"
+import { CreateProfileModal } from "../modals/profile-modal"
 
-const profiles = [
+const initialProfiles = [
   {
     id: 1,
     title: "General Speaker Profile",
@@ -42,17 +44,28 @@ const stats = [
 ]
 
 export function ProfilesOverview() {
+  const [profiles, setProfiles] = useState(initialProfiles)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+
+  const handleProfileCreated = (newProfile: any) => {
+    setProfiles((prev) => [newProfile, ...prev])
+    // Update stats
+    stats[0].value = String(profiles.length + 1)
+    if (newProfile.isPublic) {
+      const publicCount = profiles.filter((p) => p.isPublic).length + 1
+      stats[2].value = String(publicCount)
+    }
+  }
+
   return (
     <div className="space-y-6 mx-auto max-w-screen-lg">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-6 border border-white/10">
         <h2 className="text-2xl font-bold text-white mb-2">Welcome back, Mary! 👋</h2>
-        <p className="text-gray-300">
-          You have 3 active profiles. Your profiles are performing well!
-        </p>
+        <p className="text-gray-300">You have {profiles.length} active profiles.</p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon
@@ -76,7 +89,9 @@ export function ProfilesOverview() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">Your Profiles</h3>
-          <Button className="bg-purple-600 hover:bg-purple-700">Create New Profile</Button>
+          <Button onClick={() => setShowCreateModal(true)} className="bg-purple-600 hover:bg-purple-700">
+            Create New Profile
+          </Button>
         </div>
 
         <div className="grid gap-4">
@@ -121,7 +136,23 @@ export function ProfilesOverview() {
             </Card>
           ))}
         </div>
+
+        {profiles.length === 0 && (
+          <Card className="bg-black/40 border-white/10 border-dashed">
+            <CardContent className="p-12 text-center">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-white mb-2">No profiles yet</h3>
+              <p className="text-gray-400 mb-6">Create your first speaker profile to get started</p>
+              <Button onClick={() => setShowCreateModal(true)} className="bg-purple-600 hover:bg-purple-700">
+                Create Your First Profile
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
+      {/* Create Profile Modal */}
+      
     </div>
   )
 }

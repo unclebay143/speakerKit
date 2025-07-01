@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Mail, Lock, Eye, EyeOff, UserRoundPen } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, UserCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function LoginForm() {
@@ -18,33 +18,31 @@ export default function LoginForm() {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true)
-    // Implement Google OAuth logic here
     setTimeout(() => setIsLoading(false), 2000)
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Implement email login logic here
     setTimeout(() => setIsLoading(false), 2000)
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6 }}
       className="w-full max-w-md"
     >
       <Card className="bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl">
         <CardHeader className="text-center space-y-4">
           <Link href="/" className="flex items-center justify-center space-x-2 mb-4">
-            <UserRoundPen className="w-8 h-8 text-purple-500" />
+            <UserCircle className="w-8 h-8 text-purple-500" />
             <span className="text-white font-medium text-xl">SpeakerKit</span>
           </Link>
           <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
           <CardDescription className="text-gray-400">
-            Sign in to manage your profile and share your profile with event organizers
+            Sign in to manage your profile and share with event organizers
           </CardDescription>
         </CardHeader>
 
