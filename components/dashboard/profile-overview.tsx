@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Copy, Share, Users, FileText, ImageIcon } from "lucide-react"
+import { Edit, Trash2, Users, FileText, ImageIcon } from "lucide-react"
 import { CreateProfileModal } from "../modals/profile-modal"
 
 const initialProfiles = [
@@ -103,7 +103,7 @@ export function ProfilesOverview() {
                     <CardTitle className="text-white flex items-center gap-2">
                       {profile.title}
                       <Badge variant={profile.isPublic ? "default" : "secondary"} className="text-xs">
-                        {profile.isPublic ? "Public" : "Private"}
+                        {profile.isPublic ? "Visible" : "Hidden"}
                       </Badge>
                     </CardTitle>
                     <CardDescription className="text-gray-400 mt-1">{profile.description}</CardDescription>
@@ -111,12 +111,6 @@ export function ProfilesOverview() {
                   <div className="flex space-x-2">
                     <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
                       <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                      <Share className="w-4 h-4" />
                     </Button>
                     <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-300">
                       <Trash2 className="w-4 h-4" />
@@ -152,7 +146,11 @@ export function ProfilesOverview() {
       </div>
 
       {/* Create Profile Modal */}
-      
+      <CreateProfileModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        onProfileCreated={handleProfileCreated}
+      />
     </div>
   )
 }

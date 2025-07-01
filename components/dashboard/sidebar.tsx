@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserRoundPen,
+  Settings,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -67,10 +68,10 @@ export function DashboardSidebar({ activeTab, setActiveTab, isOpen, setIsOpen }:
       </div>
 
       <div className="absolute bottom-4 left-4 right-4 space-y-2">
-        {/* <Button variant="ghost" className={`w-full justify-start text-white hover:bg-white/10 ${!isOpen && "px-2"}`}>
+        <Button variant="ghost" className={`w-full justify-start text-white hover:bg-white/10 ${!isOpen && "px-2"}`}>
           <Settings className="w-5 h-5" />
           {isOpen && <span className="ml-3">Settings</span>}
-        </Button> */}
+        </Button>
         <Button
           variant="ghost"
           className={`w-full justify-start text-red-400 hover:bg-red-500/10 ${!isOpen && "px-2"}`}
