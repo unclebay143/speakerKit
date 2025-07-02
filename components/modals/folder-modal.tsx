@@ -58,10 +58,10 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
     return (
       <>
         {open && (
-          <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
+          <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
         )}
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="bg-black/95 border-white/10">
+          <DrawerContent className="bg-black/95 border-white/10 z-[101]">
             <DrawerHeader className="text-left">
               <DrawerTitle className="text-white">Create New Folder</DrawerTitle>
               <DrawerDescription className="text-gray-400">Organize your images into folders</DrawerDescription>
@@ -120,10 +120,10 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
   return (
     <>
       {open && (
-        <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
+        <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
       )}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-black/95 border-white/10 text-white max-w-md">
+        <DialogContent className="bg-black/95 border-white/10 text-white max-w-md z-[101]">
           <DialogHeader>
             <DialogTitle className="text-white">Create New Folder</DialogTitle>
             <DialogDescription className="text-gray-400">Organize your images into folders</DialogDescription>

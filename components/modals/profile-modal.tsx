@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/drawer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useIsMobile } from "@/hooks/use-mobile"
-import {  Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 
 interface CreateProfileModalProps {
   open: boolean
@@ -109,12 +109,12 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
 
   if (isMobile) {
     return (
-     <>
-       {open && (
-          <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
+      <>
+        {open && (
+          <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
         )}
         <Drawer open={open} onOpenChange={onOpenChange} modal={true}>
-          <DrawerContent className="bg-black/95 border-white/10 max-h-[90vh]">
+          <DrawerContent className="bg-black/95 border-white/10 max-h-[90vh] z-[101]">
             <DrawerHeader className="text-left">
               <DrawerTitle className="text-white">Create New Profile</DrawerTitle>
               <DrawerDescription className="text-gray-400">
@@ -143,7 +143,9 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
                   <div className="space-y-4">
                     <div>
                       <Label className="text-white text-sm font-medium">Biography Versions</Label>
-                      <p className="text-xs text-gray-400 mb-3">Create different Biography versions (short, medium or long)</p>
+                      <p className="text-xs text-gray-400 mb-3">
+                        Create different Biography versions (short, medium or long)
+                      </p>
                     </div>
 
                     {/* Short Bio */}
@@ -206,7 +208,9 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
                       <div>
                         <Label className="text-white">Profile Visibility</Label>
                         <p className="text-sm text-gray-400">
-                         {isPublic ? "Public - Include this profile on your speaker page" : "Private - Hide this profile from your speaker page"}
+                          {isPublic
+                            ? "Public - Include this profile on your speaker page"
+                            : "Private - Hide this profile from your speaker page"}
                         </p>
                       </div>
                     </div>
@@ -250,20 +254,17 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
   return (
     <>
       {open && (
-          <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
-        )}
+        <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
+      )}
       <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
-        <DialogContent className="bg-black/95 border-white/10 text-white max-w-2xl max-h-[90vh]">
+        <DialogContent className="bg-black/95 border-white/10 text-white max-w-2xl max-h-[90vh] z-[101]">
           <DialogHeader>
             <DialogTitle className="text-white">Create New Profile</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Set up a new profile for different contexts
-            </DialogDescription>
+            <DialogDescription className="text-gray-400">Set up a new profile for different contexts</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] pr-4">
             <div className="space-y-6">
               <div className="space-y-4">
-
                 {/* Profile Title */}
                 <div className="space-y-2">
                   <Label htmlFor="title" className="text-white">
@@ -277,13 +278,15 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
                     className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
                     required
                   />
-                </div>  
+                </div>
 
                 {/* Bio Sections */}
                 <div className="space-y-4">
                   <div>
                     <Label className="text-white text-sm font-medium">Biography</Label>
-                    <p className="text-xs text-gray-400 mb-3">Create different Biography versions (short, medium or long)</p>
+                    <p className="text-xs text-gray-400 mb-3">
+                      Create different Biography versions (short, medium or long)
+                    </p>
                   </div>
 
                   {/* Short Bio */}
@@ -335,14 +338,20 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
                   </div>
                 </div>
 
-                 {/* Visibility Toggle */}
+                {/* Visibility Toggle */}
                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
                   <div className="flex items-center space-x-3">
-                    {isPublic ? <Eye className="w-5 h-5 text-green-400" /> : <EyeOff className="w-5 h-5 text-gray-400" />}
+                    {isPublic ? (
+                      <Eye className="w-5 h-5 text-green-400" />
+                    ) : (
+                      <EyeOff className="w-5 h-5 text-gray-400" />
+                    )}
                     <div>
                       <Label className="text-white">Profile Visibility</Label>
                       <p className="text-sm text-gray-400">
-                        {isPublic ? "Public - Include this profile on your speaker page" : "Private - Hide this profile from your speaker page"}
+                        {isPublic
+                          ? "Public - Include this profile on your speaker page"
+                          : "Private - Hide this profile from your speaker page"}
                       </p>
                     </div>
                   </div>
