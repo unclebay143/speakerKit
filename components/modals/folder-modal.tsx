@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,7 +17,6 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { FolderPlus } from "lucide-react"
 
 interface CreateFolderModalProps {
   open: boolean
@@ -29,6 +28,7 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
   const [folderName, setFolderName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const isMobile = useIsMobile()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,86 +54,120 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
     onOpenChange(false)
   }
 
-  const ModalContent = () => (
-    <div className="space-y-6">
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="folderName" className="text-white">
-            Folder Name
-          </Label>
-          <Input
-            id="folderName"
-            placeholder="e.g., Professional Headshots"
-            value={folderName}
-            onChange={(e) => setFolderName(e.target.value)}
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
-            required
-            maxLength={50}
-          />
-          <p className="text-xs text-gray-400">{folderName.length}/50 characters</p>
-        </div>
-      </form>
-    </div>
-  )
-
-  const ActionButtons = () => (
-    <div className="flex space-x-3">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handleCancel}
-        className="flex-1 border-white/10 text-white bg-transparent hover:bg-white/10"
-        disabled={isLoading}
-      >
-        Cancel
-      </Button>
-      <Button
-        onClick={handleSubmit}
-        disabled={!folderName.trim() || isLoading}
-        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
-      >
-        {isLoading ? "Creating..." : "Create Folder"}
-      </Button>
-    </div>
-  )
-
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="bg-black/95 border-white/10">
-          <DrawerHeader className="text-left">
-            <DrawerTitle className="text-white">Create New Folder</DrawerTitle>
-            <DrawerDescription className="text-gray-400">Organize your images into folders</DrawerDescription>
-          </DrawerHeader>
-          <div className="px-4">
-            <ModalContent />
-          </div>
-          <DrawerFooter>
-            <ActionButtons />
-            <DrawerClose asChild>
-              <Button variant="outline" className="border-white/10 text-white bg-transparent">
-                Close
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <>
+        {open && (
+          <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
+        )}
+        <Drawer open={open} onOpenChange={onOpenChange}>
+          <DrawerContent className="bg-black/95 border-white/10">
+            <DrawerHeader className="text-left">
+              <DrawerTitle className="text-white">Create New Folder</DrawerTitle>
+              <DrawerDescription className="text-gray-400">Organize your images into folders</DrawerDescription>
+            </DrawerHeader>
+            <div className="px-4 space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="folderName" className="text-white">
+                    Folder Name
+                  </Label>
+                  <Input
+                    id="folderName"
+                    placeholder="e.g., Professional Headshots"
+                    value={folderName}
+                    onChange={(e) => setFolderName(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
+                    required
+                    maxLength={50}
+                    ref={inputRef}
+                  />
+                  <p className="text-xs text-gray-400">{folderName.length}/50 characters</p>
+                </div>
+              </form>
+            </div>
+            <DrawerFooter>
+              <div className="flex space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1 border-white/10 text-white bg-transparent hover:bg-white/10"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!folderName.trim() || isLoading}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {isLoading ? "Creating..." : "Create Folder"}
+                </Button>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="outline" className="border-white/10 text-white bg-transparent">
+                  Close
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </>
     )
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-black/95 border-white/10 text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-white">Create New Folder</DialogTitle>
-          <DialogDescription className="text-gray-400">Organize your images into folders</DialogDescription>
-        </DialogHeader>
-        <ModalContent />
-        <div className="mt-6">
-          <ActionButtons />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <>
+      {open && (
+        <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
+      )}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="bg-black/95 border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Create New Folder</DialogTitle>
+            <DialogDescription className="text-gray-400">Organize your images into folders</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="folderName" className="text-white">
+                  Folder Name
+                </Label>
+                <Input
+                  id="folderName"
+                  placeholder="e.g., Professional Headshots"
+                  value={folderName}
+                  onChange={(e) => setFolderName(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
+                  required
+                  maxLength={50}
+                  ref={inputRef}
+                />
+                <p className="text-xs text-gray-400">{folderName.length}/50 characters</p>
+              </div>
+            </form>
+          </div>
+          <div className="mt-6 flex space-x-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              className="flex-1 border-white/10 text-white bg-transparent hover:bg-white/10"
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!folderName.trim() || isLoading}
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {isLoading ? "Creating..." : "Create Folder"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
