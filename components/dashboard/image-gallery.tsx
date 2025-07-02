@@ -138,7 +138,7 @@ export function ImageGallery() {
         </div>
       </div>
 
-      {/* Upload section - Only show when inside a folder */}
+      {/* Upload section  */}
       {currentFolder && (
         <Card className="bg-black/40 border-white/10 border-dashed">
           <CardContent className="p-8">
@@ -158,7 +158,6 @@ export function ImageGallery() {
       {/* Folders Grid */}
       {!currentFolder && folders.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-white mb-4">Folders</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
             {folders.map((folder) => (
               <Card
@@ -171,7 +170,7 @@ export function ImageGallery() {
                       <div className="flex items-center space-x-3 mb-2">
                         <Folder className="w-8 h-8 text-purple-400" />
                         <div>
-                          <h4 className="font-medium text-white">{folder.name}</h4>
+                          <h4 className="font-medium text-white truncate max-w-[110px]">{folder.name}</h4>
                           <p className="text-sm text-gray-400">{folder.imageCount} images</p>
                         </div>
                       </div>
@@ -235,6 +234,7 @@ export function ImageGallery() {
           </CardContent>
         </Card>
       )}
+       
 
       {/* Create Folder Modal */}
       <CreateFolderModal
