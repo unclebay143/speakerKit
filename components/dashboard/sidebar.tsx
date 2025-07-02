@@ -24,7 +24,6 @@ export function DashboardSidebar({ activeTab, setActiveTab, isOpen, setIsOpen }:
   const menuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "images", label: "Image Gallery", icon: ImageIcon },
-    // { id: "sharing", label: "Share & Privacy", icon: Share2 },
   ]
 
   return (
@@ -68,7 +67,13 @@ export function DashboardSidebar({ activeTab, setActiveTab, isOpen, setIsOpen }:
       </div>
 
       <div className="absolute bottom-4 left-4 right-4 space-y-2">
-        <Button variant="ghost" className={`w-full justify-start text-white hover:bg-white/10 ${!isOpen && "px-2"}`}>
+        <Button
+          variant={activeTab === "settings" ? "secondary" : "ghost"}
+          className={`w-full justify-start text-white hover:bg-white/10 ${
+            activeTab === "settings" ? "bg-purple-600/20 text-purple-400" : ""
+          } ${!isOpen && "px-2"}`}
+          onClick={() => setActiveTab("settings")}
+        >
           <Settings className="w-5 h-5" />
           {isOpen && <span className="ml-3">Settings</span>}
         </Button>

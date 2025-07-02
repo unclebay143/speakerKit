@@ -128,7 +128,7 @@ export function UsernameModal({ open, onOpenChange }: UsernameModalProps) {
     return (
       <>
       {open && (
-        <div className="fixed inset-0 bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
+        <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)}/>
       )}
         <Drawer open={open} onOpenChange={onOpenChange}>
           <DrawerContent className="bg-black/95 border-white/10">
@@ -159,7 +159,7 @@ export function UsernameModal({ open, onOpenChange }: UsernameModalProps) {
   return (
     <>
      {open && (
-        <div className="fixed inset-0 bg-black/30 z-40" onClick={() => onOpenChange(false)} />
+        <div className="fixed inset-0 backdrop-blur-md bg-black/30 z-40" onClick={() => onOpenChange(false)} />
       )}
       <Dialog  open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-black/95 border-white/10 text-white max-w-md">

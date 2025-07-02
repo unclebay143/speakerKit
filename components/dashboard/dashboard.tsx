@@ -7,6 +7,8 @@ import { DashboardSidebar } from "./sidebar"
 import { DashboardHeader } from "./header"
 import { ProfilesOverview } from "./profile-overview"
 import { UsernameModal } from "../modals/username-modal"
+import { ImageGallery } from "./image-gallery"
+import { Settings } from "./settings"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -18,8 +20,9 @@ export default function Dashboard() {
       case "overview":
         return <ProfilesOverview />
       case "images":
-        // return <ImageGallery />
-      
+        return <ImageGallery />
+      case "settings":
+        return <Settings />
       default:
         return <ProfilesOverview />
     }
@@ -36,7 +39,11 @@ export default function Dashboard() {
         />
 
         <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-16"}`}>
-          <DashboardHeader setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
+          {/* {activeTab === "overview" && (
+            <DashboardHeader setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
+          )} */}
+
+            <DashboardHeader setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
 
           <main className="p-6">
             <motion.div

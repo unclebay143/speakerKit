@@ -4,36 +4,38 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Users, FileText, ImageIcon } from "lucide-react"
+import { Edit, Trash2, Copy, Share, Users, FileText, ImageIcon } from "lucide-react"
 import { CreateProfileModal } from "../modals/profile-modal"
 
 const initialProfiles = [
   {
     id: 1,
     title: "General Speaker Profile",
-    type: "General",
-    bioLength: "Long",
     lastUpdated: "2 days ago",
     isPublic: true,
-    description: "Full-Stack Developer with 4+ years of experience in web development and technical education.",
+    shortBio: "Full-Stack Developer with 4+ years of experience. whhgfvbhfcv hgbjcsdhjccfg  hbgzcbfsbcdgdfbcsfcj hbfjcnbf",
+    mediumBio:
+      "Full-Stack Developer with 4+ years of experience in web development, specializing in React and Node.js.",
+    longBio:
+      "Ayodele Samuel Adebayo (UncleBigBay) is a Full-Stack Developer, Technical Writer, and Educator with over four years of experience building scalable web platforms and developing educational content for developers worldwide.",
   },
   {
     id: 2,
     title: "Frontend Developer Profile",
-    type: "Frontend",
-    bioLength: "Medium",
     lastUpdated: "1 week ago",
     isPublic: false,
-    description: "Specialized profile focusing on React, Next.js, and modern frontend technologies.",
+    shortBio: "Frontend Developer specializing in React.",
+    mediumBio: "Frontend Developer with expertise in React, Next.js, and modern JavaScript frameworks.",
+    longBio: "",
   },
   {
     id: 3,
     title: "Conference Speaker Profile",
-    type: "Conference",
-    bioLength: "Short",
     lastUpdated: "3 days ago",
     isPublic: true,
-    description: "Concise profile for conference introductions and event materials.",
+    shortBio: "Tech conference speaker and developer advocate.",
+    mediumBio: "",
+    longBio: "",
   },
 ]
 
@@ -57,15 +59,45 @@ export function ProfilesOverview() {
     }
   }
 
+  const getBioBadges = (profile: any) => {
+    const badges = []
+
+    if (profile.shortBio && profile.shortBio.trim()) {
+      badges.push(
+        <Badge key="short" variant="outline" className="text-xs border-green-500/30 text-green-300 bg-green-500/10">
+          Short
+        </Badge>,
+      )
+    }
+
+    if (profile.mediumBio && profile.mediumBio.trim()) {
+      badges.push(
+        <Badge key="medium" variant="outline" className="text-xs border-blue-500/30 text-blue-300 bg-blue-500/10">
+          Medium
+        </Badge>,
+      )
+    }
+
+    if (profile.longBio && profile.longBio.trim()) {
+      badges.push(
+        <Badge key="long" variant="outline" className="text-xs border-purple-500/30 text-purple-300 bg-purple-500/10">
+          Long
+        </Badge>,
+      )
+    }
+
+    return badges
+  }
+
   return (
     <div className="space-y-6 mx-auto max-w-screen-lg">
-      {/* Welcome Section */}
+      {/* First Section */}
       <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-6 border border-white/10">
         <h2 className="text-2xl font-bold text-white mb-2">Welcome back, Mary! 👋</h2>
         <p className="text-gray-300">You have {profiles.length} active profiles.</p>
       </div>
 
-      {/* Statistics */}
+      {/* Statistics section of profile and images */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => {
           const Icon = stat.icon
@@ -85,7 +117,7 @@ export function ProfilesOverview() {
         })}
       </div>
 
-      {/* Profiles List */}
+      {/* Profiles */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">Your Profiles</h3>
@@ -106,7 +138,11 @@ export function ProfilesOverview() {
                         {profile.isPublic ? "Visible" : "Hidden"}
                       </Badge>
                     </CardTitle>
-                    <CardDescription className="text-gray-400 mt-1">{profile.description}</CardDescription>
+                    <CardDescription className="text-gray-400 mt-1">
+                      {profile.shortBio.length > 100
+                        ? `${profile.shortBio.substring(0, 100)}...`
+                        : profile.shortBio}
+                    </CardDescription>
                   </div>
                   <div className="flex space-x-2">
                     <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
@@ -121,8 +157,9 @@ export function ProfilesOverview() {
               <CardContent>
                 <div className="flex items-center justify-between text-sm text-gray-400">
                   <div className="flex items-center space-x-4">
-                    <span>Type: {profile.type}</span>
-                    <span>Length: {profile.bioLength}</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex space-x-1">{getBioBadges(profile)}</div>
+                    </div>
                   </div>
                   <span>Updated {profile.lastUpdated}</span>
                 </div>
@@ -145,7 +182,7 @@ export function ProfilesOverview() {
         )}
       </div>
 
-      {/* Create Profile Modal */}
+      {/* Modal */}
       <CreateProfileModal
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
