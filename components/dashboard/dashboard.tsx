@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-
 import { DashboardSidebar } from "./sidebar"
 import { DashboardHeader } from "./header"
 import { ProfilesOverview } from "./profile-overview"
@@ -12,7 +11,8 @@ import { Settings } from "./settings"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview")
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [showUsernameModal, setShowUsernameModal] = useState(true)
 
   const renderContent = () => {
@@ -28,34 +28,44 @@ export default function Dashboard() {
     }
   }
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setMobileSidebarOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-black/[0.96] text-white">
-      <div className="flex">
-        <DashboardSidebar
+      <DashboardSidebar
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+        mobileSidebarOpen={mobileSidebarOpen}
+        setMobileSidebarOpen={setMobileSidebarOpen}
+      />
+
+      <div className={`
+        flex-1 transition-all duration-300 
+        ${sidebarOpen ? "md:ml-64" : "md:ml-1"}
+      `}>
+        <DashboardHeader 
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isOpen={sidebarOpen}
-          setIsOpen={setSidebarOpen}
+          setSidebarOpen={setSidebarOpen} 
+          sidebarOpen={sidebarOpen}
+          setMobileSidebarOpen={setMobileSidebarOpen}
+          mobileSidebarOpen={mobileSidebarOpen}
         />
 
-        <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-16"}`}>
-          {/* {activeTab === "overview" && (
-            <DashboardHeader setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
-          )} */}
-
-            <DashboardHeader setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} />
-
-          <main className="p-6">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {renderContent()}
-            </motion.div>
-          </main>
-        </div>
+        <main className="p-6">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderContent()}
+          </motion.div>
+        </main>
       </div>
       <UsernameModal open={showUsernameModal} onOpenChange={setShowUsernameModal}/>
     </div>

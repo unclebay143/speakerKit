@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Copy, Share, Users, FileText, ImageIcon } from "lucide-react"
+import { Edit, Trash2, Users, FileText, ImageIcon } from "lucide-react"
 import { CreateProfileModal } from "../modals/profile-modal"
 
 const initialProfiles = [
@@ -132,19 +132,19 @@ export function ProfilesOverview() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-white text-[1.0rem] md:text-2xl flex items-center gap-2">
                       {profile.title}
                       <Badge variant={profile.isPublic ? "default" : "secondary"} className="text-xs">
                         {profile.isPublic ? "Visible" : "Hidden"}
                       </Badge>
                     </CardTitle>
-                    <CardDescription className="text-gray-400 mt-1">
-                      {profile.shortBio.length > 100
-                        ? `${profile.shortBio.substring(0, 100)}...`
+                    <CardDescription className="text-gray-400 text-[0.8rem] mt-1">
+                      {profile.shortBio.length > 50
+                        ? `${profile.shortBio.substring(0, 50)}...`
                         : profile.shortBio}
                     </CardDescription>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex md:space-x-2">
                     <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -155,13 +155,16 @@ export function ProfilesOverview() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between text-sm text-gray-400">
+                <div className="md:flex items-center justify-between text-sm text-gray-400">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">{getBioBadges(profile)}</div>
                     </div>
                   </div>
-                  <span>Updated {profile.lastUpdated}</span>
+                  <div className="mt-4 md:mt-0">
+                    <span className="">Updated {profile.lastUpdated}</span>
+                  </div>
+                  
                 </div>
               </CardContent>
             </Card>

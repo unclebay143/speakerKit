@@ -114,113 +114,116 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
           <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
         )}
         <Drawer open={open} onOpenChange={onOpenChange} modal={true}>
-          <DrawerContent className="bg-black/95 border-white/10 max-h-[90vh] z-[101]">
-            <DrawerHeader className="text-left">
-              <DrawerTitle className="text-white">Create New Profile</DrawerTitle>
-              <DrawerDescription className="text-gray-400">
-                Set up a new profile for different contexts
-              </DrawerDescription>
-            </DrawerHeader>
-            <ScrollArea className="px-4 flex-1">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  {/* Profile Title */}
-                  <div className="space-y-2">
-                    <Label htmlFor="title" className="text-white">
-                      Profile Title *
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Frontend Developer Profile"
-                      value={profileData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
-                      required
-                    />
-                  </div>
-
-                  {/* Bio Sections */}
+          <DrawerContent className="bg-black/95 border-white/10 max-h-[90vh] z-[101] flex flex-col">
+            <div className="overflow-y-auto px-4 pt-4 space-y-6 flex-1">
+              <DrawerHeader className="text-left">
+                <DrawerTitle className="text-white">Create New Profile</DrawerTitle>
+                <DrawerDescription className="text-gray-400">
+                  Set up a new profile for different contexts
+                </DrawerDescription>
+              </DrawerHeader>
+              {/* <ScrollArea className="px-4 flex-1"> */}
+                <div className="space-y-6">
                   <div className="space-y-4">
-                    <div>
-                      <Label className="text-white text-sm font-medium">Biography Versions</Label>
-                      <p className="text-xs text-gray-400 mb-3">
-                        Create different Biography versions (short, medium or long)
-                      </p>
-                    </div>
-
-                    {/* Short Bio */}
+                    {/* Profile Title */}
                     <div className="space-y-2">
-                      <Label htmlFor="shortBio" className="text-white text-sm">
-                        Short Bio (200 characters max)
+                      <Label htmlFor="title" className="text-white">
+                        Profile Title *
                       </Label>
-                      <Textarea
-                        id="shortBio"
-                        placeholder="Brief introduction for quick references and social media"
-                        value={profileData.shortBio}
-                        onChange={(e) => handleInputChange("shortBio", e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[80px] resize-none"
-                        maxLength={200}
+                      <Input
+                        id="title"
+                        placeholder="e.g., Frontend Developer Profile"
+                        value={profileData.title}
+                        onChange={(e) => handleInputChange("title", e.target.value)}
+                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
+                        required
                       />
-                      <p className="text-xs text-gray-400 text-right">{profileData.shortBio.length}/200 characters</p>
                     </div>
 
-                    {/* Medium Bio */}
-                    <div className="space-y-2">
-                      <Label htmlFor="mediumBio" className="text-white text-sm">
-                        Medium Bio (1500 characters max)
-                      </Label>
-                      <Textarea
-                        id="mediumBio"
-                        placeholder="Detailed bio for event programs and professional introductions"
-                        value={profileData.mediumBio}
-                        onChange={(e) => handleInputChange("mediumBio", e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[100px] resize-none"
-                        maxLength={1500}
-                      />
-                      <p className="text-xs text-gray-400 text-right">{profileData.mediumBio.length}/1500 characters</p>
-                    </div>
-
-                    {/* Long Bio */}
-                    <div className="space-y-2">
-                      <Label htmlFor="longBio" className="text-white text-sm">
-                        Long Bio (Full biography, 3000 characters max)
-                      </Label>
-                      <Textarea
-                        id="longBio"
-                        placeholder="Complete biography with full background, achievements, and experience"
-                        value={profileData.longBio}
-                        onChange={(e) => handleInputChange("longBio", e.target.value)}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[120px] resize-none"
-                        maxLength={3000}
-                      />
-                      <p className="text-xs text-gray-400 text-right">{profileData.longBio.length}/3000 characters</p>
-                    </div>
-                  </div>
-
-                  {/* Visibility Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
-                    <div className="flex items-center space-x-3">
-                      {isPublic ? (
-                        <Eye className="w-5 h-5 text-green-400" />
-                      ) : (
-                        <EyeOff className="w-5 h-5 text-gray-400" />
-                      )}
+                    {/* Bio Sections */}
+                    <div className="space-y-4">
                       <div>
-                        <Label className="text-white">Profile Visibility</Label>
-                        <p className="text-sm text-gray-400">
-                          {isPublic
-                            ? "Public - Include this profile on your speaker page"
-                            : "Private - Hide this profile from your speaker page"}
+                        <Label className="text-white text-sm font-medium">Biography Versions</Label>
+                        <p className="text-xs text-gray-400 mb-3">
+                          Create different Biography versions (short, medium or long)
                         </p>
                       </div>
+
+                      {/* Short Bio */}
+                      <div className="space-y-2">
+                        <Label htmlFor="shortBio" className="text-white text-sm">
+                          Short Bio (200 characters max)
+                        </Label>
+                        <Textarea
+                          id="shortBio"
+                          placeholder="Brief introduction for quick references and social media"
+                          value={profileData.shortBio}
+                          onChange={(e) => handleInputChange("shortBio", e.target.value)}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[80px] resize-none"
+                          maxLength={200}
+                        />
+                        <p className="text-xs text-gray-400 text-right">{profileData.shortBio.length}/200 characters</p>
+                      </div>
+
+                      {/* Medium Bio */}
+                      <div className="space-y-2">
+                        <Label htmlFor="mediumBio" className="text-white text-sm">
+                          Medium Bio (1500 characters max)
+                        </Label>
+                        <Textarea
+                          id="mediumBio"
+                          placeholder="Detailed bio for event programs and professional introductions"
+                          value={profileData.mediumBio}
+                          onChange={(e) => handleInputChange("mediumBio", e.target.value)}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[100px] resize-none"
+                          maxLength={1500}
+                        />
+                        <p className="text-xs text-gray-400 text-right">{profileData.mediumBio.length}/1500 characters</p>
+                      </div>
+
+                      {/* Long Bio */}
+                      <div className="space-y-2">
+                        <Label htmlFor="longBio" className="text-white text-sm">
+                          Long Bio (Full biography, 3000 characters max)
+                        </Label>
+                        <Textarea
+                          id="longBio"
+                          placeholder="Complete biography with full background, achievements, and experience"
+                          value={profileData.longBio}
+                          onChange={(e) => handleInputChange("longBio", e.target.value)}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 min-h-[120px] resize-none"
+                          maxLength={3000}
+                        />
+                        <p className="text-xs text-gray-400 text-right">{profileData.longBio.length}/3000 characters</p>
+                      </div>
                     </div>
-                    <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+
+                    {/* Visibility Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+                      <div className="flex items-center space-x-3">
+                        {isPublic ? (
+                          <Eye className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <EyeOff className="w-5 h-5 text-gray-400" />
+                        )}
+                        <div>
+                          <Label className="text-white">Profile Visibility</Label>
+                          <p className="text-sm text-gray-400">
+                            {isPublic
+                              ? "Public - Include this profile on your speaker page"
+                              : "Private - Hide this profile from your speaker page"}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </ScrollArea>
+              {/* </ScrollArea> */}
+            </div>
+           
             <DrawerFooter className="pt-4">
-              <div className="flex space-x-3">
+              <div className="flex space-x-3 w-full">
                 <Button
                   type="button"
                   variant="outline"
