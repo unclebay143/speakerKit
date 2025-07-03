@@ -11,21 +11,62 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Mail, Lock, Eye, EyeOff, UserCircle } from "lucide-react"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleGoogleLogin = async () => {
     setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
+    try {
+      await signIn("google", {callbackUrl: "/dashboard"})
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setError("Failed to login with Google")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: "/dashboard"
+      })
+
+      console.log("SignIn result:", result);
+
+     if (result?.error) {
+      if (result.error === "CredentialsSignin") {
+        setError("Invalid email or password")
+      } else {
+        setError(result.error)
+      }
+    } else if (result?.ok) {
+      window.location.href = "/dashboard"
+    }
+  } catch (error) {
+    console.error("Login error:", error)
+    setError("An unexpected error occurred")
+  } finally {
+    setIsLoading(false)
   }
+  }
+  
+
 
   return (
     <motion.div
@@ -74,6 +115,8 @@ export default function LoginForm() {
             {isLoading ? "Signing in..." : "Continue with Google"}
           </Button>
 
+          
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <Separator className="w-full bg-white/10" />
@@ -82,6 +125,12 @@ export default function LoginForm() {
               <span className="bg-black/40 px-2 text-gray-400">Or continue with email</span>
             </div>
           </div>
+
+          {error && (
+            <div className="p-4 text-sm text-red-500 bg-red-500/10 rounded-md">
+              {error}
+            </div>
+          )}
 
           {/* Email Login Form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
@@ -93,6 +142,7 @@ export default function LoginForm() {
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
+                  name="email"
                   placeholder="Enter your email"
                   type="email"
                   required
@@ -114,6 +164,7 @@ export default function LoginForm() {
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
+                  name="password"
                   placeholder="Enter your password"
                   type={showPassword ? "text" : "password"}
                   required

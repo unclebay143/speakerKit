@@ -11,22 +11,76 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Mail, Lock, User, Eye, EyeOff, UserCircle } from "lucide-react"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 
 export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleGoogleSignup = async () => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
+   const handleGoogleSignup = async () => {
+    setIsLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+   const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const formData = {
+    name: (e.currentTarget.elements.namedItem('name') as HTMLInputElement).value,
+    email: (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value,
+    password: (e.currentTarget.elements.namedItem('password') as HTMLInputElement).value,
+    confirmPassword: (e.currentTarget.elements.namedItem('confirmPassword') as HTMLInputElement).value
+  };
+
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords don't match");
+    setIsLoading(false);
+    return;
   }
 
-  const handleEmailSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
-  }
+     try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        }),
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+      const signInResult = await signIn("credentials", {
+      email: formData.email,
+      password: formData.password,
+      redirect: false,
+      callbackUrl: "/login"
+    });
+
+    if (signInResult?.error) {
+      throw new Error(signInResult.error);
+    }
+
+    // window.location.href = "/login";
+    } catch (error) {
+      console.error(error);
+      alert("Signup failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -87,13 +141,14 @@ export default function SignupForm() {
           {/* Email Signup Form */}
           <form onSubmit={handleEmailSignup} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-white">
+              <Label htmlFor="name" className="text-white">
                 Full Name
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  id="fullName"
+                  id="name"
+                  name="name"
                   placeholder="Enter your full name"
                   type="text"
                   required
@@ -110,6 +165,7 @@ export default function SignupForm() {
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
+                  name="email"
                   placeholder="Enter your email"
                   type="email"
                   required
@@ -120,12 +176,13 @@ export default function SignupForm() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white">
-                Password
+                Password <span className="text-gray-500">(Atleast 8 characters)</span>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
+                  name="password"
                   placeholder="Create a password"
                   type={showPassword ? "text" : "password"}
                   required
@@ -149,6 +206,7 @@ export default function SignupForm() {
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="confirmPassword"
+                  name="confirmPassword"
                   placeholder="Confirm your password"
                   type={showConfirmPassword ? "text" : "password"}
                   required
