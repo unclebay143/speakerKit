@@ -5,59 +5,90 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Users, FileText, ImageIcon } from "lucide-react"
-import { CreateProfileModal } from "../modals/profile-modal"
+import { useSession } from "next-auth/react"
+import { useProfiles } from "@/lib/hooks/useProfiles"
+import { Skeleton } from "../ui/skeleton"
+import { format } from "date-fns"
+import { ProfileModal } from "../modals/profile-modal"
+import { DeleteConfirmationModal } from "../DeleteConfirmationModal"
 
-const initialProfiles = [
-  {
-    id: 1,
-    title: "General Speaker Profile",
-    lastUpdated: "2 days ago",
-    isPublic: true,
-    shortBio: "Full-Stack Developer with 4+ years of experience. whhgfvbhfcv hgbjcsdhjccfg  hbgzcbfsbcdgdfbcsfcj hbfjcnbf",
-    mediumBio:
-      "Full-Stack Developer with 4+ years of experience in web development, specializing in React and Node.js.",
-    longBio:
-      "Ayodele Samuel Adebayo (UncleBigBay) is a Full-Stack Developer, Technical Writer, and Educator with over four years of experience building scalable web platforms and developing educational content for developers worldwide.",
-  },
-  {
-    id: 2,
-    title: "Frontend Developer Profile",
-    lastUpdated: "1 week ago",
-    isPublic: false,
-    shortBio: "Frontend Developer specializing in React.",
-    mediumBio: "Frontend Developer with expertise in React, Next.js, and modern JavaScript frameworks.",
-    longBio: "",
-  },
-  {
-    id: 3,
-    title: "Conference Speaker Profile",
-    lastUpdated: "3 days ago",
-    isPublic: true,
-    shortBio: "Tech conference speaker and developer advocate.",
-    mediumBio: "",
-    longBio: "",
-  },
-]
 
 const stats = [
-  { label: "Total Profiles", value: "3", icon: FileText, color: "text-blue-400" },
-  { label: "Images Uploaded", value: "12", icon: ImageIcon, color: "text-purple-400" },
-  { label: "Public Profiles", value: "2", icon: Users, color: "text-orange-400" },
+  { label: "Total Profiles", value: "", icon: FileText, color: "text-blue-400" },
+  { label: "Images Uploaded", value: "", icon: ImageIcon, color: "text-purple-400" },
+  { label: "Public Profiles", value: "", icon: Users, color: "text-orange-400" },
 ]
 
 export function ProfilesOverview() {
-  const [profiles, setProfiles] = useState(initialProfiles)
-  const [showCreateModal, setShowCreateModal] = useState(false)
+  const { data: session } = useSession();
+  const { 
+    profiles, 
+    isLoading, 
+    createProfile, 
+    updateProfile, 
+    deleteProfile 
+  } = useProfiles()
 
-  const handleProfileCreated = (newProfile: any) => {
-    setProfiles((prev) => [newProfile, ...prev])
-    // Update stats
-    stats[0].value = String(profiles.length + 1)
-    if (newProfile.isPublic) {
-      const publicCount = profiles.filter((p) => p.isPublic).length + 1
-      stats[2].value = String(publicCount)
+  
+   const [, setEditingProfile] = useState<any>(null);
+
+    const [profileModalState, setProfileModalState] = useState<{
+      open: boolean
+      profileToEdit?: any
+    }>({ open: false })
+
+    const [deleteModalState, setDeleteModalState] = useState<{
+      open: boolean
+      profileId?: string
+      profileTitle?: string
+    }>({ open: false })
+
+
+  const handleProfileCreated = async (newProfile: any) => {
+    try {
+       await createProfile.mutateAsync(newProfile)
+      setProfileModalState({ open: false })
+    } catch (error) {
+      console.error("Failed to create profile:", error)
     }
   }
+
+  const handleProfileUpdated = async (id: string, updates: any) => {
+    try {
+     await updateProfile.mutateAsync({ id, ...updates })
+      setProfileModalState({ open: false })
+      setEditingProfile(null)
+    } catch (error) {
+      console.error("Failed to update profile:", error)
+    }
+  }
+
+  const handleCreateProfile = () => {
+    setProfileModalState({ open: true })
+  }
+
+   const handleEditProfile = (profile: any) => {
+    setProfileModalState({ open: true, profileToEdit: profile })
+  }
+
+   const handleDeleteClick = (profileId: string, profileTitle: string) => {
+    setDeleteModalState({
+      open: true,
+      profileId,
+      profileTitle
+    })
+  }
+
+  const handleDeleteProfile = async () => {
+    if (!deleteModalState.profileId) return
+    try {
+      await deleteProfile.mutateAsync(deleteModalState.profileId)
+      setDeleteModalState({ open: false })
+    } catch (error) {
+      console.error("Failed to delete profile:", error)
+    }
+  }
+
 
   const getBioBadges = (profile: any) => {
     const badges = []
@@ -89,12 +120,28 @@ export function ProfilesOverview() {
     return badges
   }
 
+   if (isLoading) {
+    return (
+      <div className="space-y-6 mx-auto max-w-screen-lg">
+        <Skeleton className="h-32 w-full rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-lg" />
+          ))}
+        </div>
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-40 w-full rounded-lg" />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 mx-auto max-w-screen-lg">
       {/* First Section */}
       <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-6 border border-white/10">
-        <h2 className="text-2xl font-bold text-white mb-2">Welcome back, Mary! 👋</h2>
-        <p className="text-gray-300">You have {profiles.length} active profiles.</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Welcome back, {session?.user?.name || "User"}! 👋</h2>
+        <p className="text-gray-300">You have {profiles?.length || 0} active profiles.</p>
       </div>
 
       {/* Statistics section of profile and images */}
@@ -107,7 +154,7 @@ export function ProfilesOverview() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">{stat.label}</p>
-                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="text-2xl font-bold text-white">{index === 0 ? profiles?.length || 0 : stat.value}</p>
                   </div>
                   <Icon className={`w-8 h-8 ${stat.color}`} />
                 </div>
@@ -121,14 +168,14 @@ export function ProfilesOverview() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white">Your Profiles</h3>
-          <Button onClick={() => setShowCreateModal(true)} className="bg-purple-600 hover:bg-purple-700">
+          <Button onClick={handleCreateProfile} className="bg-purple-600 hover:bg-purple-700">
             Create New Profile
           </Button>
         </div>
 
         <div className="grid gap-4">
-          {profiles.map((profile) => (
-            <Card key={profile.id} className="bg-black/40 border-white/10 hover:border-purple-500/50 transition-colors">
+          {profiles?.map((profile) => (
+            <Card key={profile._id} className="bg-black/40 border-white/10 hover:border-purple-500/50 transition-colors">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -139,16 +186,16 @@ export function ProfilesOverview() {
                       </Badge>
                     </CardTitle>
                     <CardDescription className="text-gray-400 text-[0.8rem] mt-1">
-                      {profile.shortBio.length > 50
+                      {profile.shortBio && (profile.shortBio.length > 50
                         ? `${profile.shortBio.substring(0, 50)}...`
-                        : profile.shortBio}
+                        : profile.shortBio)}
                     </CardDescription>
                   </div>
                   <div className="flex md:space-x-2">
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white" onClick={() => handleEditProfile(profile)}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-300">
+                    <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-300" onClick={() => handleDeleteClick(profile._id, profile.title)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -162,7 +209,7 @@ export function ProfilesOverview() {
                     </div>
                   </div>
                   <div className="mt-4 md:mt-0">
-                    <span className="">Updated {profile.lastUpdated}</span>
+                    <span className="">Updated {format(new Date(profile.updatedAt), "MMM d, yyyy")}</span>
                   </div>
                   
                 </div>
@@ -171,13 +218,13 @@ export function ProfilesOverview() {
           ))}
         </div>
 
-        {profiles.length === 0 && (
+        {profiles?.length === 0 && (
           <Card className="bg-black/40 border-white/10 border-dashed">
             <CardContent className="p-12 text-center">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">No profiles yet</h3>
               <p className="text-gray-400 mb-6">Create your first speaker profile to get started</p>
-              <Button onClick={() => setShowCreateModal(true)} className="bg-purple-600 hover:bg-purple-700">
+              <Button onClick={handleCreateProfile} className="bg-purple-600 hover:bg-purple-700">
                 Create Your First Profile
               </Button>
             </CardContent>
@@ -185,11 +232,19 @@ export function ProfilesOverview() {
         )}
       </div>
 
-      {/* Modal */}
-      <CreateProfileModal
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
+      <ProfileModal
+        open={profileModalState.open}
+        onOpenChange={(open) => setProfileModalState({ ...profileModalState, open })}
         onProfileCreated={handleProfileCreated}
+        onProfileUpdated={handleProfileUpdated}
+        profileToEdit={profileModalState.profileToEdit}
+        isEditing={!!profileModalState.profileToEdit}
+      />
+      <DeleteConfirmationModal
+        open={deleteModalState.open}
+        onOpenChange={(open) => setDeleteModalState({ ...deleteModalState, open })}
+        onConfirm={handleDeleteProfile}
+        profileTitle={deleteModalState.profileTitle}
       />
     </div>
   )

@@ -8,7 +8,6 @@ export async function POST(req: Request) {
     await connectViaMongoose();
 
     const requestData = await req.json();
-    console.log("Request data:", requestData);
 
       const { name, email, password } = requestData;
 
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Hashed password:", hashedPassword);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, hasCompletedOnboarding: false });
     await user.save();
 
     return NextResponse.json({ 
@@ -45,7 +44,8 @@ export async function POST(req: Request) {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        hasCompletedOnboarding: user.hasCompletedOnboarding
       }
     });
   } catch (error) {

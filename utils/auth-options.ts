@@ -17,7 +17,6 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           await connectViaMongoose();
-          console.log("Database connected successfully");
           
           if (!credentials?.email || !credentials?.password) {
             console.log("Missing credentials");
@@ -25,8 +24,8 @@ export const authOptions: AuthOptions = {
           }
 
           const user = await User.findOne({ email: credentials.email.toLowerCase() });
-          console.log("User found:", user ? user.email : "No user found");
-           console.log("Searching for email:", credentials.email.toLowerCase());
+          // console.log("User found:", user ? user.email : "No user found");
+          //  console.log("Searching for email:", credentials.email.toLowerCase());
           
           if (!user) {
             console.log("No user found with this email");
@@ -38,9 +37,7 @@ export const authOptions: AuthOptions = {
             return null;
           }
 
-          console.log("Comparing passwords...");
           const isValid = await bcrypt.compare(credentials.password, user.password);
-          console.log("Password valid:", isValid);
           
           if (!isValid) {
             console.log("Password comparison failed");

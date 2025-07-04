@@ -16,13 +16,16 @@ import {
 } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Check, AlertCircle } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 interface UsernameModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onComplete?: () => void
 }
 
-export function UsernameModal({ open, onOpenChange }: UsernameModalProps) {
+export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalProps) {
+  const { data: session, update } = useSession()
   const [username, setUsername] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
@@ -34,10 +37,20 @@ export function UsernameModal({ open, onOpenChange }: UsernameModalProps) {
       return
     }
 
-    setTimeout(() => {
-      const unavailableUsernames = ["admin", "test", "user", "speaker", "demo"]
-      setIsAvailable(!unavailableUsernames.includes(value.toLowerCase()))
-    }, 500)
+     try {
+      const response = await fetch('/api/username/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: value }),
+      })
+      const data = await response.json()
+      setIsAvailable(data.available)
+    } catch (error) {
+      console.error("Error checking username:", error)
+      setIsAvailable(false)
+    }
   }
 
   const handleUsernameChange = (value: string) => {
@@ -46,17 +59,37 @@ export function UsernameModal({ open, onOpenChange }: UsernameModalProps) {
     checkUsernameAvailability(sanitized)
   }
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     if (!username || !isAvailable) return
 
     setIsLoading(true)
 
-    setTimeout(() => {
-      setIsLoading(false)
-      onOpenChange(false)
-    }, 2000)
-  }
+    try {
+      const response = await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      });
 
+      const data = await response.json();
+
+       if (!response.ok) {
+      throw new Error(data.error || 'Failed to complete onboarding');
+    }
+
+      await update();
+      if (onComplete) {
+        onComplete();
+      }
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error completing onboarding:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   if (isMobile) {
     return (
       <>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { DashboardSidebar } from "./sidebar"
 import { DashboardHeader } from "./header"
@@ -8,12 +8,33 @@ import { ProfilesOverview } from "./profile-overview"
 import { UsernameModal } from "../modals/username-modal"
 import { ImageGallery } from "./image-gallery"
 import { Settings } from "./settings"
+import { useSession } from "next-auth/react"
+import { redirect } from "next/navigation"
 
 export default function Dashboard() {
+  const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState("overview")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  const [showUsernameModal, setShowUsernameModal] = useState(true)
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
+
+  //  if (status === "unauthenticated") {
+  //   redirect("/login")
+  // }
+
+  useEffect(() => {
+    if (status === "authenticated" && !session?.user?.username) {
+      setShowUsernameModal(true);
+    }
+  }, [status, session]);
+
+   const handleUsernameComplete = () => {
+    setShowUsernameModal(false);
+  };
+
+  if (status === "unauthenticated") {
+    redirect("/login")
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -67,7 +88,14 @@ export default function Dashboard() {
           </motion.div>
         </main>
       </div>
-      <UsernameModal open={showUsernameModal} onOpenChange={setShowUsernameModal}/>
+      <UsernameModal 
+        open={showUsernameModal} 
+        onOpenChange={(open) => {
+          if (session?.user?.username || !open) {
+            setShowUsernameModal(open);
+          }
+        }}
+        onComplete={handleUsernameComplete}/>
     </div>
   )
 }

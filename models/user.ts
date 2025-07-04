@@ -15,32 +15,21 @@ const UserSchema = new Schema({
     password: { 
         type: String 
     },
-    
-    // image: { 
-    //     type: String 
-    // },
-    // provider: { 
-    //     type: String, 
-    //     default: "credentials" 
-    // },
+     username: {
+        type: String,
+        unique: true,
+        trim: true,
+        lowercase: true,
+        match: [/^[a-z0-9-]{3,30}$/, 'Username must be 3-30 characters with only letters, numbers, and hyphens']
+    },
+    hasCompletedOnboarding: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });
 
-// UserSchema.pre("save", async function (next) {
-//   if (!this.isModified("password")) return next();
-//   try {
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   } catch (error) {
-//     next(error as Error);
-//   }
-// });
-
-// UserSchema.methods.comparePassword = async function (candidatePassword: string) {
-//   return await bcrypt.compare(candidatePassword, this.password);
-// };
 
 const User = models.User || model('User', UserSchema);
 

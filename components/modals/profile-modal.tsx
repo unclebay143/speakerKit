@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,23 +22,48 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Eye, EyeOff } from "lucide-react"
 
-interface CreateProfileModalProps {
+interface ProfileModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onProfileCreated?: (profile: any) => void
+   onProfileUpdated?: (id: string, updates: any) => Promise<void>
+  profileToEdit?: any
+  isEditing?: boolean
 }
 
-export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: CreateProfileModalProps) {
+export function ProfileModal({ open, onOpenChange, onProfileCreated,  onProfileUpdated,
+  profileToEdit,
+  isEditing = false 
+ }: ProfileModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isPublic, setIsPublic] = useState(true)
   const [profileData, setProfileData] = useState({
     title: "",
-    type: "",
     shortBio: "",
     mediumBio: "",
     longBio: "",
   })
   const isMobile = useIsMobile()
+
+   useEffect(() => {
+    if (isEditing && profileToEdit) {
+      setProfileData({
+        title: profileToEdit.title,
+        shortBio: profileToEdit.shortBio || "",
+        mediumBio: profileToEdit.mediumBio || "",
+        longBio: profileToEdit.longBio || "",
+      })
+      setIsPublic(profileToEdit.isPublic)
+    } else {
+      setProfileData({
+        title: "",
+        shortBio: "",
+        mediumBio: "",
+        longBio: "",
+      })
+      setIsPublic(true)
+    }
+  }, [isEditing, profileToEdit])
 
   const handleInputChange = useCallback((field: string, value: string) => {
     setProfileData((prev) => ({
@@ -47,44 +72,43 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
     }))
   }, [])
 
-  const handleSubmit = useCallback(
+   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
       if (e) {
         e.preventDefault()
         e.stopPropagation()
       }
 
-      if (!profileData.title.trim() || !profileData.type) return
+      if (!profileData.title.trim()) {
+        return
+      }
 
       setIsLoading(true)
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        const newProfile = {
-          id: Date.now(),
+        const profilePayload = {
           title: profileData.title,
-          type: profileData.type,
-          bioLength: profileData.longBio ? "Long" : profileData.mediumBio ? "Medium" : "Short",
-          lastUpdated: "Just now",
-          isPublic,
-          description: profileData.shortBio || "No description provided",
           shortBio: profileData.shortBio,
           mediumBio: profileData.mediumBio,
           longBio: profileData.longBio,
+          isPublic,
         }
 
-        onProfileCreated?.(newProfile)
+        
+      if (isEditing && profileToEdit) {
+        await onProfileUpdated?.(profileToEdit._id, profilePayload)
+      } else {
+        await onProfileCreated?.(profilePayload)
+      }
+
 
         setProfileData({
           title: "",
-          type: "",
           shortBio: "",
           mediumBio: "",
           longBio: "",
         })
         setIsPublic(true)
-
         onOpenChange(false)
       } catch (error) {
         console.error("Error creating profile:", error)
@@ -92,13 +116,12 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
         setIsLoading(false)
       }
     },
-    [profileData, isPublic, onProfileCreated, onOpenChange],
+    [profileData, isPublic, isEditing, profileToEdit, onProfileCreated, onProfileUpdated, onOpenChange]
   )
 
   const handleCancel = useCallback(() => {
     setProfileData({
       title: "",
-      type: "",
       shortBio: "",
       mediumBio: "",
       longBio: "",
@@ -117,7 +140,7 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
           <DrawerContent className="bg-black/95 border-white/10 max-h-[90vh] z-[101] flex flex-col">
             <div className="overflow-y-auto px-4 pt-4 space-y-6 flex-1">
               <DrawerHeader className="text-left">
-                <DrawerTitle className="text-white">Create New Profile</DrawerTitle>
+                <DrawerTitle className="text-white">{isEditing ? "Edit Profile" : "Create New Profile"}</DrawerTitle>
                 <DrawerDescription className="text-gray-400">
                   Set up a new profile for different contexts
                 </DrawerDescription>
@@ -236,10 +259,10 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
                 <Button
                   type="button"
                   onClick={() => handleSubmit()}
-                  disabled={!profileData.title.trim() || !profileData.type || isLoading}
+                  disabled={!profileData.title || !profileData.shortBio || isLoading}
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
                 >
-                  {isLoading ? "Creating..." : "Create Profile"}
+                  {isLoading ? (isEditing ? "Updating..." : "Creating"): (isEditing ? "Update Profile" : "Create Profile")}
                 </Button>
               </div>
               <DrawerClose asChild>
@@ -262,7 +285,7 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
       <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
         <DialogContent className="bg-black/95 border-white/10 text-white max-w-2xl max-h-[90vh] z-[101]">
           <DialogHeader>
-            <DialogTitle className="text-white">Create New Profile</DialogTitle>
+            <DialogTitle className="text-white">{isEditing ? "Edit Profile" : "Create New Profile"}</DialogTitle>
             <DialogDescription className="text-gray-400">Set up a new profile for different contexts</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] pr-4">
@@ -295,7 +318,7 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
                   {/* Short Bio */}
                   <div className="space-y-2">
                     <Label htmlFor="shortBio" className="text-white text-sm">
-                      Short Bio (200 characters max)
+                      Short Bio (200 characters max) *
                     </Label>
                     <Textarea
                       id="shortBio"
@@ -377,10 +400,10 @@ export function CreateProfileModal({ open, onOpenChange, onProfileCreated }: Cre
               <Button
                 type="button"
                 onClick={() => handleSubmit()}
-                disabled={!profileData.title.trim() || !profileData.type || isLoading}
+                disabled={!profileData.title || !profileData.shortBio || isLoading}
                 className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
               >
-                {isLoading ? "Creating..." : "Create Profile"}
+                  {isLoading ? (isEditing ? "Updating..." : "Creating"): (isEditing ? "Update Profile" : "Create Profile")}
               </Button>
             </div>
           </div>
