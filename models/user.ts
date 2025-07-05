@@ -20,6 +20,7 @@ const UserSchema = new Schema({
         unique: true,
         trim: true,
         lowercase: true,
+        sparse: true,
         match: [/^[a-z0-9-]{3,30}$/, 'Username must be 3-30 characters with only letters, numbers, and hyphens']
     },
     hasCompletedOnboarding: {

@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     }
 
     const { username } = await req.json();
+    console.log('Received username:', username);
 
      if (!username || !/^[a-z0-9-]{3,30}$/.test(username)) {
       return NextResponse.json(
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
 
      const existingUser = await User.findOne({ username });
     if (existingUser && existingUser.email !== session.user.email) {
+        console.log('Username taken:', username);
       return NextResponse.json(
         { error: "Username is already taken" },
         { status: 400 }
@@ -46,16 +48,18 @@ export async function POST(req: Request) {
         username,
         hasCompletedOnboarding: true 
       },
-      { new: true, returnOriginal: false  }
+      { new: true }
     );
 
     if (!user) {
+      console.log('User not found for email:', session.user.email);
       return NextResponse.json(
         { error: "User not found" },
         { status: 404 }
       );
     }
 
+    console.log('Successfully updated user:', user.email);
     return NextResponse.json({ 
       success: true,
       username: user.username,

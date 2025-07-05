@@ -1,36 +1,42 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { motion } from "framer-motion"
 import { DashboardSidebar } from "./sidebar"
 import { DashboardHeader } from "./header"
 import { ProfilesOverview } from "./profile-overview"
-import { UsernameModal } from "../modals/username-modal"
+// import { UsernameModal } from "../modals/username-modal"
 import { ImageGallery } from "./image-gallery"
 import { Settings } from "./settings"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 
 export default function Dashboard() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const [activeTab, setActiveTab] = useState("overview")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [showUsernameModal, setShowUsernameModal] = useState(false)
 
-  //  if (status === "unauthenticated") {
-  //   redirect("/login")
-  // }
+  
+  
 
-  useEffect(() => {
-    if (status === "authenticated" && !session?.user?.username) {
-      setShowUsernameModal(true);
-    }
-  }, [status, session]);
+  //  useEffect(() => {
+  //   if (status === "authenticated") {
+  //     setShowUsernameModal(!session?.user?.username);
+  //   }
+  // }, [status, session?.user?.username]);
 
-   const handleUsernameComplete = () => {
-    setShowUsernameModal(false);
-  };
+  //  const handleUsernameComplete = async () => {
+  //   await update(); 
+  //   setShowUsernameModal(false);
+  // };
+
+  if (status === "loading") {
+    return <div className="min-h-screen bg-black/[0.96] flex items-center justify-center">
+      Loading session...
+    </div>;
+  }
 
   if (status === "unauthenticated") {
     redirect("/login")
@@ -53,7 +59,8 @@ export default function Dashboard() {
     setActiveTab(tab)
     setMobileSidebarOpen(false)
   }
-
+console.log('Dashboard session:', session);
+console.log('Show username modal state:', showUsernameModal);
   return (
     <div className="min-h-screen bg-black/[0.96] text-white">
       <DashboardSidebar
@@ -88,14 +95,16 @@ export default function Dashboard() {
           </motion.div>
         </main>
       </div>
-      <UsernameModal 
+      {/* <UsernameModal 
         open={showUsernameModal} 
-        onOpenChange={(open) => {
-          if (session?.user?.username || !open) {
+         onOpenChange={(open) => {
+          if (session?.user?.username) {
             setShowUsernameModal(open);
           }
         }}
-        onComplete={handleUsernameComplete}/>
+        onComplete={handleUsernameComplete}
+        /> */}
+        
     </div>
   )
 }

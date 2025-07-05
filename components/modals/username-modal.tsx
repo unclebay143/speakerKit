@@ -80,16 +80,22 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
     }
 
       await update();
+
+      onOpenChange(false)
+
       if (onComplete) {
         onComplete();
       }
-      onOpenChange(false)
+      
     } catch (error) {
       console.error("Error completing onboarding:", error)
     } finally {
       setIsLoading(false)
     }
   }
+  console.log('Modal props:', { open, onOpenChange, onComplete });
+  console.log('Session data:', session);
+  console.log('Username state:', username, 'Available:', isAvailable);
   if (isMobile) {
     return (
       <>

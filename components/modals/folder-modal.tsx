@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,13 +22,23 @@ interface CreateFolderModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onFolderCreated?: (folderName: string) => void
+  initialName?: string
 }
 
-export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: CreateFolderModalProps) {
-  const [folderName, setFolderName] = useState("")
+export function CreateFolderModal({ open, onOpenChange, onFolderCreated, initialName = "" }: CreateFolderModalProps) {
+  const [folderName, setFolderName] = useState(initialName)
   const [isLoading, setIsLoading] = useState(false)
   const isMobile = useIsMobile()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      setFolderName(initialName)
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+  }, [open, initialName])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,6 +64,8 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
     onOpenChange(false)
   }
 
+    const isEditMode = !!initialName
+
   if (isMobile) {
     return (
       <>
@@ -63,7 +75,7 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
         <Drawer open={open} onOpenChange={onOpenChange}>
           <DrawerContent className="bg-black/95 border-white/10 z-[101]">
             <DrawerHeader className="text-left">
-              <DrawerTitle className="text-white">Create New Folder</DrawerTitle>
+              <DrawerTitle className="text-white">{isEditMode ? "Rename Folder" : "Create New Folder"}</DrawerTitle>
               <DrawerDescription className="text-gray-400">Organize your images into folders</DrawerDescription>
             </DrawerHeader>
             <div className="px-4 space-y-6">
@@ -102,7 +114,11 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
                   disabled={!folderName.trim() || isLoading}
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
                 >
-                  {isLoading ? "Creating..." : "Create Folder"}
+                  {isLoading ? (
+                    isEditMode ? "Upadint..." : "Creating"
+                    ) : (
+                      isEditMode? "Update Folder" : "Create Folder"
+                  )}
                 </Button>
               </div>
               <DrawerClose asChild>
@@ -125,7 +141,7 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-black/95 border-white/10 text-white max-w-md z-[101]">
           <DialogHeader>
-            <DialogTitle className="text-white">Create New Folder</DialogTitle>
+            <DialogTitle className="text-white">{isEditMode ? "Rename Folder" : "Create New Folder"}</DialogTitle>
             <DialogDescription className="text-gray-400">Organize your images into folders</DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
@@ -163,7 +179,11 @@ export function CreateFolderModal({ open, onOpenChange, onFolderCreated }: Creat
               disabled={!folderName.trim() || isLoading}
               className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
             >
-              {isLoading ? "Creating..." : "Create Folder"}
+              {isLoading ? (
+                    isEditMode ? "Upadint..." : "Creating"
+                    ) : (
+                      isEditMode? "Update Folder" : "Create Folder"
+                  )}
             </Button>
           </div>
         </DialogContent>

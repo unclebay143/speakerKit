@@ -67,20 +67,30 @@ export const authOptions: AuthOptions = {
       }
     })
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token?.id) {
-        session.user.id = token.id;
-      }
-      return session;
-    },
+ callbacks: {
+   async session({ session, token }) {
+    if (session.user) {
+      session.user.id = token.sub || token.id;
+      session.user.username = token.username;
+      session.user.name = token.name;
+      session.user.email = token.email;
+    }
+    return session;
   },
+  async jwt({ token, user, trigger, session }) {
+    if (user) {
+      token.id = user.id;
+      token.username = user.username;
+      token.name = user.name;
+      token.email = user.email;
+    }
+    if (trigger === "update" && session?.username) {
+      token.username = session.username;
+    }
+    
+    return token;
+  }
+},
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",

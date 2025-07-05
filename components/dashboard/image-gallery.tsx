@@ -1,95 +1,146 @@
 "use client"
 
-import { useState } from "react"
+import {  useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Upload, Edit, Trash2, Eye, Folder, FolderPlus, ArrowLeft, MoreVertical } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { CreateFolderModal } from "../modals/folder-modal"
+import { useSession } from "next-auth/react"
+import { useFolders } from "@/lib/hooks/useFolders"
+import { UploadModal } from "../UploadModal"
+import { Skeleton } from "@/components/ui/skeleton";
+import { DeleteConfirmationModal } from "../DeleteConfirmationModal"
 
-const initialFolders = [
-  {
-    id: 1,
-    name: "Professional Headshots",
-    imageCount: 5,
-    createdDate: "2024-01-15",
-    images: [
-      {
-        id: 101,
-        name: "Corporate Headshot 1",
-        url: "/placeholder.svg?height=200&width=200",
-        uploadDate: "2024-01-15",
-        size: "2.3 MB",
-        dimensions: "1200x1200",
-      },
-      {
-        id: 102,
-        name: "Corporate Headshot 2",
-        url: "/placeholder.svg?height=200&width=200",
-        uploadDate: "2024-01-14",
-        size: "2.1 MB",
-        dimensions: "1200x1200",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Casual Portraits",
-    imageCount: 3,
-    createdDate: "2024-01-10",
-    images: [
-      {
-        id: 201,
-        name: "Casual Portrait 1",
-        url: "/placeholder.svg?height=200&width=200",
-        uploadDate: "2024-01-10",
-        size: "1.8 MB",
-        dimensions: "1000x1000",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Speaking Photos",
-    imageCount: 8,
-    createdDate: "2024-01-08",
-    images: [
-      {
-        id: 301,
-        name: "Conference Speaking",
-        url: "/placeholder.svg?height=200&width=200",
-        uploadDate: "2024-01-08",
-        size: "3.1 MB",
-        dimensions: "1500x1000",
-      },
-    ],
-  },
-]
 
 export function ImageGallery() {
-  const [folders, setFolders] = useState(initialFolders)
+  const { data: session } = useSession();
   const [currentFolder, setCurrentFolder] = useState<any>(null)
   const [selectedImages] = useState<number[]>([])
-  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false);
+   const [folderModalState, setFolderModalState] = useState({
+    open: false,
+    folderToEdit: null as { id: string; name: string } | null
+  });
+  
+  const [deleteModalState, setDeleteModalState] = useState<{
+  open: boolean;
+  folderId?: string;
+  folderName?: string;
+}>({ open: false });
 
-  const handleFolderCreated = (folderName: string) => {
-    const newFolder = {
-      id: Date.now(),
-      name: folderName,
-      imageCount: 0,
-      createdDate: new Date().toISOString().split("T")[0],
-      images: [],
+
+const {
+    folders,
+    isLoading,
+    getFolder,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+    uploadImage
+  } = useFolders();
+
+   
+
+  const handleFolderCreated = async (folderName: string) => {
+    try {
+      await createFolder.mutateAsync(folderName);
+    } catch (error) {
+      console.error("Error creating folder:", error);
     }
-    setFolders((prev) => [newFolder, ...prev])
-  }
+  };
 
-  const handleDeleteFolder = (folderId: number) => {
-    setFolders((prev) => prev.filter((folder) => folder.id !== folderId))
-  }
+ const handleFolderUpdated = async (folderName: string) => {
+    if (!folderModalState.folderToEdit) return;
+    
+    try {
+      await updateFolder.mutateAsync({ 
+        id: folderModalState.folderToEdit.id, 
+        name: folderName 
+      });
+      setFolderModalState({ open: false, folderToEdit: null });
+      
+      if (currentFolder?._id === folderModalState.folderToEdit.id) {
+        const updated = await getFolder.refetch(folderModalState.folderToEdit.id);
+        setCurrentFolder(updated.data);
+      }
+    } catch (error) {
+      console.error("Failed to update folder:", error);
+    }
+  };
 
-  const handleRenameFolder = (folderId: number, newName: string) => {
-    setFolders((prev) => prev.map((folder) => (folder.id === folderId ? { ...folder, name: newName } : folder)))
+ const handleCreateFolder = () => {
+    setFolderModalState({ open: true, folderToEdit: null });
+  };
+
+  const handleEditFolder = (folder: { id: string; name: string }) => {
+    setFolderModalState({ open: true, folderToEdit: folder });
+  };
+
+  const handleDeleteFolder = async () => {
+  if (!deleteModalState.folderId) return;
+  try {
+    await deleteFolder.mutateAsync(deleteModalState.folderId);
+    setDeleteModalState({ open: false });
+    if (currentFolder?._id === deleteModalState.folderId) {
+      setCurrentFolder(null);
+    }
+  } catch (error) {
+    console.error("Failed to delete folder:", error);
   }
+};
+
+const handleRenameFolder = async (folderId: string, newName: string) => {
+    try {
+      await updateFolder.mutateAsync({ id: folderId, name: newName });
+      if (currentFolder?._id === folderId) {
+        const updated = await getFolder.refetch(folderId);
+        setCurrentFolder(updated.data);
+      }
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+    }
+  };
+
+    const handleImageUploaded = async (files: File[]) => {
+      if (!currentFolder) return;
+      
+      try {
+        await Promise.all(
+          files.map(file => 
+            uploadImage.mutateAsync({ 
+              folderId: currentFolder._id, 
+              file 
+            })
+          )
+        );
+        const updated = await getFolder.refetch(currentFolder._id.toString());
+        setCurrentFolder(updated.data);
+      } catch (error) {
+        console.error("Error uploading images:", error);
+      }
+    };
+
+ if (isLoading) {
+  return (
+    <div className="space-y-6 mx-auto max-w-screen-lg py-10">
+      <Skeleton className="h-10 w-1/3 rounded-lg" />
+      <Skeleton className="h-6 w-1/2 rounded-lg" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-32 w-full rounded-lg" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-40 w-full rounded-lg" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+  
 
   return (
     <div className="space-y-6 mx-auto max-w-screen-lg">
@@ -100,7 +151,7 @@ export function ImageGallery() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setCurrentFolder(null)}
+              onClick={() => setCurrentFolder(folders)}
               className="text-gray-400 hover:text-white"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -121,7 +172,7 @@ export function ImageGallery() {
         <div className="flex space-x-2">
           {!currentFolder && (
             <Button
-              onClick={() => setShowCreateFolderModal(true)}
+               onClick={handleCreateFolder}
               variant="outline"
               className="border-white/10 text-white bg-transparent"
             >
@@ -130,7 +181,7 @@ export function ImageGallery() {
             </Button>
           )}
           {currentFolder && (
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={() => setShowUploadModal(true)}>
               <Upload className="w-4 h-4 mr-2" />
               Upload Images
             </Button>
@@ -146,7 +197,7 @@ export function ImageGallery() {
               <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">Upload Images to {currentFolder.name}</h3>
               <p className="text-gray-400 mb-4">Drag and drop your images here, or click to browse</p>
-              <Button variant="outline" className="border-white/10 text-white bg-transparent">
+              <Button variant="outline" className="border-white/10 text-white bg-transparent" onClick={() => setShowUploadModal(true)}>
                 Choose Files
               </Button>
               <p className="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, WebP. Max size: 10MB</p>
@@ -155,92 +206,152 @@ export function ImageGallery() {
         </Card>
       )}
 
-      {/* Folders Grid */}
-      {!currentFolder && folders.length > 0 && (
-        <div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-            {folders.map((folder) => (
-              <Card
-                key={folder.id}
-                className="bg-black/40 border-white/10 hover:border-purple-500/50 transition-colors cursor-pointer"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 cursor-pointer" onClick={() => setCurrentFolder(folder)}>
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Folder className="w-8 h-8 text-purple-400" />
-                        <div>
-                          <h4 className="font-medium text-white truncate max-w-[110px]">{folder.name}</h4>
-                          <p className="text-sm text-gray-400">{folder.imageCount} images</p>
-                        </div>
+       {currentFolder ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {currentFolder.images.map((image) => (
+            <Card key={image._id} className="bg-black/40 border-white/10">
+              <CardContent className="p-4">
+                <img
+                  src={image.url}
+                  alt={image.name}
+                  className="w-full h-40 object-cover rounded mb-2"
+                />
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-medium text-white truncate">{image.name}</h4>
+                    <p className="text-xs text-gray-400">
+                      {new Date(image.uploadedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-400">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        /* Folders Grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {folders?.map((folder) => (
+            <Card
+              key={folder._id}
+              className="bg-black/40 border-white/10 hover:border-purple-500/50 transition-colors cursor-pointer"
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div 
+                    className="flex-1 cursor-pointer" 
+                    onClick={() => setCurrentFolder(folder)}
+                  >
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Folder className="w-8 h-8 text-purple-400" />
+                      <div>
+                        <h4 className="font-medium text-white truncate max-w-[110px]">{folder.name}</h4>
+                        <p className="text-sm text-gray-400">{folder.images.length} images</p>
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setCurrentFolder(folder)}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Open Folder
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleRenameFolder(folder.id, prompt("New name:") || folder.name)}
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteFolder(folder.id)} className="text-red-400">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Created {new Date(folder.createdDate).toLocaleDateString()}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setCurrentFolder(folder)}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                         onClick={() => handleEditFolder({ id: folder._id._id.toString(), name: folder.name })}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                         onClick={() => {
+                          setDeleteModalState({
+                            open: true,
+                            folderId: folder._id,
+                            folderName: folder.name,
+                          });
+                        }}
+                        className="text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Created {new Date(folder.createdAt).toLocaleDateString()}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
-      {/* Bulk Actions */}
-      {selectedImages.length > 0 && (
-        <Card className="bg-purple-600/20 border-purple-500/30">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-white">
-                {selectedImages.length} image{selectedImages.length > 1 ? "s" : ""} selected
-              </span>
-              <div className="flex space-x-2">
-                {!currentFolder && (
-                  <Button variant="outline" size="sm" className="border-white/10 text-white bg-transparent">
-                    Move to Folder
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" className="border-white/10 text-white bg-transparent">
-                  Download Selected
-                </Button>
-                <Button variant="destructive" size="sm">
-                  Delete Selected
-                </Button>
-              </div>
-            </div>
+      
+      {/* Empty State */}
+      {!currentFolder && folders?.length === 0 && (
+        <Card className="bg-black/40 border-white/10 border-dashed">
+          <CardContent className="p-8 text-center">
+            <Folder className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-medium text-white mb-2">No Folders Yet</h3>
+            <p className="text-gray-400 mb-4">Create your first folder to organize your images</p>
+            <Button
+              onClick={handleCreateFolder}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <FolderPlus className="w-4 h-4 mr-2" />
+              Create Folder
+            </Button>
           </CardContent>
         </Card>
       )}
+  
        
 
       {/* Create Folder Modal */}
-      <CreateFolderModal
-        open={showCreateFolderModal}
-        onOpenChange={setShowCreateFolderModal}
-        onFolderCreated={handleFolderCreated}
+       <CreateFolderModal
+        open={folderModalState.open}
+        onOpenChange={(open) => setFolderModalState({ ...folderModalState, open })}
+        onFolderCreated={folderModalState.folderToEdit ? handleFolderUpdated : handleFolderCreated}
+        initialName={folderModalState.folderToEdit?.name || ""}
+      />
+
+      {currentFolder && (
+        <UploadModal
+          open={showUploadModal}
+          onOpenChange={setShowUploadModal}
+          folderId={currentFolder._id}
+          onUploadComplete={handleImageUploaded}
+        />
+      )}
+
+      <DeleteConfirmationModal
+        open={deleteModalState.open}
+        onOpenChange={(open) => setDeleteModalState({ ...deleteModalState, open })}
+        onConfirm={handleDeleteFolder}
+         title={`Are you sure you want to delete "${deleteModalState.folderName}" and all its images?`}
       />
     </div>
   )
