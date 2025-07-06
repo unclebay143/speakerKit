@@ -1,4 +1,3 @@
-// app/api/folders/route.ts
 import { NextResponse } from "next/server";
 import connectViaMongoose from "@/lib/db";
 import { getServerSession } from "next-auth";

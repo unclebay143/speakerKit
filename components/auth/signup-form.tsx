@@ -17,13 +17,16 @@ export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+  
 
    const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
       await signIn("google", { callbackUrl: "/dashboard" });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error(error);
+      setError("Failed to login with Google")
     } finally {
       setIsLoading(false);
     }
@@ -32,6 +35,7 @@ export default function SignupForm() {
    const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null)
     
     const formData = {
     name: (e.currentTarget.elements.namedItem('name') as HTMLInputElement).value,
@@ -65,7 +69,7 @@ export default function SignupForm() {
       const signInResult = await signIn("credentials", {
       email: formData.email,
       password: formData.password,
-      redirect: false,
+      // redirect: false,
       callbackUrl: "/login"
     });
 
@@ -73,7 +77,6 @@ export default function SignupForm() {
       throw new Error(signInResult.error);
     }
 
-    // window.location.href = "/login";
     } catch (error) {
       console.error(error);
       alert("Signup failed");
@@ -137,6 +140,12 @@ export default function SignupForm() {
               <span className="bg-black/40 px-2 text-gray-400">Or continue with email</span>
             </div>
           </div>
+
+          {error && (
+            <div className="p-4 text-sm text-red-500 bg-red-500/10 rounded-md">
+              {error}
+            </div>
+          )}
 
           {/* Email Signup Form */}
           <form onSubmit={handleEmailSignup} className="space-y-4">

@@ -33,33 +33,6 @@ export function UploadModal({ open, onOpenChange, folderId, onUploadComplete }: 
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-//   const handleUpload = async () => {
-//     if (files.length === 0) return;
-
-//     setUploading(true);
-//     try {
-//       const formData = new FormData();
-//       formData.append("folderId", folderId);
-//       files.forEach((file) => {
-//         formData.append("file", file);
-//       });
-
-//       const response = await fetch("/api/images/upload", {
-//         method: "POST",
-//         body: formData,
-//       });
-
-//       if (response.ok) {
-//         onUploadComplete();
-//         setFiles([]);
-//         onOpenChange(false);
-//       }
-//     } catch (error) {
-//       console.error("Upload error:", error);
-//     } finally {
-//       setUploading(false);
-//     }
-//   };
 const handleUpload = async () => {
     if (files.length === 0) return
 

@@ -27,16 +27,17 @@ export function useFolders() {
     enabled: !!session?.user?.id
   });
 
-  // Fetch single folder
   const getFolder = useQuery({
   queryKey: ["folder"],
-  queryFn: async (folderId: string) => {
-    const encodedId = encodeURIComponent(folderId);
-    const { data } = await axios.get(`/api/folders/${encodedId}`);
+  queryFn: async ({ queryKey }) => {
+    const [_, folderId] = queryKey;
+    const { data } = await axios.get(`/api/folders/${folderId}`);
     return data;
   },
-  enabled: false
+  enabled: false 
 });
+
+
   // Create 
   const createFolder = useMutation({
     mutationFn: (name: string) => 

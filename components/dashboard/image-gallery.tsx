@@ -11,12 +11,29 @@ import { useFolders } from "@/lib/hooks/useFolders"
 import { UploadModal } from "../UploadModal"
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal"
+import { useImage } from "@/lib/hooks/useImage"
+import axios from "axios"
+
+interface Folder {
+  _id: string;
+  name: string;
+  images: Image[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Image {
+  _id: string;
+  name: string;
+  url: string;
+  uploadedAt: string;
+}
 
 
 export function ImageGallery() {
   const { data: session } = useSession();
   const [currentFolder, setCurrentFolder] = useState<any>(null)
-  const [selectedImages] = useState<number[]>([])
+  const { deleteImage } = useImage();
   const [showUploadModal, setShowUploadModal] = useState(false);
    const [folderModalState, setFolderModalState] = useState({
     open: false,
@@ -25,8 +42,9 @@ export function ImageGallery() {
   
   const [deleteModalState, setDeleteModalState] = useState<{
   open: boolean;
-  folderId?: string;
-  folderName?: string;
+  type?: 'folder' | 'image';
+  id?: string;
+   name?: string;
 }>({ open: false });
 
 
@@ -40,11 +58,14 @@ const {
     uploadImage
   } = useFolders();
 
-   
 
   const handleFolderCreated = async (folderName: string) => {
     try {
-      await createFolder.mutateAsync(folderName);
+       await createFolder.mutateAsync(folderName);
+      // setCurrentFolder({
+      //   ...response.data,
+      //   _id: response.data._id.toString() 
+      // });
     } catch (error) {
       console.error("Error creating folder:", error);
     }
@@ -74,52 +95,58 @@ const {
   };
 
   const handleEditFolder = (folder: { id: string; name: string }) => {
-    setFolderModalState({ open: true, folderToEdit: folder });
+    setFolderModalState({ 
+    open: true, 
+    folderToEdit: { 
+      id: folder.id.toString(), 
+      name: folder.name 
+    } 
+  });
   };
 
-  const handleDeleteFolder = async () => {
-  if (!deleteModalState.folderId) return;
+
+const handleDeleteConfirm = async () => {
+  if (!deleteModalState.id) return;
+  
   try {
-    await deleteFolder.mutateAsync(deleteModalState.folderId);
-    setDeleteModalState({ open: false });
-    if (currentFolder?._id === deleteModalState.folderId) {
-      setCurrentFolder(null);
+    if (deleteModalState.type === 'folder') {
+      await deleteFolder.mutateAsync(deleteModalState.id);
+      setCurrentFolder(null); 
+    } else if (deleteModalState.type === 'image') {
+      await deleteImage.mutateAsync(deleteModalState.id);
+      if (currentFolder) {
+      
+        const { data } = await axios.get(`/api/folders/${currentFolder._id}`);
+        setCurrentFolder(data);
+      }
     }
+    setDeleteModalState({ open: false });
   } catch (error) {
-    console.error("Failed to delete folder:", error);
+    console.error("Failed to delete:", error);
   }
 };
 
-const handleRenameFolder = async (folderId: string, newName: string) => {
+  const handleImageUploaded = async (files: File[]) => {
+    if (!currentFolder) return;
+    
     try {
-      await updateFolder.mutateAsync({ id: folderId, name: newName });
-      if (currentFolder?._id === folderId) {
-        const updated = await getFolder.refetch(folderId);
-        setCurrentFolder(updated.data);
-      }
+      await Promise.all(
+        files.map(file => 
+          uploadImage.mutateAsync({ 
+            folderId: currentFolder._id.toString(),
+            file 
+          })
+        )
+      );
+      const { data } = await axios.get(`/api/folders/${currentFolder._id}`);
+      // const updated = await getFolder.refetch(currentFolder._id.toString());
+      setCurrentFolder(data);
     } catch (error) {
-      console.error("Error renaming folder:", error);
+      console.error("Error uploading images:", error);
     }
   };
 
-    const handleImageUploaded = async (files: File[]) => {
-      if (!currentFolder) return;
-      
-      try {
-        await Promise.all(
-          files.map(file => 
-            uploadImage.mutateAsync({ 
-              folderId: currentFolder._id, 
-              file 
-            })
-          )
-        );
-        const updated = await getFolder.refetch(currentFolder._id.toString());
-        setCurrentFolder(updated.data);
-      } catch (error) {
-        console.error("Error uploading images:", error);
-      }
-    };
+  
 
  if (isLoading) {
   return (
@@ -151,7 +178,7 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setCurrentFolder(folders)}
+              onClick={() => setCurrentFolder(null)}
               className="text-gray-400 hover:text-white"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -207,18 +234,18 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
       )}
 
        {currentFolder ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {currentFolder.images.map((image) => (
             <Card key={image._id} className="bg-black/40 border-white/10">
               <CardContent className="p-4">
                 <img
                   src={image.url}
                   alt={image.name}
-                  className="w-full h-40 object-cover rounded mb-2"
+                  className="w-full h-60 object-cover rounded mb-2"
                 />
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-medium text-white truncate">{image.name}</h4>
+                    <h4 className="font-medium text-white truncate max-w-[180px]">{image.name}</h4>
                     <p className="text-xs text-gray-400">
                       {new Date(image.uploadedAt).toLocaleDateString()}
                     </p>
@@ -230,11 +257,21 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      {/* <DropdownMenuItem>
                         <Eye className="w-4 h-4 mr-2" />
                         View
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-400">
+                      </DropdownMenuItem> */}
+                      <DropdownMenuItem 
+                        className="text-red-400"
+                        onClick={() => {
+                          setDeleteModalState({
+                            open: true,
+                            type: 'image',
+                            id: image._id,
+                            name: image.name,
+                          });
+                        }}
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
@@ -247,7 +284,7 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
         </div>
       ) : (
         /* Folders Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
           {folders?.map((folder) => (
             <Card
               key={folder._id}
@@ -257,7 +294,12 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
                 <div className="flex items-start justify-between mb-3">
                   <div 
                     className="flex-1 cursor-pointer" 
-                    onClick={() => setCurrentFolder(folder)}
+                    onClick={() => {
+                      setCurrentFolder({
+                        ...folder,
+                        _id: folder._id.toString() 
+                      });
+                    }}
                   >
                     <div className="flex items-center space-x-3 mb-2">
                       <Folder className="w-8 h-8 text-purple-400" />
@@ -279,7 +321,7 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
                         Open
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                         onClick={() => handleEditFolder({ id: folder._id._id.toString(), name: folder.name })}
+                         onClick={() => handleEditFolder({ id: folder._id.toString(), name: folder.name })}
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Rename
@@ -288,8 +330,9 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
                          onClick={() => {
                           setDeleteModalState({
                             open: true,
-                            folderId: folder._id,
-                            folderName: folder.name,
+                            type: 'folder',
+                            id: folder._id,
+                            name: folder.name,
                           });
                         }}
                         className="text-red-400"
@@ -350,8 +393,10 @@ const handleRenameFolder = async (folderId: string, newName: string) => {
       <DeleteConfirmationModal
         open={deleteModalState.open}
         onOpenChange={(open) => setDeleteModalState({ ...deleteModalState, open })}
-        onConfirm={handleDeleteFolder}
-         title={`Are you sure you want to delete "${deleteModalState.folderName}" and all its images?`}
+        onConfirm={handleDeleteConfirm}
+        title={deleteModalState.name}
+        type={deleteModalState.type || 'folder'}
+
       />
     </div>
   )

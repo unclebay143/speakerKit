@@ -39,8 +39,9 @@ export function ProfilesOverview() {
 
     const [deleteModalState, setDeleteModalState] = useState<{
       open: boolean
-      profileId?: string
-      profileTitle?: string
+      type?: 'profile';
+  id?: string;
+  name?: string;
     }>({ open: false })
 
 
@@ -74,15 +75,16 @@ export function ProfilesOverview() {
    const handleDeleteClick = (profileId: string, profileTitle: string) => {
     setDeleteModalState({
       open: true,
-      profileId,
-      profileTitle
+      type: 'profile',
+      id: profileId,
+      name: profileTitle
     })
   }
 
   const handleDeleteProfile = async () => {
-    if (!deleteModalState.profileId) return
+    if (!deleteModalState.id) return
     try {
-      await deleteProfile.mutateAsync(deleteModalState.profileId)
+      await deleteProfile.mutateAsync(deleteModalState.id)
       setDeleteModalState({ open: false })
     } catch (error) {
       console.error("Failed to delete profile:", error)
@@ -244,7 +246,8 @@ export function ProfilesOverview() {
         open={deleteModalState.open}
         onOpenChange={(open) => setDeleteModalState({ ...deleteModalState, open })}
         onConfirm={handleDeleteProfile}
-        profileTitle={deleteModalState.profileTitle}
+        title={deleteModalState.profileTitle}
+        type="profile"
       />
     </div>
   )

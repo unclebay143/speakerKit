@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
+import mongoose from 'mongoose';
 
 import connectViaMongoose from "@/lib/db";
 import { v2 as cloudinary } from "cloudinary";
@@ -21,7 +22,22 @@ export async function GET(
     await connectViaMongoose();
 
     const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
+     const pathParts = url.pathname.split("/");
+    const id = pathParts[pathParts.length - 1];
+
+     if (!id || id === "[object%20Object]" || id === "[object Object]") {
+      return NextResponse.json(
+        { error: "Invalid folder ID" },
+        { status: 400 }
+      );
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: "Invalid folder ID format" },
+        { status: 400 }
+      );
+    }
 
     const session = await getServerSession(authOptions);
 
