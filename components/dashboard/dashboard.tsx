@@ -34,18 +34,8 @@ export default function Dashboard() {
     }
   }, [status, session]);
 
-  //   useEffect(() => {
-  //   if (status === "authenticated" && session?.user) {
-  //     if (!session.user.username) {
-  //       setShowUsernameModal(true);
-  //     } else {
-  //       setShowUsernameModal(false);
-  //     }
-  //   }
-  // }, [status, session?.user?.username]);
 
-
-  console.log("Session after update:", session)
+  // console.log("Session after update:", session)
 
 
   const handleUsernameComplete = async () => {

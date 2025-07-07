@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Upload, Edit, Trash2, Eye, Folder, FolderPlus, ArrowLeft, MoreVertical } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { CreateFolderModal } from "../modals/folder-modal"
-// import { useSession } from "next-auth/react"
 import { useFolders } from "@/lib/hooks/useFolders"
 import { UploadModal } from "../UploadModal"
 import { Skeleton } from "@/components/ui/skeleton";

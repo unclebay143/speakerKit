@@ -47,6 +47,8 @@ export const authOptions: AuthOptions = {
             email: user.email,
             name: user.name,
             username: user.username,
+            image: user.image,
+            isPublic: user.isPublic
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -79,13 +81,18 @@ export const authOptions: AuthOptions = {
             email: user.email,
             username: null,
             image: user.image,
+            isPublic: true
           });
 
           user.id = newUser._id.toString();
           user.username = newUser.username;
+          user.image = newUser.image;
+          user.isPublic = newUser.isPublic;
         } else {
           user.id = existingUser._id.toString();
           user.username = existingUser.username;
+          user.image = existingUser.image;
+          user.isPublic = existingUser.isPublic;
         }
       }
 
@@ -98,6 +105,8 @@ export const authOptions: AuthOptions = {
       session.user.username = token.username as string;
       session.user.name = token.name;
       session.user.email = token.email;
+      session.user.image = token.image as string;
+      session.user.isPublic = token.isPublic as boolean;
     }
     return session;
   },
@@ -107,13 +116,23 @@ export const authOptions: AuthOptions = {
       token.username = user.username;
       token.name = user.name;
       token.email = user.email;
+      token.image = user.image;
+      token.isPublic = user.isPublic;
     }
     if (trigger === "update" && session?.username) {
       token.username = session.username;
     }
+
+     if (trigger === "update" && session) {
+        if (session.username) token.username = session.username;
+        if (session.name) token.name = session.name;
+        if (session.image) token.image = session.image;
+        if (session.isPublic !== undefined) token.isPublic = session.isPublic;
+      }
     
     return token;
-  }
+  },
+  
 },
   secret: process.env.NEXTAUTH_SECRET,
   session: {

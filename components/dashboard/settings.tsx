@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,25 +11,30 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { User,  Lock, Eye, EyeOff, Shield, Save, Upload, Camera } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { useSession } from "next-auth/react"
+import { Spinner } from "../ui/spinner"
 
 export function Settings() {
-  const [profileImage, setProfileImage] = useState("/placeholder.svg?height=120&width=120")
+  const { data: session, update } = useSession();
+  const [message, setMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
 
+  const [profileImage, setProfileImage] = useState(session?.user?.image || "/placeholder.svg");
   const [accountData, setAccountData] = useState({
-    fullName: "Mary Johnson",
-    email: "mary.johnson@example.com",
-    username: "maryjohnson",
-  })
+        fullName: "",
+        email: "",
+        username: "",
+    });
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   })
+
   const [accountVisibility, setAccountVisibility] = useState({
     isPublic: true,
-    requiresPassword: false,
-    accessPassword: "",
-  })
+  });
+
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -38,46 +43,166 @@ export function Settings() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
- const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string)
+ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/users/image', {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
       }
-      reader.readAsDataURL(file)
+
+      const data = await response.json();
+      setProfileImage(data.image);
+      setMessage({ text: 'Profile image updated!', type: 'success' });
+      await update({
+        ...session?.user,
+        image: data.image
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
 
-  const handleAccountUpdate = async () => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
-  }
+   const handleAccountUpdate = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/users/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: accountData.fullName,
+          username: accountData.username,
+          isPublic: accountVisibility.isPublic
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update account');
+      }
+
+      // const data = await response.json();
+      setMessage({ text: 'Account updated successfully!', type: 'success' });
+      await update({
+        ...session?.user,
+        name: accountData.fullName,
+        username: accountData.username,
+        isPublic: accountVisibility.isPublic,
+        image: session?.user?.image 
+      });
+    } catch (error) {
+      console.error("Error updating account:", error);
+      setMessage({ text: 'Failed to update account', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePasswordUpdate = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New passwords don't match!")
-      return
+      alert("New passwords don't match!");
+      return;
     }
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
-    }, 2000)
-  }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/users/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update password');
+      }
+      setMessage({ text: 'Password updated successfully!', type: 'success' });
+
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      alert(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleVisibilityUpdate = async () => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
-  }
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/users/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    isPublic: accountVisibility.isPublic
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update visibility');
+            }
+
+            setMessage({ text: 'Visibility settings updated!', type: 'success' });
+            
+            await update({
+                ...session?.user,
+                isPublic: accountVisibility.isPublic
+            });
+        } catch (error) {
+            console.error("Error updating visibility:", error);
+            setMessage({ text: 'Failed to update visibility', type: 'error' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+   useEffect(() => {
+    if (session?.user) {
+        setProfileImage(session.user.image || "/placeholder.svg");
+        setAccountData({
+            fullName: session.user.name || "",
+            email: session.user.email || "",
+            username: session.user.username || "",
+        });
+        setAccountVisibility({
+            isPublic: session.user.isPublic !== false,
+        });
+    }
+    }, [session]);
 
   return (
     <div className="space-y-6 mx-auto max-w-screen-lg">
+      {message && (
+        <div className={`p-4 mb-4 rounded-lg ${message.type === 'success' ? 'bg-green-900 text-green-100' : 'bg-red-900 text-red-100'}`}>
+          {message.text}
+          <button 
+            onClick={() => setMessage(null)} 
+            className="float-right font-bold"
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div>
         <h2 className="text-2xl font-bold text-white mb-2">Account Settings</h2>
         <p className="text-gray-400">Manage your account preferences and security settings</p>
@@ -94,10 +219,19 @@ export function Settings() {
         <CardContent className="space-y-4">
           <div className="flex items-center space-x-6">
             <div className="relative">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={profileImage || "/placeholder.svg"} />
-                <AvatarFallback className="bg-purple-600 text-white text-2xl">MJ</AvatarFallback>
+              <Avatar className="w-24 h-24 relative">
+                {isLoading ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
+                    <Spinner /> 
+                  </div>
+                ) : (
+                  <>
+                    <AvatarImage src={profileImage || "/placeholder.svg"} />
+                    <AvatarFallback className="bg-purple-600 text-white text-2xl">MJ</AvatarFallback>
+                  </>
+                )}
               </Avatar>
+
               <div className="absolute -bottom-2 -right-2">
                 <label htmlFor="profile-image" className="cursor-pointer">
                   <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-700 transition-colors">

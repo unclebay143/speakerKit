@@ -26,7 +26,15 @@ const UserSchema = new Schema({
     hasCompletedOnboarding: {
         type: Boolean,
         default: false
-    }
+    },
+     isPublic: {
+        type: Boolean,
+        default: true
+    },
+     image: {
+        type: String,
+        default: "/placeholder.svg"
+    },
 }, {
     timestamps: true
 });

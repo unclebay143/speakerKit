@@ -6,6 +6,8 @@ declare module "next-auth" {
     name: string;
     email: string;
     username?: string;
+    image?: string;
+    isPublic?: boolean;
   }
 
   interface Session {
@@ -14,7 +16,9 @@ declare module "next-auth" {
         name: string;
         email: string;
         username?: string;
-        };
+        image?: string;
+        isPublic?: boolean;
+      };
     }
 }
 
@@ -24,5 +28,7 @@ declare module "next-auth/jwt" {
     name: string;
     email: string;
     username?: string;
+    image?: string;
+    isPublic?: boolean;
   }
 }
