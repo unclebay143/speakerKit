@@ -3,7 +3,6 @@ import connectViaMongoose from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import Folder from "@/models/Folders";
-// import Image from "@/models/Images";
 import "../../../models/Images";
 
 

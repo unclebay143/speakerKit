@@ -73,13 +73,21 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
         body: JSON.stringify({ username }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error('Failed to complete onboarding');
+      }
 
-       if (!response.ok) {
-      throw new Error(data.error || 'Failed to complete onboarding');
-    }
+      // const data = await response.json();
 
-      await update();
+        if (!response.ok) {
+        throw new Error('Failed to complete onboarding');
+      }
+
+      await update({
+      username: username,
+      hasCompletedOnboarding: true
+    });
+
 
       onOpenChange(false)
 
@@ -102,7 +110,12 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
         {open && (
           <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
         )}
-        <Drawer open={open} onOpenChange={onOpenChange}>
+        <Drawer open={open}  onOpenChange={(open) => {
+            if (!open) {
+              onOpenChange(false); 
+            }
+          }}
+        >
           <DrawerContent className="bg-black/95 border-white/10 z-[101]">
             <DrawerHeader className="text-left">
               <DrawerTitle className="text-white">Set Up Your Profile</DrawerTitle>
@@ -191,7 +204,12 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
       {open && (
         <div className="fixed inset-0 backdrop-blur-md bg-black/80 z-[100]" onClick={() => onOpenChange(false)} />
       )}
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={(open) => {
+          if (!open) {
+            onOpenChange(false); 
+          }
+        }}
+      >
         <DialogContent className="bg-black/95 border-white/10 text-white max-w-md z-[101]">
           <DialogHeader>
             <DialogTitle className="text-white">Set Up Your Profile</DialogTitle>

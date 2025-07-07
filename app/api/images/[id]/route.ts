@@ -1,10 +1,16 @@
-// import cloudinary from "@/lib/cloudinary";
+import cloudinary from "@/lib/cloudinary";
 import connectViaMongoose from "@/lib/db";
+import Folder from "@/models/Folders";
 import Image from "@/models/Images";
 import { authOptions } from "@/utils/auth-options";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function DELETE(
   req: Request
@@ -35,20 +41,19 @@ export async function DELETE(
       );
     }
 
-    // for (const imageId of folder.images) {
-    //   const image = await Image.findById(imageId);
-    //   if (image) {
-    //     await cloudinary.uploader.destroy(image.publicId);
-    //     await Image.deleteOne({ _id: imageId });
-    //   }
-    // }
+    await cloudinary.uploader.destroy(image.publicId);
+
+     await Folder.updateOne(
+      { _id: image.folderId },
+      { $pull: { images: image._id } }
+    );
 
     await Image.deleteOne({ _id: id });
     return NextResponse.json(
-      { message: "Folder deleted successfully" }
+      { message: "Image deleted successfully" }
     );
   } catch (error) {
-    console.error("Error deleting folder:", error);
+    console.error("Error deleting image:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

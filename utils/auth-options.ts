@@ -24,9 +24,7 @@ export const authOptions: AuthOptions = {
           }
 
           const user = await User.findOne({ email: credentials.email.toLowerCase() });
-          // console.log("User found:", user ? user.email : "No user found");
-          //  console.log("Searching for email:", credentials.email.toLowerCase());
-          
+        
           if (!user) {
             console.log("No user found with this email");
             return null;
@@ -48,6 +46,7 @@ export const authOptions: AuthOptions = {
             id: user._id.toString(),
             email: user.email,
             name: user.name,
+            username: user.username,
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -68,10 +67,35 @@ export const authOptions: AuthOptions = {
     })
   ],
  callbacks: {
+  async signIn({ user, account }) {
+      await connectViaMongoose();
+
+      if (account?.provider === "google") {
+        const existingUser = await User.findOne({ email: user.email });
+
+        if (!existingUser) {
+          const newUser = await User.create({
+            name: user.name,
+            email: user.email,
+            username: null,
+            image: user.image,
+          });
+
+          user.id = newUser._id.toString();
+          user.username = newUser.username;
+        } else {
+          user.id = existingUser._id.toString();
+          user.username = existingUser.username;
+        }
+      }
+
+      return true;
+    },
+
    async session({ session, token }) {
-    if (session.user) {
-      session.user.id = token.sub || token.id;
-      session.user.username = token.username;
+    if (session.user && token) {
+      session.user.id = token.sub || token.id as string;
+      session.user.username = token.username as string;
       session.user.name = token.name;
       session.user.email = token.email;
     }

@@ -1,11 +1,11 @@
 "use client"
 
-import {  useState } from "react"
+import {  useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { DashboardSidebar } from "./sidebar"
 import { DashboardHeader } from "./header"
 import { ProfilesOverview } from "./profile-overview"
-// import { UsernameModal } from "../modals/username-modal"
+import { UsernameModal } from "../modals/username-modal"
 import { ImageGallery } from "./image-gallery"
 import { Settings } from "./settings"
 import { useSession } from "next-auth/react"
@@ -13,24 +13,57 @@ import { redirect } from "next/navigation"
 
 export default function Dashboard() {
   const { data: session, status, update } = useSession()
-  const [activeTab, setActiveTab] = useState("overview")
+  // const [activeTab, setActiveTab] = useState("overview")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const [, setUpdatingSession] = useState(false);
+
 
   
-  
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('activeTab') || "overview"
+    }
+    return "overview"
+  })
 
-  //  useEffect(() => {
-  //   if (status === "authenticated") {
-  //     setShowUsernameModal(!session?.user?.username);
+  useEffect(() => {
+    if (status === "authenticated") {
+      setShowUsernameModal(!session?.user?.username);
+    }
+  }, [status, session]);
+
+  //   useEffect(() => {
+  //   if (status === "authenticated" && session?.user) {
+  //     if (!session.user.username) {
+  //       setShowUsernameModal(true);
+  //     } else {
+  //       setShowUsernameModal(false);
+  //     }
   //   }
   // }, [status, session?.user?.username]);
 
-  //  const handleUsernameComplete = async () => {
-  //   await update(); 
-  //   setShowUsernameModal(false);
-  // };
+
+  console.log("Session after update:", session)
+
+
+  const handleUsernameComplete = async () => {
+    setUpdatingSession(true);
+    try {
+      await update();
+    } finally {
+      setUpdatingSession(false);
+      setShowUsernameModal(false);
+    }
+  };
+
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('activeTab', activeTab)
+    }
+  }, [activeTab])
 
   if (status === "loading") {
     return <div className="min-h-screen bg-black/[0.96] flex items-center justify-center">
@@ -45,7 +78,7 @@ export default function Dashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return <ProfilesOverview />
+        return <ProfilesOverview  />
       case "images":
         return <ImageGallery />
       case "settings":
@@ -59,8 +92,8 @@ export default function Dashboard() {
     setActiveTab(tab)
     setMobileSidebarOpen(false)
   }
-console.log('Dashboard session:', session);
-console.log('Show username modal state:', showUsernameModal);
+
+
   return (
     <div className="min-h-screen bg-black/[0.96] text-white">
       <DashboardSidebar
@@ -95,15 +128,14 @@ console.log('Show username modal state:', showUsernameModal);
           </motion.div>
         </main>
       </div>
-      {/* <UsernameModal 
-        open={showUsernameModal} 
-         onOpenChange={(open) => {
-          if (session?.user?.username) {
-            setShowUsernameModal(open);
-          }
-        }}
-        onComplete={handleUsernameComplete}
-        /> */}
+      {showUsernameModal && (
+        <UsernameModal 
+          open={showUsernameModal} 
+           onOpenChange={(open) => !open && setShowUsernameModal(false)}
+          onComplete={handleUsernameComplete}
+        />
+      )}
+
         
     </div>
   )

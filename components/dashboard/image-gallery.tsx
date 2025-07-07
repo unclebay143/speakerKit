@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Upload, Edit, Trash2, Eye, Folder, FolderPlus, ArrowLeft, MoreVertical } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { CreateFolderModal } from "../modals/folder-modal"
-import { useSession } from "next-auth/react"
+// import { useSession } from "next-auth/react"
 import { useFolders } from "@/lib/hooks/useFolders"
 import { UploadModal } from "../UploadModal"
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,7 @@ interface Folder {
   _id: string;
   name: string;
   images: Image[];
+  imageCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,8 +32,8 @@ interface Image {
 
 
 export function ImageGallery() {
-  const { data: session } = useSession();
-  const [currentFolder, setCurrentFolder] = useState<any>(null)
+  // const { data: session } = useSession();
+  const [currentFolder, setCurrentFolder] = useState<Folder | null>(null)
   const { deleteImage } = useImage();
   const [showUploadModal, setShowUploadModal] = useState(false);
    const [folderModalState, setFolderModalState] = useState({
@@ -82,7 +83,7 @@ const {
       setFolderModalState({ open: false, folderToEdit: null });
       
       if (currentFolder?._id === folderModalState.folderToEdit.id) {
-        const updated = await getFolder.refetch(folderModalState.folderToEdit.id);
+        const updated = await getFolder.refetch();
         setCurrentFolder(updated.data);
       }
     } catch (error) {
@@ -297,7 +298,8 @@ const handleDeleteConfirm = async () => {
                     onClick={() => {
                       setCurrentFolder({
                         ...folder,
-                        _id: folder._id.toString() 
+                        _id: folder._id.toString(),
+                        updatedAt: folder.updatedAt ?? new Date().toISOString(), 
                       });
                     }}
                   >

@@ -17,10 +17,10 @@ export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   
 
-   const handleGoogleSignup = async () => {
+  const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
       await signIn("google", { callbackUrl: "/dashboard" });
@@ -32,32 +32,32 @@ export default function SignupForm() {
     }
   };
 
-   const handleEmailSignup = async (e: React.FormEvent) => {
+  const handleEmailSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null)
     
-    const formData = {
-    name: (e.currentTarget.elements.namedItem('name') as HTMLInputElement).value,
-    email: (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value,
-    password: (e.currentTarget.elements.namedItem('password') as HTMLInputElement).value,
-    confirmPassword: (e.currentTarget.elements.namedItem('confirmPassword') as HTMLInputElement).value
-  };
+     const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
-  if (formData.password !== formData.confirmPassword) {
-    alert("Passwords don't match");
-    setIsLoading(false);
-    return;
-  }
+
+    if (password !== confirmPassword) {
+      setError("Passwords don't match");
+      setIsLoading(false);
+      return;
+    }
 
      try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
+          name,
+          email,
+          password
         }),
       });
 
@@ -66,9 +66,10 @@ export default function SignupForm() {
       if (!res.ok) {
         throw new Error(data.error || "Signup failed");
       }
+
       const signInResult = await signIn("credentials", {
-      email: formData.email,
-      password: formData.password,
+       email,
+        password,
       // redirect: false,
       callbackUrl: "/login"
     });
@@ -79,7 +80,7 @@ export default function SignupForm() {
 
     } catch (error) {
       console.error(error);
-      alert("Signup failed");
+      setError(error instanceof Error ? error.message : "Signup failed");
     } finally {
       setIsLoading(false);
     }
@@ -195,6 +196,7 @@ export default function SignupForm() {
                   placeholder="Create a password"
                   type={showPassword ? "text" : "password"}
                   required
+                  minLength={8}
                   className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
                 />
                 <button
@@ -219,6 +221,7 @@ export default function SignupForm() {
                   placeholder="Confirm your password"
                   type={showConfirmPassword ? "text" : "password"}
                   required
+                  minLength={8}
                   className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
                 />
                 <button

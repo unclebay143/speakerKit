@@ -17,7 +17,7 @@ export function DashboardHeader({
   activeTab 
 }: HeaderProps) {    
   return (
-    <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4 mx-auto max-w-screen-2xl">
+    <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4 lg:px-16 mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button

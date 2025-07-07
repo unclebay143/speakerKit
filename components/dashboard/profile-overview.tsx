@@ -11,6 +11,17 @@ import { Skeleton } from "../ui/skeleton"
 import { format } from "date-fns"
 import { ProfileModal } from "../modals/profile-modal"
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal"
+import { useFolders } from "@/lib/hooks/useFolders"
+
+interface Profile {
+  _id: string;
+  title: string;
+  shortBio?: string;
+  mediumBio?: string;
+  longBio?: string;
+  updatedAt: string;
+  isPublic: boolean;
+}
 
 
 const stats = [
@@ -21,6 +32,8 @@ const stats = [
 
 export function ProfilesOverview() {
   const { data: session } = useSession();
+  const { folders: allFolders } = useFolders()
+
   const { 
     profiles, 
     isLoading, 
@@ -30,22 +43,24 @@ export function ProfilesOverview() {
   } = useProfiles()
 
   
-   const [, setEditingProfile] = useState<any>(null);
+   const [, setEditingProfile] = useState<Profile | null>(null);
 
     const [profileModalState, setProfileModalState] = useState<{
       open: boolean
-      profileToEdit?: any
+      profileToEdit?: Profile
     }>({ open: false })
 
     const [deleteModalState, setDeleteModalState] = useState<{
       open: boolean
       type?: 'profile';
-  id?: string;
-  name?: string;
+      id?: string;
+      name?: string;
     }>({ open: false })
 
+    const totalImages = allFolders?.reduce((sum, folder) => sum + (folder.images?.length || 0), 0) || 0
 
-  const handleProfileCreated = async (newProfile: any) => {
+
+  const handleProfileCreated = async (newProfile: Omit<Profile, "_id" | "updatedAt">) => {
     try {
        await createProfile.mutateAsync(newProfile)
       setProfileModalState({ open: false })
@@ -54,7 +69,7 @@ export function ProfilesOverview() {
     }
   }
 
-  const handleProfileUpdated = async (id: string, updates: any) => {
+  const handleProfileUpdated = async (id: string, updates: Partial<Profile>) => {
     try {
      await updateProfile.mutateAsync({ id, ...updates })
       setProfileModalState({ open: false })
@@ -68,7 +83,7 @@ export function ProfilesOverview() {
     setProfileModalState({ open: true })
   }
 
-   const handleEditProfile = (profile: any) => {
+   const handleEditProfile = (profile:  Profile) => {
     setProfileModalState({ open: true, profileToEdit: profile })
   }
 
@@ -92,7 +107,7 @@ export function ProfilesOverview() {
   }
 
 
-  const getBioBadges = (profile: any) => {
+  const getBioBadges = (profile:  Profile) => {
     const badges = []
 
     if (profile.shortBio && profile.shortBio.trim()) {
@@ -156,7 +171,10 @@ export function ProfilesOverview() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-gray-400 text-sm">{stat.label}</p>
-                    <p className="text-2xl font-bold text-white">{index === 0 ? profiles?.length || 0 : stat.value}</p>
+                    <p className="text-2xl font-bold text-white"> 
+                      {index === 0 ? profiles?.length || 0 : 
+                      index === 1 ? totalImages : 
+                      profiles?.filter(p => p.isPublic).length || 0}</p>
                   </div>
                   <Icon className={`w-8 h-8 ${stat.color}`} />
                 </div>
@@ -246,7 +264,7 @@ export function ProfilesOverview() {
         open={deleteModalState.open}
         onOpenChange={(open) => setDeleteModalState({ ...deleteModalState, open })}
         onConfirm={handleDeleteProfile}
-        title={deleteModalState.profileTitle}
+        title={deleteModalState.name}
         type="profile"
       />
     </div>

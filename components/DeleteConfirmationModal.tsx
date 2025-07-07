@@ -47,11 +47,14 @@ export function DeleteConfirmationModal({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
+        {open && (
+          <div className="fixed inset-0 bg-black/80 z-40" onClick={() => onOpenChange(false)} />
+        )}
         <DrawerContent className="bg-black/95 border-white/10">
           <DrawerHeader>
             <DrawerTitle className="text-white">{modalTitle}</DrawerTitle>
             <DrawerDescription className="text-gray-400">
-               {displayDescription}
+              {displayDescription}
             </DrawerDescription>
           </DrawerHeader>
           <DrawerFooter>
@@ -82,6 +85,9 @@ export function DeleteConfirmationModal({
     <>
    
       <Dialog open={open} onOpenChange={onOpenChange}>
+        {open && (
+          <div className="fixed inset-0 bg-black/80 z-40" onClick={() => onOpenChange(false)} />
+        )}
         <DialogContent className="bg-black/95 border-white/10 text-white sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-white">{modalTitle}</DialogTitle>

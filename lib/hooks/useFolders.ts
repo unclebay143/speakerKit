@@ -3,6 +3,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 
 interface Folder {
+  updatedAt: string;
   _id: string;
   name: string;
   images: any[];
