@@ -1,6 +1,6 @@
 import cloudinary from "@/lib/cloudinary";
 import connectViaMongoose from "@/lib/db";
-import User from "@/models/Users";
+import User from "@/models/User";
 import { authOptions } from "@/utils/auth-options";
 import type { UploadApiResponse } from "cloudinary";
 import { getServerSession } from "next-auth";
