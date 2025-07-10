@@ -127,12 +127,17 @@ export function DashboardSidebar({
       >
         <div className='p-4'>
           <div className='flex items-center justify-between mb-10'>
-            <Avatar>
-              <AvatarImage src={session?.user?.image || ""} />
-              <AvatarFallback className='bg-purple-600 text-white'>
-                {session?.user?.name?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+             <Avatar>
+    {session?.user?.image && <AvatarImage src={session.user.image} />}
+    <AvatarFallback className='bg-purple-600 text-white text-lg'>
+      {session?.user?.name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase() || "US"}
+    </AvatarFallback>
+  </Avatar>
+
 
             {isOpen ? (
               <PanelLeftClose

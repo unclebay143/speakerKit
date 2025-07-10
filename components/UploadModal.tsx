@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDropzone } from "react-dropzone";
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
 
 interface UploadModalProps {
   open: boolean;
@@ -34,8 +35,8 @@ export function UploadModal({ open, onOpenChange,  onUploadComplete }: UploadMod
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-const handleUpload = async () => {
-    if (files.length === 0) return
+  const handleUpload = async () => {
+      if (files.length === 0) return
 
     setUploading(true)
     try {
@@ -96,7 +97,21 @@ const handleUpload = async () => {
                 key={index}
                 className="flex items-center justify-between p-2 bg-white/5 rounded"
               >
-                <span className="truncate text-sm">{file.name}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Preview */}
+                  <div className="relative w-10 h-10 flex-shrink-0">
+                    <Image
+                      src={URL.createObjectURL(file)}
+                      alt={file.name}
+                      fill
+                      className="object-cover rounded"
+                      unoptimized
+                    />
+                  </div>
+                  
+                  {/* File Name */}
+                  <span className="truncate text-sm flex-1">{file.name}</span>
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"

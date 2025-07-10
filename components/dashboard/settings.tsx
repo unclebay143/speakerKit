@@ -15,7 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
+  AlertCircle,
   Camera,
+  Check,
   Eye,
   EyeOff,
   Lock,
@@ -25,25 +27,41 @@ import {
   User,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Spinner } from "../ui/spinner";
+import debounce from "lodash.debounce";
+
 
 export function Settings() {
   const { data: session, update } = useSession();
+  // const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
+  
   const [message, setMessage] = useState<{
     text: string;
     type: "success" | "error";
   } | null>(null);
 
   const [profileImage, setProfileImage] = useState(
-    session?.user?.image || "/placeholder.svg"
+    session?.user?.image 
   );
   const [accountData, setAccountData] = useState({
     fullName: "",
     email: "",
     username: "",
   });
+
+  const [usernameStatus, setUsernameStatus] = useState<{
+    available: boolean | null;
+    loading: boolean;
+    error: string | null;
+    isEdited: boolean; 
+  }>({
+    available: null,
+    loading: false,
+    error: null,
+    isEdited: false,
+  })
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -62,6 +80,88 @@ export function Settings() {
     access: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const checkUsernameAvailability = useCallback(async (username: string) => {
+    if (username.length < 3) {
+      setUsernameStatus(prev => ({
+        ...prev,
+        available: null,
+        loading: false,
+        error: username.length > 0 ? "Username must be at least 3 characters" : null
+      })
+      );
+      return;
+    }
+
+    // if (username === session?.user?.username) {
+    //   setUsernameStatus({
+    //     available: true,
+    //     loading: false,
+    //     error: null,
+    //   });
+    //   return;
+    // }
+
+    setUsernameStatus(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const response = await fetch('/api/username/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check username');
+      }
+
+       const data = await response.json();
+        setUsernameStatus({
+        available: data.available,
+        loading: false,
+        error: null,
+        isEdited: true,
+      });
+    } catch (error) {
+       console.error("Error checking username:", error);
+      setUsernameStatus(prev => ({
+        ...prev,
+        available: null,
+        loading: false,
+        error: "Error checking username availability",
+        isEdited: true,
+      }));
+    }
+  }, []);
+
+   const debouncedCheck = useMemo(
+    () => debounce(checkUsernameAvailability, 500),
+    [checkUsernameAvailability]
+  );
+
+  const handleUsernameChange = (value: string) => {
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setAccountData(prev => ({ ...prev, username: sanitized }));
+     if (sanitized !== session?.user?.username) {
+      debouncedCheck(sanitized);
+    } else {
+      setUsernameStatus({
+        available: true,
+        loading: false,
+        error: null,
+        isEdited: false,
+      });
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      debouncedCheck.cancel();
+    };
+  }, [debouncedCheck]);
+
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -98,6 +198,14 @@ export function Settings() {
   };
 
   const handleAccountUpdate = async () => {
+    if (accountData.username !== session?.user?.username && 
+        (usernameStatus.available === false || usernameStatus.loading)) {
+      setMessage({ 
+        text: "Please choose an available username", 
+        type: "error" 
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await fetch("/api/users/update", {
@@ -116,15 +224,21 @@ export function Settings() {
         throw new Error("Failed to update account");
       }
 
-      // const data = await response.json();
-      setMessage({ text: "Account updated successfully!", type: "success" });
+      const needsSessionUpdate = 
+      session?.user?.name !== accountData.fullName ||
+      session?.user?.username !== accountData.username ||
+      session?.user?.isPublic !== accountVisibility.isPublic;
+
+    if (needsSessionUpdate) {
       await update({
         ...session?.user,
         name: accountData.fullName,
         username: accountData.username,
         isPublic: accountVisibility.isPublic,
-        image: session?.user?.image,
       });
+    }
+
+    setMessage({ text: "Account updated successfully!", type: "success" });
     } catch (error) {
       console.error("Error updating account:", error);
       setMessage({ text: "Failed to update account", type: "error" });
@@ -188,12 +302,21 @@ export function Settings() {
         throw new Error("Failed to update visibility");
       }
 
-      setMessage({ text: "Visibility settings updated!", type: "success" });
-
+       if (session?.user?.isPublic !== accountVisibility.isPublic) {
       await update({
         ...session?.user,
         isPublic: accountVisibility.isPublic,
       });
+    }
+
+    setMessage({ text: "Visibility settings updated!", type: "success" });
+
+      // setMessage({ text: "Visibility settings updated!", type: "success" });
+
+      // await update({
+      //   ...session?.user,
+      //   isPublic: accountVisibility.isPublic,
+      // });
     } catch (error) {
       console.error("Error updating visibility:", error);
       setMessage({ text: "Failed to update visibility", type: "error" });
@@ -201,6 +324,31 @@ export function Settings() {
       setIsLoading(false);
     }
   };
+  const handleDeleteImage = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/users/image", { method: "DELETE" });
+      const data = await res.json();
+
+      if (res.ok) {
+        setProfileImage(data.image);
+        setMessage({ text: "Image removed successfully!", type: "success" });
+        await update({
+          ...session?.user,
+          image: data.image,
+        });
+      } else {
+        setMessage({ text: data.error || "Failed to remove image", type: "error" });
+      }
+    } catch (error) {
+      console.error("Error removing image:", error);
+      setMessage({ text: "An error occurred while removing the image", type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     if (session?.user) {
       setProfileImage(session.user.image || "/placeholder.svg");
@@ -211,6 +359,12 @@ export function Settings() {
       });
       setAccountVisibility({
         isPublic: session.user.isPublic !== false,
+      });
+      setUsernameStatus({
+        available: true,
+        loading: false,
+        error: null,
+        isEdited: false,
       });
     }
   }, [session]);
@@ -259,9 +413,12 @@ export function Settings() {
                   </div>
                 ) : (
                   <>
-                    <AvatarImage src={profileImage || "/placeholder.svg"} />
-                    <AvatarFallback className='bg-purple-600 text-white text-2xl'>
-                      MJ
+                    <AvatarImage 
+                      src={profileImage && profileImage !== "/placeholder.svg" ? profileImage : "/dark-placeholder.svg"} 
+                      className={!profileImage || profileImage === "/placeholder.svg" ? "opacity-80" : ""}
+                    />
+                    <AvatarFallback className='bg-gray-800 text-gray-400 text-2xl'>
+                      {session?.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'US'}
                     </AvatarFallback>
                   </>
                 )}
@@ -309,9 +466,8 @@ export function Settings() {
                 <Button
                   variant='outline'
                   className='border-red-500/30 text-red-400 bg-transparent hover:bg-red-500/10'
-                  onClick={() =>
-                    setProfileImage("/placeholder.svg?height=120&width=120")
-                  }
+                  onClick={handleDeleteImage}
+
                 >
                   Remove
                 </Button>
@@ -353,15 +509,42 @@ export function Settings() {
                 <div className='absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none'>
                   <span className='text-gray-400'>speakerkit.com/</span>
                 </div>
-                <Input
+                 <Input
                   id='username'
                   value={accountData.username}
-                  onChange={(e) =>
-                    setAccountData({ ...accountData, username: e.target.value })
-                  }
+                  onChange={(e) => handleUsernameChange(e.target.value)}
                   className='bg-white/5 border-white/10 text-white pl-32'
                 />
+                 {usernameStatus.isEdited && accountData.username.length >= 3 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {usernameStatus.loading ? (
+                      <Spinner className="w-1 h-1" />
+                    ) : usernameStatus.available === true ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : usernameStatus.available === false ? (
+                      <AlertCircle className="w-4 h-4 text-red-400" />
+                    ) : null}
+                  </div>
+                )}
               </div>
+               {(usernameStatus.isEdited || usernameStatus.error) && (
+                <p className={`text-xs ${
+                  usernameStatus.loading ? "text-gray-600" :
+                  usernameStatus.available === true ? "text-green-400" : 
+                  usernameStatus.available === false ? "text-red-400" : 
+                  usernameStatus.error ? "text-red-400" : "text-gray-400"
+                }`}>
+                  {usernameStatus.loading && "Checking availability..."}
+                  {!usernameStatus.loading && usernameStatus.available === true && "✓ Username is available"}
+                  {!usernameStatus.loading && usernameStatus.available === false && "✗ Username is already taken"}
+                  {usernameStatus.error && usernameStatus.error}
+                  {!usernameStatus.loading && 
+                   usernameStatus.available === null && 
+                   !usernameStatus.error && 
+                   accountData.username.length > 0 && 
+                   accountData.username.length < 3 && "Username must be at least 3 characters"}
+                </p>
+              )}
             </div>
           </div>
           <div className='space-y-2'>

@@ -225,7 +225,7 @@ export function ImageGallery() {
       </div>
 
       {/* Upload section  */}
-      {currentFolder && (
+      {currentFolder && currentFolder.images.length === 0 && (
         <Card className='bg-black/40 border-white/10 border-dashed'>
           <CardContent className='p-8'>
             <div className='text-center'>

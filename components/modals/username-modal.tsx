@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import debounce from "lodash.debounce";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Drawer,
@@ -31,33 +32,83 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
   const isMobile = useIsMobile()
 
-  const checkUsernameAvailability = async (value: string) => {
-    if (value.length < 3) {
-      setIsAvailable(null)
-      return
-    }
+  // const checkUsernameAvailability = async (value: string) => {
+  //   if (value.length < 3) {
+  //     setIsAvailable(null)
+  //     return
+  //   }
 
-     try {
-      const response = await fetch('/api/username/check', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username: value }),
-      })
-      const data = await response.json()
-      setIsAvailable(data.available)
-    } catch (error) {
-      console.error("Error checking username:", error)
-      setIsAvailable(false)
-    }
-  }
+  //    try {
+  //     const response = await fetch('/api/username/check', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ username: value }),
+  //     })
+  //     const data = await response.json()
+  //     setIsAvailable(data.available)
+  //   } catch (error) {
+  //     console.error("Error checking username:", error)
+  //     setIsAvailable(false)
+  //   }
+  // }
+
+   const debouncedCheck = useMemo(
+    () =>
+      debounce(async (value: string) => {
+        if (value.length < 3) {
+          setIsAvailable(null);
+          return;
+        }
+
+        try {
+          setIsLoading(true);
+          const response = await fetch('/api/username/check', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: value }),
+          });
+          const data = await response.json();
+          setIsAvailable(data.available);
+        } catch (error) {
+          console.error("Error checking username:", error);
+          setIsAvailable(false);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 500), 
+    []
+  );
 
   const handleUsernameChange = (value: string) => {
-    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
-    setUsername(sanitized)
-    checkUsernameAvailability(sanitized)
-  }
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setUsername(sanitized);
+    
+    debouncedCheck.cancel();
+    
+    if (sanitized.length >= 3) {
+      debouncedCheck(sanitized);
+    } else {
+      setIsAvailable(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      debouncedCheck.cancel();
+    };
+  }, [debouncedCheck]);
+
+
+
+  // const handleUsernameChange = (value: string) => {
+  //   const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
+  //   setUsername(sanitized)
+  //   checkUsernameAvailability(sanitized)
+  // }
 
  const handleSubmit = async () => {
     if (!username || !isAvailable) return

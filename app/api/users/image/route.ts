@@ -65,3 +65,36 @@ export async function PUT(req: Request) {
     );
   }
 }
+
+
+export async function DELETE() {
+  try {
+    await connectViaMongoose();
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await User.findOne({ email: session.user.email });
+
+    if (!user || !user.image || user.image === "/placeholder.svg") {
+      return NextResponse.json({ error: "No image to delete" }, { status: 400 });
+    }
+
+    const publicIdMatch = user.image.match(/\/v\d+\/([^\.]+)\./);
+    const publicId = publicIdMatch ? `profile-images/${publicIdMatch[1]}` : null;
+
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    user.image = "/placeholder.svg";
+    await user.save();
+
+    return NextResponse.json({ success: true, image: user.image });
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
