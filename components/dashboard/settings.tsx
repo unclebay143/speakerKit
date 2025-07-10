@@ -186,10 +186,15 @@ export function Settings() {
       const data = await response.json();
       setProfileImage(data.image);
       setMessage({ text: "Profile image updated!", type: "success" });
+
       await update({
-        ...session?.user,
         image: data.image,
       });
+      
+      // await update({
+      //   ...session?.user,
+      //   image: data.image,
+      // });
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -350,8 +355,12 @@ export function Settings() {
 
 
   useEffect(() => {
-    if (session?.user) {
-      setProfileImage(session.user.image || "/placeholder.svg");
+  if (session?.user) {
+    setProfileImage((prev) => {
+      const sessionImage = session.user.image || "/placeholder.svg";
+      return prev !== sessionImage ? sessionImage : prev;
+    });
+
       setAccountData({
         fullName: session.user.name || "",
         email: session.user.email || "",

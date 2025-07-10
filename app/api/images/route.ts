@@ -7,6 +7,7 @@ import connectViaMongoose from "@/lib/db";
 import { v2 as cloudinary } from "cloudinary";
 import { writeFile } from "fs/promises";
 import { join } from "path";
+import User from "@/models/User";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -49,18 +50,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Save file temporarily
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const path = join("/tmp", file.name);
     await writeFile(path, buffer);
 
-    // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(path, {
       folder: `user_uploads/${session.user.id}/${folderId}`,
     });
 
-    // Create image record
     const image = await Image.create({
       name: file.name,
       url: result.secure_url,
@@ -76,8 +74,25 @@ export async function POST(req: Request) {
     folder.images.push(image._id);
     await folder.save();
 
+    const user = await User.findById(session.user.id);
+    if (user && (!user.image || user.image === "/placeholder.svg")) {
+      user.image = image.url;
+      await user.save();
+    }
     return NextResponse.json(image, { status: 201 });
-  } catch (error) {
+
+  //  if (!session.user.image) {
+  // const user = await User.findByIdAndUpdate(
+  //   session.user.id,
+  //   { image: image.url },
+  //   { new: true }
+  // );
+  
+  // return NextResponse.json({
+  //   image: image,
+  //   updatedProfileImage: user?.image
+  // }, { status: 201 });
+}  catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Error uploading image" },

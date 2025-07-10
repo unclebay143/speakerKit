@@ -28,15 +28,21 @@ export function useFolders() {
     enabled: !!session?.user?.id
   });
 
-  const getFolder = useQuery({
-  queryKey: ["folder"],
-  queryFn: async ({ queryKey }) => {
-    const [_, folderId] = queryKey;
+//   const getFolder = useQuery({
+//   queryKey: ["folder"],
+//   queryFn: async ({ queryKey }) => {
+//     const [_, folderId] = queryKey;
+//     const { data } = await axios.get(`/api/folders/${folderId}`);
+//     return data;
+//   },
+//   enabled: false 
+// });
+
+  const getFolder = async (folderId: string) => {
+    if (!folderId) throw new Error("Folder ID is required");
     const { data } = await axios.get(`/api/folders/${folderId}`);
     return data;
-  },
-  enabled: false 
-});
+  };
 
 
   // Create 

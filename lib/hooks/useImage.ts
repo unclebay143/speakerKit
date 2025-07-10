@@ -15,7 +15,7 @@ export function useImage() {
 
     const deleteImage = useMutation({
         mutationFn: (id: string) =>
-            axios.delete(`api/images/${id}`),
+            axios.delete(`/api/images/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries(["images"]);
         }

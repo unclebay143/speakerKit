@@ -111,7 +111,7 @@ export const authOptions: AuthOptions = {
         session.user.username = token.username as string;
         session.user.name = token.name;
         session.user.email = token.email;
-        session.user.image = token.image as string;
+        session.user.image = token.image;
         session.user.isPublic = token.isPublic as boolean;
       }
       return session;
@@ -128,6 +128,11 @@ export const authOptions: AuthOptions = {
       if (trigger === "update" && session?.username) {
         token.username = session.username;
       }
+
+      if (trigger === "update" && session?.image) {
+        token.image = session.image;
+      }
+
 
       if (trigger === "update" && session) {
         if (session.username) token.username = session.username;
