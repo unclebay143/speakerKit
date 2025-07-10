@@ -13,7 +13,7 @@ import { useFolders } from "@/lib/hooks/useFolders";
 import { useImage } from "@/lib/hooks/useImage";
 import axios from "axios";
 import {
-  ArrowLeft,
+  ChevronRight,
   Edit,
   Eye,
   Folder,
@@ -175,28 +175,29 @@ export function ImageGallery() {
   }
 
   return (
-    <div className='space-y-6 mx-auto max-w-screen-lg'>
+    <div className='flex flex-col gap-4 mx-auto max-w-screen-lg'>
       {/* Header part */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-4'>
-          {currentFolder && (
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={() => setCurrentFolder(null)}
-              className='text-gray-400 hover:text-white'
-            >
-              <ArrowLeft className='w-4 h-4' />
-            </Button>
-          )}
-          <div>
-            <h2 className='text-2xl font-bold text-white mb-2'>
-              {currentFolder ? currentFolder.name : "Image Gallery"}
-            </h2>
+          <div className='flex flex-col gap-2'>
+            <div className='flex items-center gap-2'>
+              {currentFolder && (
+                <>
+                  <button onClick={() => setCurrentFolder(null)}>
+                    <h2 className='text-2xl font-bold text-white'>
+                      Image Gallery
+                    </h2>
+                  </button>
+
+                  <ChevronRight className='w-4 h-4' />
+                </>
+              )}
+              <h2 className='text-2xl font-bold text-white/80'>
+                {currentFolder ? currentFolder.name : "Image Gallery"}
+              </h2>
+            </div>
             <p className='text-gray-400'>
-              {currentFolder
-                ? `${currentFolder.imageCount} images in this folder`
-                : "Manage your headshots and profile images"}
+              Manage your headshots and profile images
             </p>
           </div>
         </div>

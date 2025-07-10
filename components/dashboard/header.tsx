@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, PanelLeftOpen } from "lucide-react";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -19,7 +19,7 @@ export function DashboardHeader({
   sidebarOpen,
   activeTab,
 }: HeaderProps) {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
 
   return (
     <header

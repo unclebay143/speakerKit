@@ -12,7 +12,7 @@ import {
 import { useFolders } from "@/lib/hooks/useFolders";
 import { useProfiles } from "@/lib/hooks/useProfiles";
 import { format } from "date-fns";
-import { Edit, FileText, ImageIcon, Trash2, Users } from "lucide-react";
+import { Edit, FileText, Globe, ImageIcon, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
@@ -45,7 +45,7 @@ const stats = [
   {
     label: "Public Profiles",
     value: "",
-    icon: Users,
+    icon: Globe,
     color: "text-orange-400",
   },
 ];

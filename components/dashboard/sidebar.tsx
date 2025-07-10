@@ -35,6 +35,7 @@ export function DashboardSidebar({
   const menuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "images", label: "Image Gallery", icon: ImageIcon },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   const { data: session } = useSession();
@@ -125,7 +126,7 @@ export function DashboardSidebar({
       `}
       >
         <div className='p-4'>
-          <div className='flex items-center justify-between mb-8'>
+          <div className='flex items-center justify-between mb-10'>
             <Avatar>
               <AvatarImage src={session?.user?.image || ""} />
               <AvatarFallback className='bg-purple-600 text-white'>
@@ -164,7 +165,7 @@ export function DashboardSidebar({
         </div>
 
         <div className='absolute bottom-4 left-4 right-4 space-y-2'>
-          <Button
+          {/* <Button
             variant={activeTab === "settings" ? "secondary" : "ghost"}
             className={`w-full justify-start text-white hover:bg-white/10 ${
               activeTab === "settings" ? "bg-purple-600/20 text-purple-400" : ""
@@ -173,7 +174,7 @@ export function DashboardSidebar({
           >
             <Settings className='w-5 h-5' />
             {isOpen && <span>Settings</span>}
-          </Button>
+          </Button> */}
           <Button
             variant='ghost'
             className={`w-full justify-start text-red-400 hover:bg-red-500/10 ${
