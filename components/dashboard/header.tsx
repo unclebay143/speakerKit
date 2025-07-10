@@ -2,7 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Menu, PanelLeftOpen } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -14,12 +16,21 @@ interface HeaderProps {
 
 export function DashboardHeader({
   setMobileSidebarOpen,
+  setSidebarOpen,
+  sidebarOpen,
   activeTab,
 }: HeaderProps) {
+  const { data: session } = useSession();
+
   return (
-    <header className='bg-black/20 backdrop-blur-sm border-b border-white/10 p-4 lg:px-16 mx-auto'>
+    <header
+      className={cn(
+        "bg-black/20 backdrop-blur-sm border-b border-white/10 p-4 mx-auto",
+        sidebarOpen ? "lg:pr-16" : "lg:pl-16"
+      )}
+    >
       <div className='flex items-center justify-between'>
-        <div className='flex items-center space-x-4'>
+        <div className='flex items-center gap-2'>
           <Button
             variant='ghost'
             size='icon'
@@ -38,12 +49,20 @@ export function DashboardHeader({
             <Menu className="w-5 h-5" />
           </Button>
            */}
-          <div className=''>
+
+          {sidebarOpen ? null : (
+            <PanelLeftOpen
+              className='w-4 h-4 ml-3 cursor-pointer'
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            />
+          )}
+          <div className='text-2xl font-bold text-white'>SpeakerKit</div>
+          {/* <div className=''>
             <h1 className='text-2xl font-bold text-white'>Dashboard</h1>
             <p className='text-gray-400'>
               Manage your {activeTab === "images" ? "images" : "profile"}
             </p>
-          </div>
+          </div> */}
         </div>
 
         <div className='flex items-center space-x-4'>
@@ -61,9 +80,9 @@ export function DashboardHeader({
             </Button>
           )} */}
           <Avatar>
-            <AvatarImage src='/placeholder.svg?height=40&width=40' />
+            <AvatarImage src={session?.user?.image || ""} />
             <AvatarFallback className='bg-purple-600 text-white'>
-              UA
+              {session?.user?.name?.charAt(0)}
             </AvatarFallback>
           </Avatar>
         </div>

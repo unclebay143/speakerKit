@@ -1,32 +1,31 @@
-"use client"
+"use client";
 
-import {  useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import { DashboardSidebar } from "./sidebar"
-import { DashboardHeader } from "./header"
-import { ProfilesOverview } from "./profile-overview"
-import { UsernameModal } from "../modals/username-modal"
-import { ImageGallery } from "./image-gallery"
-import { Settings } from "./settings"
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
+import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { UsernameModal } from "../modals/username-modal";
+import { Spinner } from "../ui/spinner";
+import { DashboardHeader } from "./header";
+import { ImageGallery } from "./image-gallery";
+import { ProfilesOverview } from "./profile-overview";
+import { Settings } from "./settings";
+import { DashboardSidebar } from "./sidebar";
 
 export default function Dashboard() {
-  const { data: session, status, update } = useSession()
+  const { data: session, status, update } = useSession();
   // const [activeTab, setActiveTab] = useState("overview")
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [, setUpdatingSession] = useState(false);
 
-
-  
   const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('activeTab') || "overview"
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("activeTab") || "overview";
     }
-    return "overview"
-  })
+    return "overview";
+  });
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -34,9 +33,7 @@ export default function Dashboard() {
     }
   }, [status, session]);
 
-
   // console.log("Session after update:", session)
-
 
   const handleUsernameComplete = async () => {
     setUpdatingSession(true);
@@ -48,44 +45,44 @@ export default function Dashboard() {
     }
   };
 
-
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('activeTab', activeTab)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("activeTab", activeTab);
     }
-  }, [activeTab])
+  }, [activeTab]);
 
   if (status === "loading") {
-    return <div className="min-h-screen bg-black/[0.96] flex items-center justify-center">
-      Loading session...
-    </div>;
+    return (
+      <div className='min-h-screen bg-black/[0.96] flex items-center justify-center'>
+        <Spinner className='bg-purple-600' />
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {
-    redirect("/login")
+    redirect("/login");
   }
 
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return <ProfilesOverview  />
+        return <ProfilesOverview />;
       case "images":
-        return <ImageGallery />
+        return <ImageGallery />;
       case "settings":
-        return <Settings />
+        return <Settings />;
       default:
-        return <ProfilesOverview />
+        return <ProfilesOverview />;
     }
-  }
+  };
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab)
-    setMobileSidebarOpen(false)
-  }
-
+    setActiveTab(tab);
+    setMobileSidebarOpen(false);
+  };
 
   return (
-    <div className="min-h-screen bg-black/[0.96] text-white">
+    <div className='min-h-screen bg-black/[0.96] text-white'>
       <DashboardSidebar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -95,19 +92,21 @@ export default function Dashboard() {
         setMobileSidebarOpen={setMobileSidebarOpen}
       />
 
-      <div className={`
+      <div
+        className={`
         flex-1 transition-all duration-300 
         ${sidebarOpen ? "md:ml-64" : "md:ml-1"}
-      `}>
-        <DashboardHeader 
+      `}
+      >
+        <DashboardHeader
           activeTab={activeTab}
-          setSidebarOpen={setSidebarOpen} 
+          setSidebarOpen={setSidebarOpen}
           sidebarOpen={sidebarOpen}
           setMobileSidebarOpen={setMobileSidebarOpen}
           mobileSidebarOpen={mobileSidebarOpen}
         />
 
-        <main className="p-6">
+        <main className='p-6'>
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
@@ -119,14 +118,12 @@ export default function Dashboard() {
         </main>
       </div>
       {showUsernameModal && (
-        <UsernameModal 
-          open={showUsernameModal} 
-           onOpenChange={(open) => !open && setShowUsernameModal(false)}
+        <UsernameModal
+          open={showUsernameModal}
+          onOpenChange={(open) => !open && setShowUsernameModal(false)}
           onComplete={handleUsernameComplete}
         />
       )}
-
-        
     </div>
-  )
+  );
 }

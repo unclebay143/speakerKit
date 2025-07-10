@@ -1,15 +1,18 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+
 import {
   ChevronLeft,
-  ChevronRight,
   ImageIcon,
   LayoutDashboard,
   LogOut,
+  PanelLeftClose,
   Settings,
   UserRoundPen,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 interface SidebarProps {
@@ -33,6 +36,8 @@ export function DashboardSidebar({
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "images", label: "Image Gallery", icon: ImageIcon },
   ];
+
+  const { data: session } = useSession();
 
   return (
     <>
@@ -121,31 +126,19 @@ export function DashboardSidebar({
       >
         <div className='p-4'>
           <div className='flex items-center justify-between mb-8'>
-            <Link
-              href='/'
-              className={`flex items-center space-x-2 ${
-                !isOpen && "justify-center"
-              }`}
-            >
-              <UserRoundPen className='w-8 h-8 text-purple-500' />
-              {isOpen && (
-                <span className='text-white font-medium text-xl'>
-                  speakerKit
-                </span>
-              )}
-            </Link>
-            <Button
-              variant='ghost'
-              size='icon'
-              onClick={() => setIsOpen(!isOpen)}
-              className='text-white hover:bg-white/10'
-            >
-              {isOpen ? (
-                <ChevronLeft className='w-4 h-4' />
-              ) : (
-                <ChevronRight className='w-4 h-4' />
-              )}
-            </Button>
+            <Avatar>
+              <AvatarImage src={session?.user?.image || ""} />
+              <AvatarFallback className='bg-purple-600 text-white'>
+                {session?.user?.name?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+
+            {isOpen ? (
+              <PanelLeftClose
+                className='w-4 h-4 cursor-pointer'
+                onClick={() => setIsOpen(!isOpen)}
+              />
+            ) : null}
           </div>
 
           <nav className='space-y-2'>
