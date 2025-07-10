@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import User from "@/models/User";
 import connectViaMongoose from "@/lib/db";
-import { getServerSession } from "next-auth";
+import User from "@/models/Users";
 import { authOptions } from "@/utils/auth-options";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -10,18 +10,18 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { username } = await req.json();
-    console.log('Received username:', username);
+    console.log("Received username:", username);
 
-     if (!username || !/^[a-z0-9-]{3,30}$/.test(username)) {
+    if (!username || !/^[a-z0-9-]{3,30}$/.test(username)) {
       return NextResponse.json(
-        { error: "Username must be 3-30 characters with only letters, numbers, and hyphens" },
+        {
+          error:
+            "Username must be 3-30 characters with only letters, numbers, and hyphens",
+        },
         { status: 400 }
       );
     }
@@ -33,9 +33,9 @@ export async function POST(req: Request) {
       );
     }
 
-     const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ username });
     if (existingUser && existingUser.email !== session.user.email) {
-        console.log('Username taken:', username);
+      console.log("Username taken:", username);
       return NextResponse.json(
         { error: "Username is already taken" },
         { status: 400 }
@@ -44,31 +44,28 @@ export async function POST(req: Request) {
 
     const user = await User.findOneAndUpdate(
       { email: session.user.email },
-      { 
+      {
         username,
-        hasCompletedOnboarding: true 
+        hasCompletedOnboarding: true,
       },
       { new: true }
     );
 
     if (!user) {
-      console.log('User not found for email:', session.user.email);
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      console.log("User not found for email:", session.user.email);
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log('Successfully updated user:', user.email);
-    return NextResponse.json({ 
+    console.log("Successfully updated user:", user.email);
+    return NextResponse.json({
       success: true,
       username: user.username,
-       user: {
+      user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        username: user.username
-      }
+        username: user.username,
+      },
     });
   } catch (error) {
     console.error("Onboarding error:", error);

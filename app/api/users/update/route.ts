@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import User from "@/models/User";
 import connectViaMongoose from "@/lib/db";
+import User from "@/models/Users";
 import { authOptions } from "@/utils/auth-options";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
 export async function PUT(req: Request) {
   try {
@@ -10,25 +10,22 @@ export async function PUT(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { name, username, image, isPublic } = await req.json();
 
-   const updateData: Partial<{
-    name: string;
-    username: string;
-    image: string;
-    isPublic: boolean;
-  }> = {};
+    const updateData: Partial<{
+      name: string;
+      username: string;
+      image: string;
+      isPublic: boolean;
+    }> = {};
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
     if (image) updateData.image = image;
-    if (typeof isPublic !== 'undefined') updateData.isPublic = isPublic;
+    if (typeof isPublic !== "undefined") updateData.isPublic = isPublic;
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
@@ -37,13 +34,10 @@ export async function PUT(req: Request) {
     );
 
     if (!updatedUser) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       user: {
         id: updatedUser._id,
@@ -51,8 +45,8 @@ export async function PUT(req: Request) {
         email: updatedUser.email,
         username: updatedUser.username,
         image: updatedUser.image,
-        isPublic: updatedUser.isPublic
-      }
+        isPublic: updatedUser.isPublic,
+      },
     });
   } catch (error) {
     console.error("Error updating user:", error);

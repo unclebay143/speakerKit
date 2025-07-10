@@ -1,10 +1,9 @@
+import connectViaMongoose from "@/lib/db";
+import User from "@/models/Users";
+import bcrypt from "bcryptjs";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import User from "@/models/User";
-import bcrypt from "bcryptjs";
-import connectViaMongoose from "@/lib/db";
-
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -17,26 +16,33 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           await connectViaMongoose();
-          
+
           if (!credentials?.email || !credentials?.password) {
             console.log("Missing credentials");
             return null;
           }
 
-          const user = await User.findOne({ email: credentials.email.toLowerCase() });
-        
+          const user = await User.findOne({
+            email: credentials.email.toLowerCase(),
+          });
+
           if (!user) {
             console.log("No user found with this email");
             return null;
           }
 
           if (!user.password) {
-            console.log("User has no password set (possibly signed up with Google)");
+            console.log(
+              "User has no password set (possibly signed up with Google)"
+            );
             return null;
           }
 
-          const isValid = await bcrypt.compare(credentials.password, user.password);
-          
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
           if (!isValid) {
             console.log("Password comparison failed");
             return null;
@@ -48,28 +54,28 @@ export const authOptions: AuthOptions = {
             name: user.name,
             username: user.username,
             image: user.image,
-            isPublic: user.isPublic
+            isPublic: user.isPublic,
           };
         } catch (error) {
           console.error("Authorization error:", error);
           return null;
         }
-      }
+      },
     }),
-     GoogleProvider({
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code"
-        }
-      }
-    })
+          response_type: "code",
+        },
+      },
+    }),
   ],
- callbacks: {
-  async signIn({ user, account }) {
+  callbacks: {
+    async signIn({ user, account }) {
       await connectViaMongoose();
 
       if (account?.provider === "google") {
@@ -81,7 +87,7 @@ export const authOptions: AuthOptions = {
             email: user.email,
             username: null,
             image: user.image,
-            isPublic: true
+            isPublic: true,
           });
 
           user.id = newUser._id.toString();
@@ -99,48 +105,47 @@ export const authOptions: AuthOptions = {
       return true;
     },
 
-   async session({ session, token }) {
-    if (session.user && token) {
-      session.user.id = token.sub || token.id as string;
-      session.user.username = token.username as string;
-      session.user.name = token.name;
-      session.user.email = token.email;
-      session.user.image = token.image as string;
-      session.user.isPublic = token.isPublic as boolean;
-    }
-    return session;
-  },
-  async jwt({ token, user, trigger, session }) {
-    if (user) {
-      token.id = user.id;
-      token.username = user.username;
-      token.name = user.name;
-      token.email = user.email;
-      token.image = user.image;
-      token.isPublic = user.isPublic;
-    }
-    if (trigger === "update" && session?.username) {
-      token.username = session.username;
-    }
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.sub || (token.id as string);
+        session.user.username = token.username as string;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.image as string;
+        session.user.isPublic = token.isPublic as boolean;
+      }
+      return session;
+    },
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+        token.username = user.username;
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
+        token.isPublic = user.isPublic;
+      }
+      if (trigger === "update" && session?.username) {
+        token.username = session.username;
+      }
 
-     if (trigger === "update" && session) {
+      if (trigger === "update" && session) {
         if (session.username) token.username = session.username;
         if (session.name) token.name = session.name;
         if (session.image) token.image = session.image;
         if (session.isPublic !== undefined) token.isPublic = session.isPublic;
       }
-    
-    return token;
+
+      return token;
+    },
   },
-  
-},
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, 
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",
-    error: "/login?error=true"
+    error: "/login?error=true",
   },
 };

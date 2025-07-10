@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import connectViaMongoose from "@/lib/db";
+import User from "@/models/Users";
 import bcrypt from "bcryptjs";
-import User from "@/models/User";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
     const requestData = await req.json();
 
-      const { name, email, password } = requestData;
+    const { name, email, password } = requestData;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -33,20 +33,24 @@ export async function POST(req: Request) {
       );
     }
 
-
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Hashed password:", hashedPassword);
-    const user = new User({ name, email, password: hashedPassword, hasCompletedOnboarding: false });
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      hasCompletedOnboarding: false,
+    });
     await user.save();
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        hasCompletedOnboarding: user.hasCompletedOnboarding
-      }
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+      },
     });
   } catch (error) {
     console.error("Signup error:", error);

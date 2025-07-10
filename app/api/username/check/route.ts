@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import User from "@/models/User";
 import connectViaMongoose from "@/lib/db";
+import User from "@/models/Users";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -15,9 +15,11 @@ export async function POST(req: Request) {
     }
 
     const existingUser = await User.findOne({ username });
-    return NextResponse.json({ 
+    return NextResponse.json({
       available: !existingUser,
-      suggested: existingUser ? `${username}-${Math.floor(Math.random() * 1000)}` : null
+      suggested: existingUser
+        ? `${username}-${Math.floor(Math.random() * 1000)}`
+        : null,
     });
   } catch (error) {
     console.error("Username check error:", error);

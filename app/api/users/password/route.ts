@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import User from "@/models/User";
 import connectViaMongoose from "@/lib/db";
-import bcrypt from "bcryptjs";
+import User from "@/models/Users";
 import { authOptions } from "@/utils/auth-options";
+import bcrypt from "bcryptjs";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
 export async function PUT(req: Request) {
   try {
@@ -11,10 +11,7 @@ export async function PUT(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { currentPassword, newPassword } = await req.json();
@@ -35,10 +32,7 @@ export async function PUT(req: Request) {
 
     const user = await User.findOne({ email: session.user.email });
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
@@ -53,9 +47,9 @@ export async function PUT(req: Request) {
     user.password = hashedPassword;
     await user.save();
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: "Password updated successfully"
+      message: "Password updated successfully",
     });
   } catch (error) {
     console.error("Error updating password:", error);
