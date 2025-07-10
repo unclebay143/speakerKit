@@ -93,15 +93,6 @@ export function Settings() {
       return;
     }
 
-    // if (username === session?.user?.username) {
-    //   setUsernameStatus({
-    //     available: true,
-    //     loading: false,
-    //     error: null,
-    //   });
-    //   return;
-    // }
-
     setUsernameStatus(prev => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -187,14 +178,14 @@ export function Settings() {
       setProfileImage(data.image);
       setMessage({ text: "Profile image updated!", type: "success" });
 
-      await update({
-        image: data.image,
-      });
-      
       // await update({
-      //   ...session?.user,
       //   image: data.image,
       // });
+      
+      await update({
+        ...session?.user,
+        image: data.image,
+      });
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
