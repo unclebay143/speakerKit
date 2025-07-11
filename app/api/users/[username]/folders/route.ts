@@ -1,7 +1,9 @@
+import mongoose from "mongoose"; 
 import { NextResponse } from "next/server";
 import connectViaMongoose from "@/lib/db";
 import User from "@/models/User";
 import Folder from "@/models/Folders";
+import Image from "@/models/Images";
 
 export async function GET(
   request: Request,
@@ -9,6 +11,10 @@ export async function GET(
 ) {
   try {
     await connectViaMongoose();
+
+    if (!mongoose.models.Image) {
+      throw new Error("Image model not registered");
+    }
     
     const user = await User.findOne({ username: params.username });
     
@@ -19,7 +25,10 @@ export async function GET(
       );
     }
 
-    const folders = await Folder.find({ userId: user._id }).populate("images");
+     const folders = await Folder.find({ userId: user._id })
+      .populate("images");
+
+    // const folders = await Folder.find({ userId: user._id }).populate("images");
     return NextResponse.json(folders);
   } catch (error) {
     console.error("Error fetching folders:", error);
