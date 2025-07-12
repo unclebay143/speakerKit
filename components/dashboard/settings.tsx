@@ -35,7 +35,6 @@ import debounce from "lodash.debounce";
 
 export function Settings() {
   const { data: session, update } = useSession();
-  // const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
   
   const [message, setMessage] = useState<{
     text: string;
@@ -80,6 +79,10 @@ export function Settings() {
     access: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [isAccountLoading, setIsAccountLoading] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [isVisibilityLoading, setIsVisibilityLoading] = useState(false);
 
   const checkUsernameAvailability = useCallback(async (username: string) => {
     if (username.length < 3) {
@@ -160,7 +163,7 @@ export function Settings() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsLoading(true);
+    setIsImageLoading(true);
     try {
       const formData = new FormData();
       formData.append("image", file);
@@ -189,7 +192,7 @@ export function Settings() {
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
-      setIsLoading(false);
+      setIsImageLoading(false);
     }
   };
 
@@ -202,7 +205,7 @@ export function Settings() {
       });
       return;
     }
-    setIsLoading(true);
+    setIsAccountLoading(true);
     try {
       const response = await fetch("/api/users/update", {
         method: "PUT",
@@ -239,7 +242,7 @@ export function Settings() {
       console.error("Error updating account:", error);
       setMessage({ text: "Failed to update account", type: "error" });
     } finally {
-      setIsLoading(false);
+     setIsAccountLoading(true);
     }
   };
 
@@ -249,7 +252,7 @@ export function Settings() {
       return;
     }
 
-    setIsLoading(true);
+    setIsPasswordLoading(false);
     try {
       const response = await fetch("/api/users/password", {
         method: "PUT",
@@ -277,12 +280,12 @@ export function Settings() {
       console.error("Error updating password:", error);
       alert(error);
     } finally {
-      setIsLoading(false);
+      setIsPasswordLoading(false);
     }
   };
 
   const handleVisibilityUpdate = async () => {
-    setIsLoading(true);
+    setIsVisibilityLoading(true);
     try {
       const response = await fetch("/api/users/update", {
         method: "PUT",
@@ -306,18 +309,11 @@ export function Settings() {
     }
 
     setMessage({ text: "Visibility settings updated!", type: "success" });
-
-      // setMessage({ text: "Visibility settings updated!", type: "success" });
-
-      // await update({
-      //   ...session?.user,
-      //   isPublic: accountVisibility.isPublic,
-      // });
     } catch (error) {
       console.error("Error updating visibility:", error);
       setMessage({ text: "Failed to update visibility", type: "error" });
     } finally {
-      setIsLoading(false);
+      setIsVisibilityLoading(true);
     }
   };
   const handleDeleteImage = async () => {
@@ -407,7 +403,7 @@ export function Settings() {
           <div className='flex items-center space-x-6'>
             <div className='relative'>
               <Avatar className='w-24 h-24 relative'>
-                {isLoading ? (
+                {isImageLoading ? (
                   <div className='absolute inset-0 flex items-center justify-center bg-black/40 rounded-full'>
                     <Spinner />
                   </div>
@@ -564,11 +560,11 @@ export function Settings() {
           <div className='flex justify-end'>
             <Button
               onClick={handleAccountUpdate}
-              disabled={isLoading}
+              disabled={isAccountLoading}
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
               <Save className='w-4 h-4' />
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isAccountLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </CardContent>
@@ -699,7 +695,7 @@ export function Settings() {
             <Button
               onClick={handlePasswordUpdate}
               disabled={
-                isLoading ||
+                isPasswordLoading ||
                 !passwordData.currentPassword ||
                 !passwordData.newPassword ||
                 !passwordData.confirmPassword
@@ -761,7 +757,7 @@ export function Settings() {
           <div className='flex justify-end'>
             <Button
               onClick={handleVisibilityUpdate}
-              disabled={isLoading}
+              disabled={isVisibilityLoading}
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
               <Shield className='w-4 h-4' />

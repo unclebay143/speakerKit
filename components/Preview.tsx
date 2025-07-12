@@ -122,7 +122,7 @@ export default function ProfilePreview() {
           
           {/* The top Profile Section */}
           <div className="flex-1 space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex flex-row justify-between items-center md:flex-row md:items-center md:justify-between gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-white">
                 {userData.name}
               </h1>
@@ -143,7 +143,7 @@ export default function ProfilePreview() {
               </div>
             </div>
 
-            <div className="flex items-center gap-6  text-sm">
+            <div className="md:flex md:items-center gap-6  text-sm space-y-2">
               <div className="flex items-center text-gray-400 gap-2">
                 <MapPin className="h-4 w-4 flex-shrink-0 text-purple-400" />
                 <span>{userData.location || "Location not specified"}</span>
@@ -169,10 +169,6 @@ export default function ProfilePreview() {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm">
-              <div className="flex items-center text-gray-400 gap-2">
-                <span className="hidden sm:block text-purple-400">•</span>
-                <span>{userData.country || "Country not specified"}</span>
-              </div>
               
               <div className="flex items-center text-gray-400 gap-2">
                 <MailIcon className="h-4 w-4 flex-shrink-0 text-purple-400" />
@@ -404,7 +400,7 @@ export default function ProfilePreview() {
                       <img
                         src={image.url}
                         alt={image.name}
-                        className="w-full h-60 object-cover"
+                        className="w-full h-80 object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                         <div>
