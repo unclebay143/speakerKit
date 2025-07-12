@@ -110,7 +110,7 @@ export default function ProfilePreview() {
   return (
     <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 ">
       <div className="space-y-6 mx-auto max-w-[1100px] py-10 p-4 ">
-        <div className="flex flex-col md:flex-row gap-6 bg-black/40 p-6 rounded-xl "> 
+        <div className="flex flex-col md:flex-row gap-6 bg-black/50 p-6 rounded-xl "> 
           <div className="flex justify-center md:justify-start">
             <Avatar className="h-32 w-32 md:h-40 md:w-40 border-2 border-purple-500/30">
               <AvatarImage src={userData.image || "/profile-picture.jpg"} className="object-cover" />
@@ -218,7 +218,7 @@ export default function ProfilePreview() {
                         onClick={() => setActiveProfile(profile._id)}
                       >
                         <div className="flex items-start justify-between">
-                          <h3 className="text-white font-semibold text-base">{profile.title}</h3>
+                          <h3 className="text-white font-semibold text-base truncate">{profile.title}</h3>
                           {profile.isPublic && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
                               Public
@@ -244,15 +244,15 @@ export default function ProfilePreview() {
                   transition={{ duration: 0.3 }}
                   className="h-full"
                 >
-                  <Card className="bg-gradient-to-br from-black/40 to-purple-900/20 border border-white/10 rounded-xl backdrop-blur-sm h-full">
-                    <CardHeader className="border-b border-white/10 pb-4">
+                  <Card className="bg-gradient-to-br from-gray-900/70 via-purple-900/30 to-blue-900/20 border border-white/5 rounded-xl backdrop-blur-md h-full shadow-lg shadow-purple-500/10">
+                    <CardHeader className="border-b border-white/5 pb-4">
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-white text-xl md:text-2xl font-bold">
                           {getActiveProfile().title}
                         </CardTitle>
                         {getActiveProfile().isPublic && (
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                            Public Profile
+                            Public
                           </span>
                         )}
                       </div>
@@ -260,26 +260,26 @@ export default function ProfilePreview() {
                     <CardContent className="space-y-6 py-6">
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">Short Biography</h3>
-                          <p className="text-gray-300 text-[0.9rem]  leading-relaxed">{getActiveProfile().shortBio}</p>
+                          <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wider">Short Biography</h3>
+                          <p className="text-gray-200 text-[0.9rem] leading-relaxed">{getActiveProfile().shortBio}</p>
                         </div>
                         
                         {getActiveProfile().mediumBio && (
                           <div className="space-y-2">
-                            <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">About</h3>
-                            <p className="text-gray-300 text-[0.9rem] leading-relaxed">{getActiveProfile().mediumBio}</p>
+                            <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wider">About</h3>
+                            <p className="text-gray-200 text-[0.9rem] leading-relaxed">{getActiveProfile().mediumBio}</p>
                           </div>
                         )}
                         
                         {getActiveProfile().longBio && (
                           <div className="space-y-2">
-                            <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wider">Full Biography</h3>
-                            <p className="text-gray-300 text-[0.9rem]  leading-relaxed">{getActiveProfile().longBio}</p>
+                            <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wider">Full Biography</h3>
+                            <p className="text-gray-200 text-[0.9rem] leading-relaxed">{getActiveProfile().longBio}</p>
                           </div>
                         )}
                       </div>
 
-                      <div className="pt-4 border-t border-white/10 text-xs text-gray-400 flex justify-between items-center">
+                      <div className="pt-4 border-t border-white/5 text-xs text-gray-400 flex justify-between items-center">
                         <span>Last updated {format(new Date(getActiveProfile().updatedAt), "MMMM d, yyyy")}</span>
                         <div className="flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -360,10 +360,7 @@ export default function ProfilePreview() {
                           <Calendar className="h-4 w-4 text-purple-400" />
                           <span>Created {format(new Date(folder.createdAt), "MMM d, yyyy")}</span>
                         </div>
-                        <div className="flex gap-1">
-                          <span className="text-xs bg-gray-700/50 text-gray-300 px-2 py-1 rounded">22.3</span>
-                          <span className="text-xs bg-gray-700/50 text-gray-300 px-2 py-1 rounded">17.6K</span>
-                        </div>
+                        
                       </div>
                     </CardContent>
                   </Card>
