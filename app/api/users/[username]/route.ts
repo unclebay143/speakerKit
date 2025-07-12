@@ -23,9 +23,16 @@ export async function GET(
       image: user.image,
       location: user.location,
       email: user.email,
-      joinedDate: user.createdAt,
+      createdAt: user.createdAt,
       website: user.website,
-      country: user.country
+      country: user.country,
+      socialMedia: user.socialMedia || {
+        twitter: '',
+        linkedin: '',
+        instagram: '',
+        email: user.email || ''
+      },
+      
     });
   } catch (error) {
     console.error("Error fetching user:", error);

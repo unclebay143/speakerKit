@@ -39,6 +39,20 @@ const UserSchema = new Schema(
       type: String,
       default: "/placeholder.svg",
     },
+    socialMedia: {
+      twitter: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      email: { type: String, default: '' }
+    },
+    location: { 
+      type: String, 
+      default: "" 
+    },
+    website: { 
+      type: String, 
+      default: "" 
+    },
   },
   {
     timestamps: true,

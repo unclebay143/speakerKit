@@ -13,7 +13,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { username } = await req.json();
+    const { username, socialMedia, location, website } = await req.json();
+
     console.log("Received username:", username);
 
     if (!username || !/^[a-z0-9-]{3,30}$/.test(username)) {
@@ -47,6 +48,14 @@ export async function POST(req: Request) {
       {
         username,
         hasCompletedOnboarding: true,
+         socialMedia: {
+          twitter: socialMedia?.twitter || '',
+          linkedin: socialMedia?.linkedin || '',
+          instagram: socialMedia?.instagram || '',
+          email: socialMedia?.email || session.user.email || ''
+        },
+        location: location || '', 
+        website: website || ''
       },
       { new: true }
     );
@@ -60,11 +69,14 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       username: user.username,
+      location: user.location,
+      website: user.website,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         username: user.username,
+        socialMedia: user.socialMedia,
       },
     });
   } catch (error) {

@@ -19,40 +19,34 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { Check, AlertCircle } from "lucide-react"
 import { useSession } from "next-auth/react"
 
+
 interface UsernameModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onComplete?: () => void
+  // initialSocialMedia?: {
+  //   twitter?: string;
+  //   linkedin?: string;
+  //   instagram?: string;
+  //   website?: string;
+  //   email?: string;
+  // };
 }
 
 export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalProps) {
   const { data: session, update } = useSession()
   const [username, setUsername] = useState("")
+  const [location, setLocation] = useState("")
+  const [website, setWebsite] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
+  const [socialMedia, setSocialMedia] = useState({
+    twitter: '',
+    linkedin: '',
+    instagram: '',
+    email: session?.user?.email || ''
+  });
   const isMobile = useIsMobile()
-
-  // const checkUsernameAvailability = async (value: string) => {
-  //   if (value.length < 3) {
-  //     setIsAvailable(null)
-  //     return
-  //   }
-
-  //    try {
-  //     const response = await fetch('/api/username/check', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ username: value }),
-  //     })
-  //     const data = await response.json()
-  //     setIsAvailable(data.available)
-  //   } catch (error) {
-  //     console.error("Error checking username:", error)
-  //     setIsAvailable(false)
-  //   }
-  // }
 
    const debouncedCheck = useMemo(
     () =>
@@ -102,14 +96,6 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
     };
   }, [debouncedCheck]);
 
-
-
-  // const handleUsernameChange = (value: string) => {
-  //   const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "")
-  //   setUsername(sanitized)
-  //   checkUsernameAvailability(sanitized)
-  // }
-
  const handleSubmit = async () => {
     if (!username || !isAvailable) return
 
@@ -121,7 +107,7 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, socialMedia, location, website }),
       });
 
       if (!response.ok) {
@@ -136,7 +122,15 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
 
       await update({
       username: username,
-      hasCompletedOnboarding: true
+      hasCompletedOnboarding: true,
+      location: location,
+      website: website,
+      socialMedia: {
+        twitter: socialMedia.twitter,
+        linkedin: socialMedia.linkedin,
+        instagram: socialMedia.instagram,
+        email: socialMedia.email
+      }
     });
 
 
@@ -219,7 +213,70 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
                       </p>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="twitter" className="text-white">
+                      Twitter (optional)
+                    </Label>
+                    <Input
+                      id="twitter"
+                      placeholder="https://twitter.com/username"
+                      value={socialMedia.twitter}
+                      onChange={(e) => setSocialMedia({...socialMedia, twitter: e.target.value})}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin" className="text-white">
+                      LinkedIn (optional)
+                    </Label>
+                    <Input
+                      id="linkedin"
+                      placeholder="https://linkedin.com/in/username"
+                      value={socialMedia.linkedin}
+                      onChange={(e) => setSocialMedia({...socialMedia, linkedin: e.target.value})}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram" className="text-white">
+                      Instagram (optional)
+                    </Label>
+                    <Input
+                      id="instagram"
+                      placeholder="https://instagram.com/username"
+                      value={socialMedia.instagram}
+                      onChange={(e) => setSocialMedia({...socialMedia, instagram: e.target.value})}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="website" className="text-white">
+                      Website (optional)
+                    </Label>
+                    <Input
+                      id="website"
+                      placeholder="https://yourwebsite.com"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="text-white">
+                      Location (optional)
+                    </Label>
+                    <Input
+                      id="location"
+                      placeholder="e.g., New York, USA"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+              </div>
                   <div className="text-xs text-gray-500 space-y-1">
                     <p>• Username must be 3-30 characters long</p>
                     <p>• Only letters, numbers, and hyphens allowed</p>
@@ -312,6 +369,72 @@ export function UsernameModal({ open, onOpenChange, onComplete }: UsernameModalP
                   </p>
                 )}
               </div>
+              <div className="space-y-2">
+                    <Label htmlFor="twitter" className="text-white">
+                      Twitter (optional)
+                    </Label>
+                    <Input
+                      id="twitter"
+                      placeholder="https://twitter.com/username"
+                      value={socialMedia.twitter}
+                      onChange={(e) => setSocialMedia({...socialMedia, twitter: e.target.value})}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+              </div>
+                  
+              <div className="space-y-2">
+                <Label htmlFor="linkedin" className="text-white">
+                  LinkedIn (optional)
+                </Label>
+                <Input
+                  id="linkedin"
+                  placeholder="https://linkedin.com/in/username"
+                  value={socialMedia.linkedin}
+                  onChange={(e) => setSocialMedia({...socialMedia, linkedin: e.target.value})}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="instagram" className="text-white">
+                  Instagram (optional)
+                </Label>
+                <Input
+                  id="instagram"
+                  placeholder="https://instagram.com/username"
+                  value={socialMedia.instagram}
+                  onChange={(e) => setSocialMedia({...socialMedia, instagram: e.target.value})}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website" className="text-white">
+                  Website (optional)
+                </Label>
+                <Input
+                  id="website"
+                  placeholder="https://yourwebsite.com"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="location" className="text-white">
+                  Location (optional)
+                </Label>
+                <Input
+                  id="location"
+                  placeholder="e.g., New York, USA"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+
+              
 
               <div className="text-xs text-gray-500 space-y-1">
                 <p>• Username must be 3-30 characters long</p>

@@ -88,17 +88,26 @@ export const authOptions: AuthOptions = {
             username: null,
             image: user.image,
             isPublic: true,
+            location: user.location,
+            website: user.website,
+            socialMedia: user.socialMedia
           });
 
           user.id = newUser._id.toString();
           user.username = newUser.username;
           user.image = newUser.image;
           user.isPublic = newUser.isPublic;
+          user.location= newUser.location;
+          user.website= newUser.website;
+          user.socialMedia=  newUser.socialMedia;
         } else {
           user.id = existingUser._id.toString();
           user.username = existingUser.username;
           user.image = existingUser.image;
           user.isPublic = existingUser.isPublic;
+          user.location= existingUser.location;
+          user.website= existingUser.website;
+          user.socialMedia=  existingUser.socialMedia;
         }
       }
 
@@ -109,6 +118,14 @@ export const authOptions: AuthOptions = {
       if (session.user && token) {
         session.user.id = token.sub || (token.id as string);
         session.user.username = token.username as string;
+        session.user.location = token.location;
+        session.user.website = token.website;
+        session.user.socialMedia = token.socialMedia as {
+          twitter?: string;
+          linkedin?: string;
+          instagram?: string;
+          email?: string;
+        };
         session.user.name = token.name;
         session.user.email = token.email;
         session.user.image = token.image;
@@ -120,6 +137,9 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id;
         token.username = user.username;
+        token.location = user.location;
+        token.website = user.website;
+        token.socialMedia = user.socialMedia
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;

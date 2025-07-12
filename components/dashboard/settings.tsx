@@ -20,6 +20,7 @@ import {
   Check,
   Eye,
   EyeOff,
+  Globe,
   Lock,
   Save,
   Shield,
@@ -66,6 +67,13 @@ export function Settings() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+  });
+
+  const [socialMedia, setSocialMedia] = useState({
+    twitter: session?.user?.socialMedia?.twitter || '',
+    linkedin: session?.user?.socialMedia?.linkedin || '',
+    instagram: session?.user?.socialMedia?.instagram || '',
+    email: session?.user?.email || ''
   });
 
   const [accountVisibility, setAccountVisibility] = useState({
@@ -340,6 +348,45 @@ export function Settings() {
     }
   };
 
+  const handleSocialMediaUpdate = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/users/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          socialMedia: {
+            twitter: socialMedia.twitter,
+            linkedin: socialMedia.linkedin,
+            instagram: socialMedia.instagram,
+            email: socialMedia.email
+          }
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update social media");
+
+      await update({
+        ...session?.user,
+        socialMedia: {
+          twitter: socialMedia.twitter,
+          linkedin: socialMedia.linkedin,
+          instagram: socialMedia.instagram,
+          email: socialMedia.email
+        }
+      });
+
+      setMessage({ text: "Social media updated!", type: "success" });
+    } catch (error) {
+      console.error("Error updating social media:", error);
+      setMessage({ text: "Failed to update social media", type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   useEffect(() => {
   if (session?.user) {
@@ -353,9 +400,17 @@ export function Settings() {
         email: session.user.email || "",
         username: session.user.username || "",
       });
+      setSocialMedia({
+        twitter: session.user.socialMedia?.twitter || '',
+        linkedin: session.user.socialMedia?.linkedin || '',
+        instagram: session.user.socialMedia?.instagram || '',
+        email: session.user.email || ''
+      });
+
       setAccountVisibility({
         isPublic: session.user.isPublic !== false,
       });
+
       setUsernameStatus({
         available: true,
         loading: false,
@@ -565,6 +620,84 @@ export function Settings() {
             >
               <Save className='w-4 h-4' />
               {isAccountLoading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Social Media Info */}
+      <Card className='bg-black/40 border-white/10'>
+        <CardHeader>
+          <CardTitle className='text-white flex items-center gap-2'>
+            <Globe className='w-5 h-5' />
+            Social Media Links
+          </CardTitle>
+          <CardDescription>Update your social media profiles</CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='space-y-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='twitter' className='text-white'>
+                Twitter
+              </Label>
+              <Input
+                id='twitter'
+                placeholder="https://twitter.com/janet"
+                value={socialMedia.twitter}
+                onChange={(e) => setSocialMedia({...socialMedia, twitter: e.target.value})}
+                className='bg-white/5 border-white/10 text-white'
+              />
+            </div>
+            
+            <div className='space-y-2'>
+              <Label htmlFor='linkedin' className='text-white'>
+                LinkedIn
+              </Label>
+              <Input
+                id='linkedin'
+                placeholder="https://linkedin.com/in/janet"
+                value={socialMedia.linkedin}
+                onChange={(e) => setSocialMedia({...socialMedia, linkedin: e.target.value})}
+                className='bg-white/5 border-white/10 text-white'
+              />
+            </div>
+            
+            <div className='space-y-2'>
+              <Label htmlFor='instagram' className='text-white'>
+                Instagram
+              </Label>
+              <Input
+                id='instagram'
+                placeholder="https://instagram.com/janet"
+                value={socialMedia.instagram}
+                onChange={(e) => setSocialMedia({...socialMedia, instagram: e.target.value})}
+                className='bg-white/5 border-white/10 text-white'
+              />
+            </div>
+            
+            <div className='space-y-2'>
+              <Label htmlFor='email' className='text-white'>
+                Contact Email
+              </Label>
+              <Input
+                id='email'
+                type="email"
+                placeholder="your@email.com"
+                value={socialMedia.email}
+                onChange={(e) => setSocialMedia({...socialMedia, email: e.target.value})}
+                className='bg-white/5 border-white/10 text-white'
+              />
+            </div>
+          </div>
+          
+          <div className='flex justify-end'>
+            <Button
+              onClick={handleSocialMediaUpdate}
+              disabled={isLoading}
+              className='bg-purple-600 hover:bg-purple-700 text-white'
+            >
+              <Save className='w-4 h-4' />
+              {isLoading ? "Saving..." : "Save Social Links"}
             </Button>
           </div>
         </CardContent>

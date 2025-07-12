@@ -8,18 +8,34 @@ declare module "next-auth" {
     username?: string;
     image?: string;
     isPublic?: boolean;
+    website?: string;
+    location?: string;
+    socialMedia?: {
+      twitter?: string;
+      linkedin?: string;
+      instagram?: string;
+      email?: string;
+    };
   }
 
   interface Session {
-        user: {
-        id: string;
-        name: string;
-        email: string;
-        username?: string;
-        image?: string;
-        isPublic?: boolean;
+      user: {
+      id: string;
+      name: string;
+      email: string;
+      username?: string;
+      image?: string;
+      location?: string;
+      website?: string;
+      isPublic?: boolean;
+      socialMedia?: {
+        twitter?: string;
+        linkedin?: string;
+        instagram?: string;
+        email?: string;
       };
-    }
+    };
+  }
 }
 
 declare module "next-auth/jwt" {
@@ -30,5 +46,13 @@ declare module "next-auth/jwt" {
     username?: string;
     image?: string;
     isPublic?: boolean;
+    location?: string;
+    website?: string;
+    socialMedia?: {
+      twitter?: string;
+      linkedin?: string;
+      instagram?: string;
+      email?: string;
+    };
   }
 }

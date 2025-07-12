@@ -13,19 +13,37 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, username, image, isPublic } = await req.json();
+    const { name, username, image, isPublic, socialMedia, location, website } = await req.json();
 
     const updateData: Partial<{
       name: string;
       username: string;
       image: string;
       isPublic: boolean;
+      location: string;
+      website: string;
+      socialMedia: {
+        twitter: string;
+        linkedin: string;
+        instagram: string;
+        email: string;
+      };
     }> = {};
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
     if (image) updateData.image = image;
+    if (location) updateData.location = location;
+    if (website) updateData.website = website;
     if (typeof isPublic !== "undefined") updateData.isPublic = isPublic;
+    if (socialMedia) {
+      updateData.socialMedia = {
+        twitter: socialMedia.twitter || '',
+        linkedin: socialMedia.linkedin || '',
+        instagram: socialMedia.instagram || '',
+        email: socialMedia.email || session.user.email
+      };
+    }
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
@@ -46,6 +64,9 @@ export async function PUT(req: Request) {
         username: updatedUser.username,
         image: updatedUser.image,
         isPublic: updatedUser.isPublic,
+        location: updatedUser.location,
+        website: updatedUser.website,
+        socialMedia: updatedUser.socialMedia
       },
     });
   } catch (error) {

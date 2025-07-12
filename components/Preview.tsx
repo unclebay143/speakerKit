@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar, Globe, MapPin, Folder, Image as   ImageIcon, X, Phone, Instagram, Linkedin,  Clock12, FolderOpen, ChevronUp, User2Icon, MailIcon } from "lucide-react";
+import { Calendar, Globe, MapPin, Folder, Image as   ImageIcon, X, Instagram, Linkedin,  Clock12, FolderOpen, ChevronUp, User2Icon, MailIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -40,6 +40,12 @@ interface UserData {
   createdAt: string;
   website: string;
   country: string;
+  socialMedia: {
+    twitter: string,
+    instagram: string,
+    email: string,
+    linkedin: string
+  }
 }
 
 export default function ProfilePreview() {
@@ -109,7 +115,7 @@ export default function ProfilePreview() {
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 ">
-      <div className="space-y-6 mx-auto max-w-[1100px] py-10 p-4 ">
+      <div className="space-y-6 mx-auto max-w-[1100px] py-10 px-3 xl:px-0">
         <div className="flex flex-col md:flex-row gap-6 bg-black/50 p-6 rounded-xl "> 
           <div className="flex justify-center md:justify-start">
             <Avatar className="h-32 w-32 md:h-40 md:w-40 border-2 border-purple-500/30">
@@ -128,19 +134,58 @@ export default function ProfilePreview() {
               </h1>
               
               <div className="flex items-center justify-center md:justify-end gap-3">
-                <a href="#" className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors">
-                  <X className="h-4 w-4" />
-                </a>
-                <a href="#" className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors">
-                  <Instagram className="h-4 w-4" />
-                </a>
-                <a href="#" className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors">
-                  <Phone className="h-4 w-4" />
-                </a>
-                <a href="#" className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors">
-                  <Linkedin className="h-4 w-4" />
-                </a>
+                {userData.socialMedia?.twitter && (
+                  <a 
+                    href={
+                      userData.socialMedia.twitter.startsWith('http') ? 
+                      userData.socialMedia.twitter : 
+                      `https://twitter.com/${userData.socialMedia.twitter}`
+                    } 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </a>
+                )}
+                {userData.socialMedia?.instagram && (
+                  <a 
+                    href={
+                      userData.socialMedia.instagram.startsWith('http') ? 
+                      userData.socialMedia.instagram : 
+                      `https://instagram.com/${userData.socialMedia.instagram}`
+                    }
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors"
+                  >
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                )}
+                {userData.socialMedia?.email && (
+                  <a 
+                    href={`mailto:${userData.socialMedia.email}`} 
+                    className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors"
+                  >
+                    <MailIcon className="h-4 w-4" />
+                  </a>
+                )}
+                {userData.socialMedia?.linkedin && (
+                  <a 
+                    href={
+                      userData.socialMedia.linkedin.startsWith('http') ? 
+                      userData.socialMedia.linkedin : 
+                      `https://linkedin.com/in/${userData.socialMedia.linkedin}`
+                    }
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 bg-purple-700/80 hover:bg-purple-600 rounded-full transition-colors"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                )}
               </div>
+
             </div>
 
             <div className="md:flex md:items-center gap-6  text-sm space-y-2">

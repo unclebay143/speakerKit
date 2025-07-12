@@ -35,11 +35,20 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Hashed password:", hashedPassword);
+
     const user = new User({
       name,
       email,
       password: hashedPassword,
       hasCompletedOnboarding: false,
+      socialMedia: { 
+        twitter: '',
+        linkedin: '',
+        instagram: '',
+        email: email
+      },
+      website: '',
+      location: ''
     });
     await user.save();
 
@@ -49,7 +58,10 @@ export async function POST(req: Request) {
         id: user._id,
         name: user.name,
         email: user.email,
+        website: user.website,
+        location: user.location,
         hasCompletedOnboarding: user.hasCompletedOnboarding,
+        socialMedia: user.socialMedia
       },
     });
   } catch (error) {
