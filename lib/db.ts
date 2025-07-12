@@ -5,10 +5,10 @@ import Image from "@/models/Images";
 
 
 const connectViaMongoose = async () => {
-//     mongoose.models = {}; // Clear existing models
-// mongoose.model("User", User.schema);
-// mongoose.model("Folder", Folder.schema);
-// mongoose.model("Image", Image.schema);
+    mongoose.models = {}; 
+    mongoose.model("User", User.schema);
+    mongoose.model("Folder", Folder.schema);
+    mongoose.model("Image", Image.schema);
 
     if (mongoose.connection.readyState === 1) {
         return;

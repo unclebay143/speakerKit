@@ -28,7 +28,6 @@ export async function GET(
      const folders = await Folder.find({ userId: user._id })
       .populate("images");
 
-    // const folders = await Folder.find({ userId: user._id }).populate("images");
     return NextResponse.json(folders);
   } catch (error) {
     console.error("Error fetching folders:", error);
