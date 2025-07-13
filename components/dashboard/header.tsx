@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
-import { Copy, Menu, Moon, PanelLeftOpen, Sun } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Check, Copy, Menu, Moon, PanelLeftOpen, Sun } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -21,8 +22,9 @@ export function DashboardHeader({
   sidebarOpen,
   activeTab,
 }: HeaderProps) {
-  const { data: session } = useSession();
+  const { data: user } = useCurrentUser();
   const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
 
   const toggleTheme = () => {
     const isDark = document.documentElement.classList.contains("dark");
@@ -30,14 +32,27 @@ export function DashboardHeader({
     localStorage.setItem("speakerkit-theme", !isDark ? "dark" : "light");
   };
 
-  const handleCopyProfileUrl = () => {
-    const url = `${window.location.origin}/@${session?.user?.username}`;
-    navigator.clipboard.writeText(url).then(() => {
+  const handleCopyProfileUrl = async () => {
+    const url = `${window.location.origin}/@${user?.username}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
       toast({
         title: "Profile URL copied!",
         description: url,
       });
-    });
+
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy URL",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -71,10 +86,10 @@ export function DashboardHeader({
         </div>
 
         <div className='flex items-center space-x-4'>
-          {session?.user?.username && (
+          {user?.username && (
             <div className='flex rounded-md overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40'>
               <Link
-                href={`/@${session.user.username}`}
+                href={`/@${user.username}`}
                 target='_blank'
                 className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none focus:bg-gray-100 dark:focus:bg-white/10 border-r border-gray-200 dark:border-white/10 flex items-center'
                 style={{ textDecoration: "none" }}
@@ -83,11 +98,19 @@ export function DashboardHeader({
               </Link>
               <button
                 onClick={handleCopyProfileUrl}
-                className='px-3 py-2 flex items-center text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none'
-                title='Copy profile URL'
+                className={cn(
+                  "px-3 py-2 flex items-center text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none transition-colors",
+                  copied &&
+                    "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20"
+                )}
+                title={copied ? "Copied!" : "Copy profile URL"}
                 type='button'
               >
-                <Copy className='w-4 h-4' />
+                {copied ? (
+                  <Check className='w-4 h-4' />
+                ) : (
+                  <Copy className='w-4 h-4' />
+                )}
               </button>
             </div>
           )}

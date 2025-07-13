@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
@@ -14,65 +14,60 @@ export function useFolders() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
-  // Fetch all 
-  const { 
-    data: folders, 
-    isLoading, 
-    error 
+  // Fetch all folders
+  const {
+    data: folders,
+    isLoading,
+    error,
   } = useQuery<Folder[]>({
     queryKey: ["folders"],
     queryFn: async () => {
       const { data } = await axios.get("/api/folders");
       return data;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id,
   });
 
-//   const getFolder = useQuery({
-//   queryKey: ["folder"],
-//   queryFn: async ({ queryKey }) => {
-//     const [_, folderId] = queryKey;
-//     const { data } = await axios.get(`/api/folders/${folderId}`);
-//     return data;
-//   },
-//   enabled: false 
-// });
-
-  const getFolder = async (folderId: string) => {
-    if (!folderId) throw new Error("Folder ID is required");
-    const { data } = await axios.get(`/api/folders/${folderId}`);
-    return data;
+  // Fetch individual folder
+  const useFolder = (folderId: string | null) => {
+    return useQuery<Folder>({
+      queryKey: ["folder", folderId],
+      queryFn: async () => {
+        if (!folderId) throw new Error("Folder ID is required");
+        const { data } = await axios.get(`/api/folders/${folderId}`);
+        return data;
+      },
+      enabled: !!folderId && !!session?.user?.id,
+    });
   };
 
-
-  // Create 
+  // Create folder
   const createFolder = useMutation({
-    mutationFn: (name: string) => 
-      axios.post("/api/folders", { name }),
+    mutationFn: (name: string) => axios.post("/api/folders", { name }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["folders"]);
-    }
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+    },
   });
 
-  // Update 
+  // Update folder
   const updateFolder = useMutation({
-    mutationFn: ({ id, name }: { id: string; name: string }) => 
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
       axios.put(`/api/folders/${id}`, { name }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["folders"]);
-    }
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      queryClient.invalidateQueries({ queryKey: ["folder", variables.id] });
+    },
   });
 
-  // Delete 
+  // Delete folder
   const deleteFolder = useMutation({
-    mutationFn: (id: string) => 
-      axios.delete(`/api/folders/${id}`),
+    mutationFn: (id: string) => axios.delete(`/api/folders/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["folders"]);
-    }
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+    },
   });
 
-  // Upload
+  // Upload image
   const uploadImage = useMutation({
     mutationFn: ({ folderId, file }: { folderId: string; file: File }) => {
       const formData = new FormData();
@@ -80,19 +75,22 @@ export function useFolders() {
       formData.append("file", file);
       return axios.post("/api/images/upload", formData);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["folders"]);
-    }
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      queryClient.invalidateQueries({
+        queryKey: ["folder", variables.folderId],
+      });
+    },
   });
 
   return {
     folders,
     isLoading,
     error,
-    getFolder,
+    useFolder,
     createFolder,
     updateFolder,
     deleteFolder,
-    uploadImage
+    uploadImage,
   };
 }

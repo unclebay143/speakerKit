@@ -11,7 +11,7 @@ import {
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
 import { Check, Palette } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const themeOptions = [
@@ -32,24 +32,35 @@ const themeOptions = [
 function ThemeSection() {
   const { data: user, refetch } = useCurrentUser();
   const updateUser = useUpdateCurrentUser();
-  const { register, handleSubmit, formState, reset, watch } = useForm({
-    defaultValues: { theme: user?.theme || "teal" },
-    mode: "onChange",
-  });
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { register, handleSubmit, formState, reset, watch, setValue } = useForm(
+    {
+      mode: "onChange",
+    }
+  );
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
-    if (user) {
-      reset({ theme: user.theme || "teal" });
+    if (user && !isInitialized) {
+      const userTheme = user.theme || "teal";
+      setValue("theme", userTheme);
+      setIsInitialized(true);
     }
-  }, [user, reset]);
+  }, [user, isInitialized, setValue]);
 
   const selectedTheme = watch("theme");
 
   const onSubmit = async (values: any) => {
     try {
       await updateUser.mutateAsync({ theme: values.theme });
+      setMessage({ text: "Theme updated successfully!", type: "success" });
       refetch();
-    } catch (error) {}
+    } catch (error) {
+      setMessage({ text: "Failed to update theme", type: "error" });
+    }
   };
 
   return (
@@ -65,6 +76,17 @@ function ThemeSection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-6'>
+          {message && (
+            <div
+              className={`text-sm p-3 rounded-md ${
+                message.type === "success"
+                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
             {themeOptions.map((theme) => (
               <label
@@ -98,7 +120,7 @@ function ThemeSection() {
               }
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
-              {updateUser.isPending ? "Saving..." : "Save Changes"}
+              {updateUser.isPending ? "Saving..." : "Save Theme"}
             </Button>
           </div>
         </CardContent>

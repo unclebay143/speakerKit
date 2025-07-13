@@ -40,7 +40,21 @@ export async function PUT(req: Request) {
   const updateData: Record<string, any> = {};
   for (const key of allowedFields) {
     if (key in updateFields) {
-      updateData[key] = updateFields[key];
+      // Handle image field validation
+      if (key === "image") {
+        const imageValue = updateFields[key];
+        if (typeof imageValue === "string") {
+          updateData[key] = imageValue;
+        } else if (imageValue && typeof imageValue === "object") {
+          // If it's an object, try to extract URL or ignore it
+          if (imageValue.url && typeof imageValue.url === "string") {
+            updateData[key] = imageValue.url;
+          }
+          // If it's an empty object or doesn't have a url, skip it
+        }
+      } else {
+        updateData[key] = updateFields[key];
+      }
     }
   }
 

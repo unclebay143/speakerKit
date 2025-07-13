@@ -14,32 +14,46 @@ import {
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
 import { Eye, Lock, Shield } from "lucide-react";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 function VisibilitySection() {
   const { data: user, refetch } = useCurrentUser();
   const updateUser = useUpdateCurrentUser();
-  const { register, handleSubmit, formState, reset, watch, setValue } = useForm(
-    {
-      defaultValues: { isPublic: user?.isPublic !== false },
-      mode: "onChange",
-    }
-  );
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { control, handleSubmit, formState, setValue, watch } = useForm({
+    mode: "onChange",
+  });
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
-    if (user) {
-      reset({ isPublic: user.isPublic !== false });
+    if (user && !isInitialized) {
+      setValue("isPublic", user.isPublic !== false);
+      setIsInitialized(true);
     }
-  }, [user, reset]);
+  }, [user, isInitialized, setValue]);
 
   const isPublic = watch("isPublic");
 
   const onSubmit = async (values: any) => {
     try {
       await updateUser.mutateAsync({ isPublic: values.isPublic });
+      setMessage({
+        text: `Profile visibility ${
+          values.isPublic ? "enabled" : "disabled"
+        } successfully!`,
+        type: "success",
+      });
       refetch();
-    } catch (error) {}
+    } catch (error) {
+      setMessage({
+        text: "Failed to update profile visibility",
+        type: "error",
+      });
+    }
   };
 
   return (
@@ -55,6 +69,17 @@ function VisibilitySection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-6'>
+          {message && (
+            <div
+              className={`text-sm p-3 rounded-md ${
+                message.type === "success"
+                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
           <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10'>
             <div className='flex items-center space-x-3'>
               {isPublic ? (
@@ -84,11 +109,15 @@ function VisibilitySection() {
               >
                 {isPublic ? "Visible" : "Hidden"}
               </Badge>
-              <Switch
-                checked={isPublic}
-                onCheckedChange={(checked) =>
-                  setValue("isPublic", checked, { shouldDirty: true })
-                }
+              <Controller
+                name='isPublic'
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked)}
+                  />
+                )}
               />
             </div>
           </div>

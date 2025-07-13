@@ -23,8 +23,9 @@ import {
   Upload,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { CreateFolderModal } from "../modals/folder-modal";
 import { UploadModal } from "../UploadModal";
@@ -47,10 +48,8 @@ interface Image {
 
 export function ImageGallery() {
   const { data: session, update } = useSession();
-  const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
   const { deleteImage } = useImage();
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
   const folderId = pathname.startsWith("/gallery/")
     ? pathname.split("/").pop()
@@ -66,48 +65,21 @@ export function ImageGallery() {
     id?: string;
     name?: string;
   }>({ open: false });
-  const [loading, setLoading] = useState(false);
 
   const {
     folders,
-    // isLoading,
-    getFolder,
+    isLoading: foldersLoading,
+    useFolder,
     createFolder,
     updateFolder,
     deleteFolder,
     uploadImage,
   } = useFolders();
 
-  const handleFolderClick = (folder: Folder) => {
-    if (!folder?._id) return;
-    router.push(`/gallery/${folder._id}`);
-  };
-
-  useEffect(() => {
-    const loadFolder = async () => {
-      if (!folderId || folderId === "gallery") {
-        setCurrentFolder(null);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const folderData = await getFolder(folderId);
-        setCurrentFolder(folderData);
-      } catch (err) {
-        console.error("Error loading folder:", err);
-        router.push("/gallery");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFolder();
-  }, [folderId]);
-
-  const handleBackToGallery = () => {
-    router.push("/gallery");
-  };
+  // Use the new useFolder hook for individual folder data
+  const { data: currentFolder, isLoading: folderLoading } = useFolder(
+    folderId || null
+  );
 
   const handleFolderCreated = async (folderName: string) => {
     try {
@@ -126,11 +98,6 @@ export function ImageGallery() {
         name: folderName,
       });
       setFolderModalState({ open: false, folderToEdit: null });
-
-      if (currentFolder?._id === folderModalState.folderToEdit.id) {
-        const updated = await getFolder(folderModalState.folderToEdit.id);
-        setCurrentFolder(updated);
-      }
     } catch (error) {
       console.error("Failed to update folder:", error);
     }
@@ -156,13 +123,8 @@ export function ImageGallery() {
     try {
       if (deleteModalState.type === "folder") {
         await deleteFolder.mutateAsync(deleteModalState.id);
-        setCurrentFolder(null);
       } else if (deleteModalState.type === "image") {
         await deleteImage.mutateAsync(deleteModalState.id);
-        if (currentFolder) {
-          const { data } = await axios.get(`/api/folders/${currentFolder._id}`);
-          setCurrentFolder(data);
-        }
       }
       setDeleteModalState({ open: false });
     } catch (error) {
@@ -182,8 +144,6 @@ export function ImageGallery() {
           })
         )
       );
-      const { data } = await axios.get(`/api/folders/${currentFolder._id}`);
-      setCurrentFolder(data);
 
       if (responses.length > 0 && !session?.user?.image) {
         const firstResponse = responses[0];
@@ -205,7 +165,7 @@ export function ImageGallery() {
     }
   };
 
-  if (loading) {
+  if (foldersLoading || folderLoading) {
     return (
       <div className='space-y-6 mx-auto max-w-screen-lg py-10'>
         <Skeleton className='h-10 w-1/3 rounded-lg' />
@@ -233,12 +193,11 @@ export function ImageGallery() {
             <div className='flex items-center gap-2'>
               {currentFolder && (
                 <>
-                  <button onClick={handleBackToGallery}>
-                    <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
+                  <Link href='/gallery'>
+                    <h2 className='text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer'>
                       Image Gallery
                     </h2>
-                  </button>
-
+                  </Link>
                   <ChevronRight className='w-4 h-4 text-gray-600 dark:text-gray-400' />
                 </>
               )}
@@ -361,23 +320,24 @@ export function ImageGallery() {
           {folders?.map((folder) => (
             <Card
               key={folder._id}
-              className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm hover:border-purple-300 dark:hover:border-purple-500/50 hover:shadow-md transition-colors cursor-pointer'
-              onClick={() => handleFolderClick(folder)}
+              className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm hover:border-purple-300 dark:hover:border-purple-500/50 hover:shadow-md transition-colors'
             >
               <CardContent className='p-4'>
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex-1'>
-                    <div className='flex items-center space-x-3 mb-2'>
-                      <Folder className='w-8 h-8 text-purple-600 dark:text-purple-400' />
-                      <div>
-                        <h4 className='font-medium text-gray-900 dark:text-white truncate max-w-[110px]'>
-                          {folder.name}
-                        </h4>
-                        <p className='text-sm text-gray-600 dark:text-gray-400'>
-                          {folder.images.length} images
-                        </p>
+                    <Link href={`/gallery/${folder._id}`} className='block'>
+                      <div className='flex items-center space-x-3 mb-2'>
+                        <Folder className='w-8 h-8 text-purple-600 dark:text-purple-400' />
+                        <div>
+                          <h4 className='font-medium text-gray-900 dark:text-white truncate max-w-[110px] hover:text-purple-600 dark:hover:text-purple-400 transition-colors'>
+                            {folder.name}
+                          </h4>
+                          <p className='text-sm text-gray-600 dark:text-gray-400'>
+                            {folder.images.length} images
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -385,17 +345,16 @@ export function ImageGallery() {
                         variant='ghost'
                         size='icon'
                         className='h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <MoreVertical className='w-4 h-4' />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
-                      <DropdownMenuItem
-                        onClick={() => handleFolderClick(folder)}
-                      >
-                        <Eye className='w-4 h-4' />
-                        Open
+                      <DropdownMenuItem asChild>
+                        <Link href={`/gallery/${folder._id}`}>
+                          <Eye className='w-4 h-4' />
+                          Open
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={(e) => {
