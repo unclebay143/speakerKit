@@ -55,6 +55,7 @@ export const authOptions: AuthOptions = {
             username: user.username,
             image: user.image,
             isPublic: user.isPublic,
+            theme: user.theme,
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -88,17 +89,20 @@ export const authOptions: AuthOptions = {
             username: null,
             image: user.image,
             isPublic: true,
+            theme: "teal",
           });
 
           user.id = newUser._id.toString();
           user.username = newUser.username;
           user.image = newUser.image;
           user.isPublic = newUser.isPublic;
+          user.theme = newUser.theme;
         } else {
           user.id = existingUser._id.toString();
           user.username = existingUser.username;
           user.image = existingUser.image;
           user.isPublic = existingUser.isPublic;
+          user.theme = existingUser.theme;
         }
       }
 
@@ -113,6 +117,7 @@ export const authOptions: AuthOptions = {
         session.user.email = token.email;
         session.user.image = token.image;
         session.user.isPublic = token.isPublic as boolean;
+        session.user.theme = token.theme as string;
       }
       return session;
     },
@@ -124,6 +129,7 @@ export const authOptions: AuthOptions = {
         token.email = user.email;
         token.image = user.image;
         token.isPublic = user.isPublic;
+        token.theme = user.theme;
       }
       if (trigger === "update" && session?.username) {
         token.username = session.username;
@@ -133,12 +139,12 @@ export const authOptions: AuthOptions = {
         token.image = session.image;
       }
 
-
       if (trigger === "update" && session) {
         if (session.username) token.username = session.username;
         if (session.name) token.name = session.name;
         if (session.image) token.image = session.image;
         if (session.isPublic !== undefined) token.isPublic = session.isPublic;
+        if (session.theme) token.theme = session.theme;
       }
 
       return token;

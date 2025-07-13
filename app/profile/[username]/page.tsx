@@ -57,6 +57,7 @@ export default async function Page({ params }: PageProps) {
       website: "",
       country: "",
       theme: user.theme,
+      isVerified: user.isVerified,
     };
 
     const transformedProfiles = profiles.map((profile) => ({
@@ -66,7 +67,7 @@ export default async function Page({ params }: PageProps) {
       mediumBio: profile.mediumBio || "",
       longBio: profile.longBio || "",
       isPublic: profile.isPublic,
-      isVerified: profile.isPublic, // Using isPublic as isVerified for now
+      isVerified: profile.isVerified,
       updatedAt: profile.updatedAt.toISOString(),
       createdAt: profile.createdAt.toISOString(),
     }));

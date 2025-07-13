@@ -41,8 +41,12 @@ const UserSchema = new Schema(
     },
     theme: {
       type: String,
-      enum: ["light", "dark", "blue", "purple", "teal", "green"],
+      enum: ["light", "dark", "blue", "purple", "teal", "green", "gradient"],
       default: "teal",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {

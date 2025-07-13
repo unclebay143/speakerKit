@@ -1,25 +1,27 @@
 import "next-auth";
 
 declare module "next-auth" {
-   interface User {
+  interface User {
     id: string;
     name: string;
     email: string;
     username?: string;
     image?: string;
     isPublic?: boolean;
+    theme?: string;
   }
 
   interface Session {
-        user: {
-        id: string;
-        name: string;
-        email: string;
-        username?: string;
-        image?: string;
-        isPublic?: boolean;
-      };
-    }
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      username?: string;
+      image?: string;
+      isPublic?: boolean;
+      theme?: string;
+    };
+  }
 }
 
 declare module "next-auth/jwt" {
@@ -30,5 +32,6 @@ declare module "next-auth/jwt" {
     username?: string;
     image?: string;
     isPublic?: boolean;
+    theme?: string;
   }
 }

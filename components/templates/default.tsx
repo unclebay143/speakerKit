@@ -21,6 +21,7 @@ interface Profile {
   isVerified: boolean;
   updatedAt: string;
   createdAt: string;
+  isPublic: boolean;
 }
 
 interface Folder {
@@ -66,6 +67,12 @@ interface UltimateProfileProps {
 }
 
 const THEMES = {
+  light: {
+    bg: "bg-white",
+    text: "text-gray-900",
+    accent: "gray",
+    heroBg: "from-gray-100 to-gray-200",
+  },
   dark: {
     bg: "bg-white",
     text: "text-white",
@@ -95,6 +102,12 @@ const THEMES = {
     text: "text-white",
     accent: "green",
     heroBg: "from-green-500 to-green-400",
+  },
+  gradient: {
+    bg: "bg-white",
+    text: "text-white",
+    accent: "purple",
+    heroBg: "from-purple-600 via-pink-600 to-blue-600",
   },
 };
 
@@ -287,23 +300,26 @@ export function DefaultTemplate({
 
           {/* Profile Selector */}
           <div className='flex flex-wrap gap-2 justify-center mb-8'>
-            {profiles.map((profile) => (
-              <button
-                key={profile._id}
-                type='button'
-                onClick={() => setActiveProfile(profile._id)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
-                  activeProfile === profile._id
-                    ? `bg-${theme.accent}-600 text-white shadow`
-                    : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
-                } focus:outline-none focus:ring-2 focus:ring-${
-                  theme.accent
-                }-400`}
-                aria-pressed={activeProfile === profile._id}
-              >
-                {profile.title}
-              </button>
-            ))}
+            {profiles.map((profile) => {
+              if (!profile.isPublic) return null;
+              return (
+                <button
+                  key={profile._id}
+                  type='button'
+                  onClick={() => setActiveProfile(profile._id)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                    activeProfile === profile._id
+                      ? `bg-${theme.accent}-600 text-white shadow`
+                      : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
+                  } focus:outline-none focus:ring-2 focus:ring-${
+                    theme.accent
+                  }-400`}
+                  aria-pressed={activeProfile === profile._id}
+                >
+                  {profile.title}
+                </button>
+              );
+            })}
           </div>
 
           {/* Bios */}
@@ -366,66 +382,68 @@ export function DefaultTemplate({
 
         {/* Image Gallery Section */}
         <section className='mb-16'>
-          <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
-            Image Gallery
-          </h2>
-
           {folders.length > 0 ? (
-            <div className='space-y-8'>
-              {folders.map((folder) => (
-                <div
-                  key={folder._id}
-                  className='bg-white rounded-xl shadow overflow-hidden'
-                >
-                  <div className='p-6 border-b border-gray-100'>
-                    <h3 className='text-xl font-semibold mb-2'>
-                      {folder.name}
-                    </h3>
-                    <p className='text-gray-600'>{folder.description}</p>
-                  </div>
+            <>
+              <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
+                Image Gallery
+              </h2>
 
-                  {folder.images.length > 0 ? (
-                    <div className='p-6'>
-                      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                        {folder.images.map((image) => (
-                          <div
-                            key={image._id}
-                            className='relative group rounded-lg overflow-hidden'
-                          >
-                            <img
-                              src={image.url}
-                              alt={image.name}
-                              className='w-full h-full object-cover'
-                            />
-                            <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
-                              <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                                <button
-                                  onClick={() =>
-                                    downloadImage(image.url, image.name)
-                                  }
-                                  disabled={downloadingImage === image.name}
-                                  className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
-                                >
-                                  {downloadingImage === image.name ? (
-                                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
-                                  ) : (
-                                    <Download className='h-4 w-4' />
-                                  )}
-                                </button>
+              <div className='space-y-8'>
+                {folders.map((folder) => (
+                  <div
+                    key={folder._id}
+                    className='bg-white rounded-xl shadow overflow-hidden'
+                  >
+                    <div className='p-6 border-b border-gray-100'>
+                      <h3 className='text-xl font-semibold mb-2'>
+                        {folder.name}
+                      </h3>
+                      <p className='text-gray-600'>{folder.description}</p>
+                    </div>
+
+                    {folder.images.length > 0 ? (
+                      <div className='p-6'>
+                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                          {folder.images.map((image) => (
+                            <div
+                              key={image._id}
+                              className='relative group rounded-lg overflow-hidden'
+                            >
+                              <img
+                                src={image.url}
+                                alt={image.name}
+                                className='w-full h-full object-cover'
+                              />
+                              <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
+                                <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                  <button
+                                    onClick={() =>
+                                      downloadImage(image.url, image.name)
+                                    }
+                                    disabled={downloadingImage === image.name}
+                                    className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
+                                  >
+                                    {downloadingImage === image.name ? (
+                                      <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
+                                    ) : (
+                                      <Download className='h-4 w-4' />
+                                    )}
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className='p-6 text-center text-gray-500'>
-                      No images in this folder
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    ) : (
+                      <div className='p-6 text-center text-gray-500'>
+                        No images in this folder
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
             <div className='text-center text-gray-500 py-12'>
               <p>No image galleries available</p>

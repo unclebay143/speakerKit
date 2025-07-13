@@ -1,17 +1,16 @@
 "use client";
 
-"use client";
-import React, { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { UsernameModal } from "../modals/username-modal";
+import { Spinner } from "../ui/spinner";
 import { DashboardHeader } from "./header";
 import { DashboardSidebar } from "./sidebar";
-import { Spinner } from '../ui/spinner';
-import { usePathname, useRouter } from 'next/navigation';
 
 interface DashboardProps {
-  children: React.ReactNode; 
+  children: React.ReactNode;
 }
 
 export default function Dashboard({ children }: DashboardProps) {
@@ -20,13 +19,13 @@ export default function Dashboard({ children }: DashboardProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [, setUpdatingSession] = useState(false);
-   const router = useRouter();
+  const router = useRouter();
   const pathname = usePathname();
 
-   const getActiveTab = () => {
-    if (pathname.startsWith('/gallery')) return 'images';
-    if (pathname.startsWith('/settings')) return 'settings';
-    return 'overview';
+  const getActiveTab = () => {
+    if (pathname.startsWith("/gallery")) return "gallery";
+    if (pathname.startsWith("/settings")) return "settings";
+    return "overview";
   };
 
   const [activeTab, setActiveTab] = useState(getActiveTab());
@@ -34,24 +33,64 @@ export default function Dashboard({ children }: DashboardProps) {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     switch (tab) {
-      case 'overview':
-        router.push('/dashboard');
+      case "overview":
+        router.push("/overview");
         break;
-      case 'images':
-        router.push('/gallery');
+      case "gallery":
+        router.push("/gallery");
         break;
-      case 'settings':
-        router.push('/settings');
+      case "settings":
+        router.push("/settings");
         break;
     }
     setMobileSidebarOpen(false);
   };
 
- useEffect(() => {
+  useEffect(() => {
     if (status === "authenticated") {
       setShowUsernameModal(!session?.user?.username);
     }
   }, [status, session]);
+
+  // Handle theme persistence and system preference
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("speakerkit-theme");
+      if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
+        document.documentElement.classList.toggle(
+          "dark",
+          savedTheme === "dark"
+        );
+      } else {
+        // Check system preference if no saved theme
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        document.documentElement.classList.toggle("dark", prefersDark);
+        localStorage.setItem(
+          "speakerkit-theme",
+          prefersDark ? "dark" : "light"
+        );
+      }
+
+      // Listen for system theme changes (only if no user preference is saved)
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+        const savedTheme = localStorage.getItem("speakerkit-theme");
+        if (!savedTheme) {
+          document.documentElement.classList.toggle("dark", e.matches);
+          localStorage.setItem(
+            "speakerkit-theme",
+            e.matches ? "dark" : "light"
+          );
+        }
+      };
+
+      mediaQuery.addEventListener("change", handleSystemThemeChange);
+      return () =>
+        mediaQuery.removeEventListener("change", handleSystemThemeChange);
+    }
+  }, []);
 
   const handleUsernameComplete = async () => {
     setUpdatingSession(true);
@@ -63,18 +102,16 @@ export default function Dashboard({ children }: DashboardProps) {
     }
   };
 
-   if (status === "loading") {
+  if (status === "loading") {
     return (
-      <div className='min-h-screen bg-black/[0.96] flex items-center justify-center'>
-        <Spinner className='bg-purple-600' />
+      <div className='min-h-screen bg-gray-50 dark:bg-black/[0.96] flex items-center justify-center'>
+        <Spinner className='bg-purple-600 dark:bg-purple-400' />
       </div>
     );
   }
 
-
-
   return (
-    <div className='min-h-screen bg-black/[0.96] text-white'>
+    <div className='min-h-screen bg-gray-50 dark:bg-black/[0.96] text-gray-900 dark:text-white'>
       <DashboardSidebar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -100,13 +137,12 @@ export default function Dashboard({ children }: DashboardProps) {
 
         <main className='p-6'>
           <motion.div
-            // key={activeTab}
+            key={pathname}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
             {children}
-            {/* {renderContent()} */}
           </motion.div>
         </main>
       </div>

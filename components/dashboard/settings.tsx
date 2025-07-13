@@ -2,7 +2,6 @@
 
 import type React from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,40 +10,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
-  AlertCircle,
-  Camera,
-  Check,
-  Eye,
-  EyeOff,
-  Lock,
-  Save,
-  Shield,
-  Upload,
-  User,
-} from "lucide-react";
-import { useSession } from "next-auth/react";
+  useCurrentUser,
+  useUpdateCurrentUser,
+} from "@/lib/hooks/useCurrentUser";
+import debounce from "lodash.debounce";
+import { Camera, Upload } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Spinner } from "../ui/spinner";
-import debounce from "lodash.debounce";
-
+import PasswordSection from "./PasswordSection";
+import ProfileInfoSection from "./ProfileInfoSection";
+import ThemeSection from "./ThemeSection";
+import VisibilitySection from "./VisibilitySection";
 
 export function Settings() {
-  const { data: session, update } = useSession();
-  // const [isAvailable, setIsAvailable] = useState<boolean | null>(null)
-  
+  const { data: user, isLoading: userLoading, refetch } = useCurrentUser();
+  const updateUser = useUpdateCurrentUser();
+
   const [message, setMessage] = useState<{
     text: string;
     type: "success" | "error";
   } | null>(null);
 
-  const [profileImage, setProfileImage] = useState(
-    session?.user?.image 
-  );
+  const [profileImage, setProfileImage] = useState(user?.image);
   const [accountData, setAccountData] = useState({
     fullName: "",
     email: "",
@@ -55,13 +44,13 @@ export function Settings() {
     available: boolean | null;
     loading: boolean;
     error: string | null;
-    isEdited: boolean; 
+    isEdited: boolean;
   }>({
     available: null,
     loading: false,
     error: null,
     isEdited: false,
-  })
+  });
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -73,6 +62,8 @@ export function Settings() {
     isPublic: true,
   });
 
+  const [selectedTheme, setSelectedTheme] = useState("teal");
+
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -83,41 +74,41 @@ export function Settings() {
 
   const checkUsernameAvailability = useCallback(async (username: string) => {
     if (username.length < 3) {
-      setUsernameStatus(prev => ({
+      setUsernameStatus((prev) => ({
         ...prev,
         available: null,
         loading: false,
-        error: username.length > 0 ? "Username must be at least 3 characters" : null
-      })
-      );
+        error:
+          username.length > 0 ? "Username must be at least 3 characters" : null,
+      }));
       return;
     }
 
-    setUsernameStatus(prev => ({ ...prev, loading: true, error: null }));
+    setUsernameStatus((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const response = await fetch('/api/username/check', {
-        method: 'POST',
+      const response = await fetch("/api/username/check", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to check username');
+        throw new Error("Failed to check username");
       }
 
-       const data = await response.json();
-        setUsernameStatus({
+      const data = await response.json();
+      setUsernameStatus({
         available: data.available,
         loading: false,
         error: null,
         isEdited: true,
       });
     } catch (error) {
-       console.error("Error checking username:", error);
-      setUsernameStatus(prev => ({
+      console.error("Error checking username:", error);
+      setUsernameStatus((prev) => ({
         ...prev,
         available: null,
         loading: false,
@@ -127,15 +118,15 @@ export function Settings() {
     }
   }, []);
 
-   const debouncedCheck = useMemo(
+  const debouncedCheck = useMemo(
     () => debounce(checkUsernameAvailability, 500),
     [checkUsernameAvailability]
   );
 
   const handleUsernameChange = (value: string) => {
     const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
-    setAccountData(prev => ({ ...prev, username: sanitized }));
-     if (sanitized !== session?.user?.username) {
+    setAccountData((prev) => ({ ...prev, username: sanitized }));
+    if (sanitized !== user?.username) {
       debouncedCheck(sanitized);
     } else {
       setUsernameStatus({
@@ -153,7 +144,6 @@ export function Settings() {
     };
   }, [debouncedCheck]);
 
-
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -165,9 +155,10 @@ export function Settings() {
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch("/api/users/image", {
+      const response = await fetch("/api/users/me", {
         method: "PUT",
-        body: formData,
+        body: JSON.stringify({ image: file }),
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -175,17 +166,9 @@ export function Settings() {
       }
 
       const data = await response.json();
-      setProfileImage(data.image);
+      setProfileImage(data.user.image);
       setMessage({ text: "Profile image updated!", type: "success" });
-
-      // await update({
-      //   image: data.image,
-      // });
-      
-      await update({
-        ...session?.user,
-        image: data.image,
-      });
+      refetch();
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -194,47 +177,26 @@ export function Settings() {
   };
 
   const handleAccountUpdate = async () => {
-    if (accountData.username !== session?.user?.username && 
-        (usernameStatus.available === false || usernameStatus.loading)) {
-      setMessage({ 
-        text: "Please choose an available username", 
-        type: "error" 
+    if (
+      accountData.username !== user?.username &&
+      (usernameStatus.available === false || usernameStatus.loading)
+    ) {
+      setMessage({
+        text: "Please choose an available username",
+        type: "error",
       });
       return;
     }
     setIsLoading(true);
     try {
-      const response = await fetch("/api/users/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: accountData.fullName,
-          username: accountData.username,
-          isPublic: accountVisibility.isPublic,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update account");
-      }
-
-      const needsSessionUpdate = 
-      session?.user?.name !== accountData.fullName ||
-      session?.user?.username !== accountData.username ||
-      session?.user?.isPublic !== accountVisibility.isPublic;
-
-    if (needsSessionUpdate) {
-      await update({
-        ...session?.user,
+      await updateUser.mutateAsync({
         name: accountData.fullName,
         username: accountData.username,
         isPublic: accountVisibility.isPublic,
       });
-    }
 
-    setMessage({ text: "Account updated successfully!", type: "success" });
+      setMessage({ text: "Account updated successfully!", type: "success" });
+      refetch();
     } catch (error) {
       console.error("Error updating account:", error);
       setMessage({ text: "Failed to update account", type: "error" });
@@ -263,19 +225,18 @@ export function Settings() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update password");
+        throw new Error("Failed to update password");
       }
-      setMessage({ text: "Password updated successfully!", type: "success" });
 
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
+      setMessage({ text: "Password updated successfully!", type: "success" });
     } catch (error) {
       console.error("Error updating password:", error);
-      alert(error);
+      setMessage({ text: "Failed to update password", type: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -284,35 +245,9 @@ export function Settings() {
   const handleVisibilityUpdate = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/users/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          isPublic: accountVisibility.isPublic,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update visibility");
-      }
-
-       if (session?.user?.isPublic !== accountVisibility.isPublic) {
-      await update({
-        ...session?.user,
-        isPublic: accountVisibility.isPublic,
-      });
-    }
-
-    setMessage({ text: "Visibility settings updated!", type: "success" });
-
-      // setMessage({ text: "Visibility settings updated!", type: "success" });
-
-      // await update({
-      //   ...session?.user,
-      //   isPublic: accountVisibility.isPublic,
-      // });
+      await updateUser.mutateAsync({ isPublic: accountVisibility.isPublic });
+      setMessage({ text: "Visibility settings updated!", type: "success" });
+      refetch();
     } catch (error) {
       console.error("Error updating visibility:", error);
       setMessage({ text: "Failed to update visibility", type: "error" });
@@ -320,46 +255,63 @@ export function Settings() {
       setIsLoading(false);
     }
   };
+
   const handleDeleteImage = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/users/image", { method: "DELETE" });
-      const data = await res.json();
+      const response = await fetch("/api/users/image", {
+        method: "DELETE",
+      });
 
-      if (res.ok) {
-        setProfileImage(data.image);
-        setMessage({ text: "Image removed successfully!", type: "success" });
-        await update({
-          ...session?.user,
-          image: data.image,
-        });
-      } else {
-        setMessage({ text: data.error || "Failed to remove image", type: "error" });
+      if (!response.ok) {
+        throw new Error("Failed to delete image");
       }
+
+      setProfileImage(undefined);
+      setMessage({ text: "Profile image removed!", type: "success" });
+      refetch();
     } catch (error) {
-      console.error("Error removing image:", error);
-      setMessage({ text: "An error occurred while removing the image", type: "error" });
+      console.error("Error deleting image:", error);
+      setMessage({ text: "Failed to remove image", type: "error" });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleThemeUpdate = async () => {
+    setIsLoading(true);
+    try {
+      await updateUser.mutateAsync({ theme: selectedTheme });
+      setMessage({ text: "Theme updated successfully!", type: "success" });
+      refetch();
+    } catch (error) {
+      console.error("Error updating theme:", error);
+      setMessage({ text: "Failed to update theme", type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-  if (session?.user) {
-    setProfileImage((prev) => {
-      const sessionImage = session.user.image || "/placeholder.svg";
-      return prev !== sessionImage ? sessionImage : prev;
-    });
+    if (user) {
+      setProfileImage((prev: string | undefined) => {
+        const sessionImage = user.image || "/placeholder.svg";
+        return prev !== sessionImage ? sessionImage : prev;
+      });
 
       setAccountData({
-        fullName: session.user.name || "",
-        email: session.user.email || "",
-        username: session.user.username || "",
+        fullName: user.name || "",
+        email: user.email || "",
+        username: user.username || "",
       });
       setAccountVisibility({
-        isPublic: session.user.isPublic !== false,
+        isPublic: user.isPublic !== false,
       });
+
+      // Set theme from session, default to "teal" if not set
+      const sessionTheme = user.theme || "teal";
+      setSelectedTheme(sessionTheme);
+
       setUsernameStatus({
         available: true,
         loading: false,
@@ -367,7 +319,7 @@ export function Settings() {
         isEdited: false,
       });
     }
-  }, [session]);
+  }, [user]);
 
   return (
     <div className='space-y-6 mx-auto max-w-screen-lg'>
@@ -375,8 +327,8 @@ export function Settings() {
         <div
           className={`p-4 mb-4 rounded-lg ${
             message.type === "success"
-              ? "bg-green-900 text-green-100"
-              : "bg-red-900 text-red-100"
+              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 border border-green-200 dark:border-green-800"
+              : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 border border-red-200 dark:border-red-800"
           }`}
         >
           {message.text}
@@ -389,36 +341,52 @@ export function Settings() {
         </div>
       )}
       <div>
-        <h2 className='text-2xl font-bold text-white mb-2'>Account Settings</h2>
-        <p className='text-gray-400'>
+        <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
+          Account Settings
+        </h2>
+        <p className='text-gray-600 dark:text-gray-400'>
           Manage your account preferences and security settings
         </p>
       </div>
 
-      <Card className='bg-black/40 border-white/10'>
+      <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm'>
         <CardHeader>
-          <CardTitle className='text-white flex items-center gap-2'>
-            <Camera className='w-5 h-5' />
+          <CardTitle className='flex items-center gap-2 text-gray-900 dark:text-white'>
+            {/* <Camera className='w-5 h-5' /> */}
             Profile Image
           </CardTitle>
-          <CardDescription>Update your profile picture</CardDescription>
+          <CardDescription className='text-gray-600 dark:text-gray-400'>
+            Update your profile picture
+          </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
           <div className='flex items-center space-x-6'>
             <div className='relative'>
               <Avatar className='w-24 h-24 relative'>
                 {isLoading ? (
-                  <div className='absolute inset-0 flex items-center justify-center bg-black/40 rounded-full'>
+                  <div className='absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-black/40 rounded-full'>
                     <Spinner />
                   </div>
                 ) : (
                   <>
-                    <AvatarImage 
-                      src={profileImage && profileImage !== "/placeholder.svg" ? profileImage : "/dark-placeholder.svg"} 
-                      className={!profileImage || profileImage === "/placeholder.svg" ? "opacity-80" : ""}
+                    <AvatarImage
+                      src={
+                        profileImage && profileImage !== "/placeholder.svg"
+                          ? profileImage
+                          : "/dark-placeholder.svg"
+                      }
+                      className={
+                        !profileImage || profileImage === "/placeholder.svg"
+                          ? "opacity-80"
+                          : ""
+                      }
                     />
-                    <AvatarFallback className='bg-gray-800 text-gray-400 text-2xl'>
-                      {session?.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'US'}
+                    <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400'>
+                      {user?.name
+                        ?.split(" ")
+                        .map((n: string) => n[0])
+                        .join("")
+                        .toUpperCase() || "US"}
                     </AvatarFallback>
                   </>
                 )}
@@ -440,14 +408,14 @@ export function Settings() {
               </div>
             </div>
             <div className='flex-1'>
-              <h3 className='text-white font-medium mb-1'>
+              <h3 className='font-medium text-gray-900 dark:text-white mb-1'>
                 Upload new picture
               </h3>
               <div className='flex space-x-2'>
                 <label htmlFor='profile-image-btn'>
                   <Button
                     variant='outline'
-                    className='border-white/10 text-white bg-transparent'
+                    className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
                     asChild
                   >
                     <span className='cursor-pointer'>
@@ -465,9 +433,8 @@ export function Settings() {
                 </label>
                 <Button
                   variant='outline'
-                  className='border-red-500/30 text-red-400 bg-transparent hover:bg-red-500/10'
+                  className='border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 bg-white dark:bg-transparent hover:bg-red-50 dark:hover:bg-red-500/10'
                   onClick={handleDeleteImage}
-
                 >
                   Remove
                 </Button>
@@ -478,298 +445,10 @@ export function Settings() {
       </Card>
 
       {/* Account Information */}
-      <Card className='bg-black/40 border-white/10'>
-        <CardHeader>
-          <CardTitle className='text-white flex items-center gap-2'>
-            <User className='w-5 h-5' />
-            Account Information
-          </CardTitle>
-          <CardDescription>Update your personal information</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='grid md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='fullName' className='text-white'>
-                Full Name
-              </Label>
-              <Input
-                id='fullName'
-                value={accountData.fullName}
-                onChange={(e) =>
-                  setAccountData({ ...accountData, fullName: e.target.value })
-                }
-                className='bg-white/5 border-white/10 text-white'
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='username' className='text-white'>
-                Username
-              </Label>
-              <div className='relative'>
-                <div className='absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none'>
-                  <span className='text-gray-400'>speakerkit.com/</span>
-                </div>
-                 <Input
-                  id='username'
-                  value={accountData.username}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  className='bg-white/5 border-white/10 text-white pl-32'
-                />
-                 {usernameStatus.isEdited && accountData.username.length >= 3 && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {usernameStatus.loading ? (
-                      <Spinner className="w-1 h-1" />
-                    ) : usernameStatus.available === true ? (
-                      <Check className="w-4 h-4 text-green-400" />
-                    ) : usernameStatus.available === false ? (
-                      <AlertCircle className="w-4 h-4 text-red-400" />
-                    ) : null}
-                  </div>
-                )}
-              </div>
-               {(usernameStatus.isEdited || usernameStatus.error) && (
-                <p className={`text-xs ${
-                  usernameStatus.loading ? "text-gray-600" :
-                  usernameStatus.available === true ? "text-green-400" : 
-                  usernameStatus.available === false ? "text-red-400" : 
-                  usernameStatus.error ? "text-red-400" : "text-gray-400"
-                }`}>
-                  {usernameStatus.loading && "Checking availability..."}
-                  {!usernameStatus.loading && usernameStatus.available === true && "✓ Username is available"}
-                  {!usernameStatus.loading && usernameStatus.available === false && "✗ Username is already taken"}
-                  {usernameStatus.error && usernameStatus.error}
-                  {!usernameStatus.loading && 
-                   usernameStatus.available === null && 
-                   !usernameStatus.error && 
-                   accountData.username.length > 0 && 
-                   accountData.username.length < 3 && "Username must be at least 3 characters"}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='email' className='text-white'>
-              Email Address
-            </Label>
-            <Input
-              id='email'
-              type='email'
-              value={accountData.email}
-              onChange={(e) =>
-                setAccountData({ ...accountData, email: e.target.value })
-              }
-              className='bg-white/5 border-white/10 text-white'
-            />
-          </div>
-          <div className='flex justify-end'>
-            <Button
-              onClick={handleAccountUpdate}
-              disabled={isLoading}
-              className='bg-purple-600 hover:bg-purple-700 text-white'
-            >
-              <Save className='w-4 h-4' />
-              {isLoading ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Password Section */}
-      <Card className='bg-black/40 border-white/10'>
-        <CardHeader>
-          <CardTitle className='text-white flex items-center gap-2'>
-            <Lock className='w-5 h-5' />
-            Update Password
-          </CardTitle>
-          <CardDescription>Change your account password</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='currentPassword' className='text-white'>
-              Current Password
-            </Label>
-            <div className='relative'>
-              <Input
-                id='currentPassword'
-                type={showPasswords.current ? "text" : "password"}
-                value={passwordData.currentPassword}
-                onChange={(e) =>
-                  setPasswordData({
-                    ...passwordData,
-                    currentPassword: e.target.value,
-                  })
-                }
-                className='bg-white/5 border-white/10 text-white pr-10'
-                placeholder='Enter current password'
-              />
-              <button
-                type='button'
-                onClick={() =>
-                  setShowPasswords({
-                    ...showPasswords,
-                    current: !showPasswords.current,
-                  })
-                }
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white'
-              >
-                {showPasswords.current ? (
-                  <EyeOff className='w-4 h-4' />
-                ) : (
-                  <Eye className='w-4 h-4' />
-                )}
-              </button>
-            </div>
-          </div>
-          <div className='grid md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='newPassword' className='text-white'>
-                New Password
-              </Label>
-              <div className='relative'>
-                <Input
-                  id='newPassword'
-                  type={showPasswords.new ? "text" : "password"}
-                  value={passwordData.newPassword}
-                  onChange={(e) =>
-                    setPasswordData({
-                      ...passwordData,
-                      newPassword: e.target.value,
-                    })
-                  }
-                  className='bg-white/5 border-white/10 text-white pr-10'
-                  placeholder='Enter new password'
-                />
-                <button
-                  type='button'
-                  onClick={() =>
-                    setShowPasswords({
-                      ...showPasswords,
-                      new: !showPasswords.new,
-                    })
-                  }
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white'
-                >
-                  {showPasswords.new ? (
-                    <EyeOff className='w-4 h-4' />
-                  ) : (
-                    <Eye className='w-4 h-4' />
-                  )}
-                </button>
-              </div>
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='confirmPassword' className='text-white'>
-                Confirm New Password
-              </Label>
-              <div className='relative'>
-                <Input
-                  id='confirmPassword'
-                  type={showPasswords.confirm ? "text" : "password"}
-                  value={passwordData.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordData({
-                      ...passwordData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  className='bg-white/5 border-white/10 text-white pr-10'
-                  placeholder='Confirm new password'
-                />
-                <button
-                  type='button'
-                  onClick={() =>
-                    setShowPasswords({
-                      ...showPasswords,
-                      confirm: !showPasswords.confirm,
-                    })
-                  }
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white'
-                >
-                  {showPasswords.confirm ? (
-                    <EyeOff className='w-4 h-4' />
-                  ) : (
-                    <Eye className='w-4 h-4' />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex justify-end'>
-            <Button
-              onClick={handlePasswordUpdate}
-              disabled={
-                isLoading ||
-                !passwordData.currentPassword ||
-                !passwordData.newPassword ||
-                !passwordData.confirmPassword
-              }
-              className='bg-purple-600 hover:bg-purple-700 text-white'
-            >
-              <Lock className='w-4 h-4' />
-              {isLoading ? "Updating..." : "Update Password"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Account Visibility */}
-      <Card className='bg-black/40 border-white/10'>
-        <CardHeader>
-          <CardTitle className='text-white flex items-center gap-2'>
-            <Shield className='w-5 h-5' />
-            Account Visibility
-          </CardTitle>
-          <CardDescription>Control who can view your profiles</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-6'>
-          {/* Public/Private Toggle */}
-          <div className='flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10'>
-            <div className='flex items-center space-x-3'>
-              {accountVisibility.isPublic ? (
-                <Eye className='w-5 h-5 text-green-400' />
-              ) : (
-                <Lock className='w-5 h-5 text-orange-400' />
-              )}
-              <div>
-                <Label className='text-white'>Profile Visibility</Label>
-                <p className='text-sm text-gray-400'>
-                  {accountVisibility.isPublic
-                    ? "Your profiles are publicly accessible"
-                    : "Your profiles are private and hidden from public view"}
-                </p>
-              </div>
-            </div>
-            <div className='flex items-center space-x-2'>
-              <Badge
-                variant={accountVisibility.isPublic ? "default" : "secondary"}
-              >
-                {accountVisibility.isPublic ? "Visible" : "Hidden"}
-              </Badge>
-              <Switch
-                checked={accountVisibility.isPublic}
-                onCheckedChange={(checked) =>
-                  setAccountVisibility({
-                    ...accountVisibility,
-                    isPublic: checked,
-                  })
-                }
-              />
-            </div>
-          </div>
-
-          <div className='flex justify-end'>
-            <Button
-              onClick={handleVisibilityUpdate}
-              disabled={isLoading}
-              className='bg-purple-600 hover:bg-purple-700 text-white'
-            >
-              <Shield className='w-4 h-4' />
-              {isLoading ? "Saving..." : "Save Visibility Settings"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileInfoSection />
+      <ThemeSection />
+      <VisibilitySection />
+      <PasswordSection />
     </div>
   );
 }

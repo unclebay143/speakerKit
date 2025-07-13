@@ -9,7 +9,7 @@ export default async function FolderPage() {
   if (!session) {
     redirect("/login");
   }
-  
+
   return (
     <Dashboard>
       <ImageGallery />

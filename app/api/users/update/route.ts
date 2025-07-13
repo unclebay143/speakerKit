@@ -13,19 +13,21 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, username, image, isPublic } = await req.json();
+    const { name, username, image, isPublic, theme } = await req.json();
 
     const updateData: Partial<{
       name: string;
       username: string;
       image: string;
       isPublic: boolean;
+      theme: string;
     }> = {};
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
     if (image) updateData.image = image;
     if (typeof isPublic !== "undefined") updateData.isPublic = isPublic;
+    if (theme) updateData.theme = theme;
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
@@ -46,6 +48,7 @@ export async function PUT(req: Request) {
         username: updatedUser.username,
         image: updatedUser.image,
         isPublic: updatedUser.isPublic,
+        theme: updatedUser.theme,
       },
     });
   } catch (error) {

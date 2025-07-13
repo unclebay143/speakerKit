@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import connectViaMongoose from "@/lib/db";
 import User from "@/models/User";
+import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
@@ -8,14 +8,11 @@ export async function GET(
 ) {
   try {
     await connectViaMongoose();
-    
+
     const user = await User.findOne({ username: params.username });
-    
+
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -25,7 +22,9 @@ export async function GET(
       email: user.email,
       joinedDate: user.createdAt,
       website: user.website,
-      country: user.country
+      country: user.country,
+      theme: user.theme,
+      isVerified: user.isVerified,
     });
   } catch (error) {
     console.error("Error fetching user:", error);

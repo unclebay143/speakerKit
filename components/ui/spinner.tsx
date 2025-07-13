@@ -6,7 +6,10 @@ export function Spinner({ className }: { className?: string }) {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className={cn("w-2 h-2 bg-white rounded-full", className)}
+          className={cn(
+            "w-2 h-2 bg-gray-600 dark:bg-white rounded-full",
+            className
+          )}
           style={{
             animation: `bounce 1s infinite ease-in-out ${i * 0.2}s`,
             transformOrigin: "bottom center",

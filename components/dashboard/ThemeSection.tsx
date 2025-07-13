@@ -1,0 +1,110 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  useCurrentUser,
+  useUpdateCurrentUser,
+} from "@/lib/hooks/useCurrentUser";
+import { Check, Palette } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+
+const themeOptions = [
+  { key: "light", name: "Light", bg: "bg-gray-100", text: "text-gray-900" },
+  { key: "dark", name: "Dark", bg: "bg-gray-800", text: "text-white" },
+  { key: "blue", name: "Blue", bg: "bg-blue-600", text: "text-white" },
+  { key: "purple", name: "Purple", bg: "bg-purple-600", text: "text-white" },
+  { key: "teal", name: "Teal", bg: "bg-teal-500", text: "text-white" },
+  { key: "green", name: "Green", bg: "bg-green-500", text: "text-white" },
+  {
+    key: "gradient",
+    name: "Gradient",
+    bg: "bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600",
+    text: "text-white",
+  },
+];
+
+function ThemeSection() {
+  const { data: user, refetch } = useCurrentUser();
+  const updateUser = useUpdateCurrentUser();
+  const { register, handleSubmit, formState, reset, watch } = useForm({
+    defaultValues: { theme: user?.theme || "teal" },
+    mode: "onChange",
+  });
+
+  useEffect(() => {
+    if (user) {
+      reset({ theme: user.theme || "teal" });
+    }
+  }, [user, reset]);
+
+  const selectedTheme = watch("theme");
+
+  const onSubmit = async (values: any) => {
+    try {
+      await updateUser.mutateAsync({ theme: values.theme });
+      refetch();
+    } catch (error) {}
+  };
+
+  return (
+    <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm'>
+      <CardHeader>
+        <CardTitle className='flex items-center gap-2 text-gray-900 dark:text-white'>
+          <Palette className='w-5 h-5' />
+          Profile Theme
+        </CardTitle>
+        <CardDescription className='text-gray-600 dark:text-gray-400'>
+          Choose the theme for your public profile page
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardContent className='space-y-6'>
+          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+            {themeOptions.map((theme) => (
+              <label
+                key={theme.key}
+                className={`relative p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                  selectedTheme === theme.key
+                    ? "border-purple-500 ring-2 ring-purple-200 dark:ring-purple-800"
+                    : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                } ${theme.bg} ${theme.text}`}
+              >
+                <input
+                  type='radio'
+                  value={theme.key}
+                  {...register("theme")}
+                  className='hidden'
+                />
+                <div className='text-center'>
+                  <div className='text-sm font-medium'>{theme.name}</div>
+                  {selectedTheme === theme.key && (
+                    <Check className='w-4 h-4 mx-auto mt-2' />
+                  )}
+                </div>
+              </label>
+            ))}
+          </div>
+          <div className='flex justify-end'>
+            <Button
+              type='submit'
+              disabled={
+                !formState.isDirty || !formState.isValid || updateUser.isPending
+              }
+              className='bg-purple-600 hover:bg-purple-700 text-white'
+            >
+              {updateUser.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </CardContent>
+      </form>
+    </Card>
+  );
+}
+
+export default ThemeSection;
