@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Lock, Mail, UserCircle } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -85,7 +85,7 @@ export default function LoginForm() {
             href='/'
             className='flex items-center justify-center space-x-2 mb-4'
           >
-            <UserCircle className='w-8 h-8 text-purple-500' />
+            {/* <UserCircle className='w-8 h-8 text-purple-500' /> */}
             <span className='text-white font-medium text-xl'>SpeakerKit</span>
           </Link>
           <CardTitle className='text-2xl font-bold text-white'>
