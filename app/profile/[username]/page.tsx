@@ -191,38 +191,51 @@ export default async function Page({ params }: PageProps) {
       country: "",
       theme: user.theme,
       isVerified: user.isVerified,
-      socialMedia: user.socialMedia || {
-        twitter: "",
-        linkedin: "",
-        instagram: "",
-        email: user.email || "",
-      },
+      socialMedia: user.socialMedia
+        ? {
+            twitter: user.socialMedia.twitter || "",
+            linkedin: user.socialMedia.linkedin || "",
+            instagram: user.socialMedia.instagram || "",
+            email: user.socialMedia.email || user.email || "",
+          }
+        : {
+            twitter: "",
+            linkedin: "",
+            instagram: "",
+            email: user.email || "",
+          },
     };
 
-    const transformedProfiles = publicProfiles.map((profile) => ({
-      _id: profile._id.toString(),
-      title: profile.title,
-      shortBio: profile.shortBio || "",
-      mediumBio: profile.mediumBio || "",
-      longBio: profile.longBio || "",
-      isPublic: profile.isPublic,
-      isVerified: profile.isVerified,
-      updatedAt: profile.updatedAt.toISOString(),
-      createdAt: profile.createdAt.toISOString(),
-    }));
+    const transformedProfiles = publicProfiles.map((profile) => {
+      const plainProfile = profile.toObject();
+      return {
+        _id: plainProfile._id.toString(),
+        title: plainProfile.title,
+        shortBio: plainProfile.shortBio || "",
+        mediumBio: plainProfile.mediumBio || "",
+        longBio: plainProfile.longBio || "",
+        isPublic: plainProfile.isPublic,
+        isVerified: plainProfile.isVerified,
+        updatedAt: plainProfile.updatedAt.toISOString(),
+        createdAt: plainProfile.createdAt.toISOString(),
+      };
+    });
 
-    const transformedFolders = folders.map((folder) => ({
-      _id: folder._id.toString(),
-      name: folder.name,
-      description: "", // Not available in current Folder model
-      images: folder.images.map((image: any) => ({
-        _id: image._id.toString(),
-        name: image.name,
-        url: image.url,
-        uploadedAt: image.uploadedAt.toISOString(),
-      })),
-      createdAt: folder.createdAt.toISOString(),
-    }));
+    const transformedFolders = folders.map((folder) => {
+      const plainFolder = folder.toObject();
+      return {
+        _id: plainFolder._id.toString(),
+        name: plainFolder.name,
+        description: "", // Not available in current Folder model
+        images: plainFolder.images.map((image: any) => ({
+          _id: image._id.toString(),
+          name: image.name,
+          url: image.url,
+          uploadedAt: image.uploadedAt.toISOString(),
+        })),
+        createdAt: plainFolder.createdAt.toISOString(),
+      };
+    });
 
     // Set default active profile
     const activeProfile =
