@@ -39,6 +39,11 @@ const UserSchema = new Schema(
       type: String,
       default: "/placeholder.svg",
     },
+    theme: {
+      type: String,
+      enum: ["light", "dark", "blue", "purple", "teal", "green"],
+      default: "teal",
+    },
   },
   {
     timestamps: true,
