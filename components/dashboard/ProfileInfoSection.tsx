@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { InputWithPrefix } from "@/components/ui/input-with-prefix";
 import { Label } from "@/components/ui/label";
 import {
   useCurrentUser,
@@ -96,20 +97,13 @@ function ProfileInfoSection() {
                 htmlFor='username'
                 className='text-gray-900 dark:text-white'
               >
-                Username
+                Profile URL
               </Label>
-              <div className='relative'>
-                <div className='absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none'>
-                  <span className='text-gray-500 dark:text-gray-400'>
-                    speakerkit.com/
-                  </span>
-                </div>
-                <Input
-                  id='username'
-                  {...register("username", { required: true, minLength: 3 })}
-                  className='pl-32'
-                />
-              </div>
+              <InputWithPrefix
+                id='username'
+                prefix='speakerkit.com/'
+                {...register("username", { required: true, minLength: 3 })}
+              />
             </div>
           </div>
           <div className='space-y-2'>

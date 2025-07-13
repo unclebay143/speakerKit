@@ -7,7 +7,7 @@ import {
   Download,
   Instagram,
   Linkedin,
-  Phone,
+  Mail,
   Twitter,
 } from "lucide-react";
 import { useState } from "react";
@@ -46,6 +46,12 @@ interface UserData {
   website: string;
   country: string;
   theme: string;
+  socialMedia?: {
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+    email?: string;
+  };
 }
 
 interface Event {
@@ -260,42 +266,61 @@ export function DefaultTemplate({
             </h2>
 
             {/* Email and Social Links */}
-            <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
-              <div className='flex gap-2'>
-                <button
-                  className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
-                  aria-label='LinkedIn'
-                >
-                  <Linkedin className='h-4 w-4' />
-                </button>
-                <button
-                  className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
-                  aria-label='Twitter'
-                >
-                  <Twitter className='h-4 w-4' />
-                </button>
-                <button
-                  className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
-                  aria-label='Instagram'
-                >
-                  <Instagram className='h-4 w-4' />
-                </button>
-                <button
-                  className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
-                  aria-label='Phone'
-                >
-                  <Phone className='h-4 w-4' />
-                </button>
-              </div>
-
-              {/* {userData.email && (
-                <div className='flex items-center gap-2'>
-                  <Mail className='h-4 w-4 text-teal-500' />
-                  <span className='text-gray-700'>{userData.email}</span>
-                  <CopyButton text={userData.email} type='email' label='Copy' />
-                </div>
-              )} */}
-            </div>
+            {userData.socialMedia &&
+              (() => {
+                const { twitter, linkedin, instagram, email } =
+                  userData.socialMedia || {};
+                const hasAny = twitter || linkedin || instagram || email;
+                if (!hasAny) return null;
+                return (
+                  <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
+                    <div className='flex gap-2'>
+                      {linkedin && (
+                        <a
+                          href={linkedin}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          aria-label='LinkedIn'
+                        >
+                          <Linkedin className='h-4 w-4' />
+                        </a>
+                      )}
+                      {twitter && (
+                        <a
+                          href={twitter}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          aria-label='Twitter'
+                        >
+                          <Twitter className='h-4 w-4' />
+                        </a>
+                      )}
+                      {instagram && (
+                        <a
+                          href={instagram}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          aria-label='Instagram'
+                        >
+                          <Instagram className='h-4 w-4' />
+                        </a>
+                      )}
+                      {email && (
+                        <a
+                          href={`mailto:${email}`}
+                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          aria-label='Email'
+                        >
+                          <Mail className='h-4 w-4' />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
           </div>
 
           {/* Profile Selector */}

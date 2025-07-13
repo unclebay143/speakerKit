@@ -38,7 +38,6 @@ interface UserData {
 }
 
 interface ProfilePreviewProps {
-  username: string;
   userData: UserData;
   profiles: Profile[];
   folders: Folder[];
@@ -46,7 +45,6 @@ interface ProfilePreviewProps {
 }
 
 export default function ProfilePreview({
-  username,
   userData,
   profiles,
   folders,

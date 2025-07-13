@@ -21,13 +21,31 @@ export async function PUT(req: Request) {
       image: string;
       isPublic: boolean;
       theme: string;
+      location: string;
+      website: string;
+      socialMedia: {
+        twitter: string;
+        linkedin: string;
+        instagram: string;
+        email: string;
+      };
     }> = {};
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
     if (image) updateData.image = image;
+    if (location) updateData.location = location;
+    if (website) updateData.website = website;
     if (typeof isPublic !== "undefined") updateData.isPublic = isPublic;
     if (theme) updateData.theme = theme;
+    if (socialMedia) {
+      updateData.socialMedia = {
+        twitter: socialMedia.twitter || "",
+        linkedin: socialMedia.linkedin || "",
+        instagram: socialMedia.instagram || "",
+        email: socialMedia.email || session.user.email,
+      };
+    }
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
@@ -49,6 +67,9 @@ export async function PUT(req: Request) {
         image: updatedUser.image,
         isPublic: updatedUser.isPublic,
         theme: updatedUser.theme,
+        location: updatedUser.location,
+        website: updatedUser.website,
+        socialMedia: updatedUser.socialMedia,
       },
     });
   } catch (error) {

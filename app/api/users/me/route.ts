@@ -12,17 +12,25 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await User.findOne({ email: session.user.email }).select(
-    "-password -__v"
-  );
+  // Try to get the user without any select restrictions first
+  const user = await User.findOne({ email: session.user.email });
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  console.log("GET /api/users/me - Full user data:", user);
+  console.log("User socialMedia field:", user.socialMedia);
+  console.log("User keys:", Object.keys(user.toObject()));
+
+  // Return user without password and __v
+  const { password, __v, ...userWithoutPassword } = user.toObject();
+
+  console.log("User without password:", userWithoutPassword);
+
   return NextResponse.json({
     success: true,
-    user,
+    user: userWithoutPassword,
   });
 }
 
@@ -36,7 +44,14 @@ export async function PUT(req: Request) {
 
   const updateFields = await req.json();
   // Only allow updating certain fields
-  const allowedFields = ["name", "username", "image", "theme", "isPublic"];
+  const allowedFields = [
+    "name",
+    "username",
+    "image",
+    "theme",
+    "isPublic",
+    "socialMedia",
+  ];
   const updateData: Record<string, any> = {};
   for (const key of allowedFields) {
     if (key in updateFields) {
@@ -62,14 +77,17 @@ export async function PUT(req: Request) {
     { email: session.user.email },
     updateData,
     { new: true }
-  ).select("-password -__v");
+  );
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  // Return user without password and __v
+  const { password, __v, ...userWithoutPassword } = user.toObject();
+
   return NextResponse.json({
     success: true,
-    user,
+    user: userWithoutPassword,
   });
 }

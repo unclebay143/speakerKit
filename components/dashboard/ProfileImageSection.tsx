@@ -19,7 +19,6 @@ function ProfileImageSection() {
     text: string;
     type: "success" | "error";
   } | null>(null);
-  const [profileImage, setProfileImage] = useState(user?.image);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -42,7 +41,6 @@ function ProfileImageSection() {
       }
 
       const data = await response.json();
-      setProfileImage(data.image);
       setMessage({ text: "Profile image updated!", type: "success" });
       refetch();
     } catch (error) {
@@ -64,7 +62,6 @@ function ProfileImageSection() {
         throw new Error("Failed to delete image");
       }
 
-      setProfileImage(undefined);
       setMessage({ text: "Profile image removed!", type: "success" });
       refetch();
     } catch (error) {
@@ -108,12 +105,12 @@ function ProfileImageSection() {
                 <>
                   <AvatarImage
                     src={
-                      profileImage && profileImage !== "/placeholder.svg"
-                        ? profileImage
+                      user?.image && user.image !== "/placeholder.svg"
+                        ? user.image
                         : "/dark-placeholder.svg"
                     }
                     className={
-                      !profileImage || profileImage === "/placeholder.svg"
+                      !user?.image || user.image === "/placeholder.svg"
                         ? "opacity-80"
                         : ""
                     }

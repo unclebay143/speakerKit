@@ -20,11 +20,12 @@ export async function GET(
       image: user.image,
       location: user.location,
       email: user.email,
-      joinedDate: user.createdAt,
+      createdAt: user.createdAt,
       website: user.website,
       country: user.country,
       theme: user.theme,
       isVerified: user.isVerified,
+      socialMedia: user.socialMedia,
     });
   } catch (error) {
     console.error("Error fetching user:", error);

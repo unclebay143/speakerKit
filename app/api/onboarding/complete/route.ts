@@ -13,8 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { username } = await req.json();
-    console.log("Received username:", username);
+    const { username, socialMedia, location, website } = await req.json();
 
     if (!username || !/^[a-z0-9-]{3,30}$/.test(username)) {
       return NextResponse.json(
@@ -35,7 +34,6 @@ export async function POST(req: Request) {
 
     const existingUser = await User.findOne({ username });
     if (existingUser && existingUser.email !== session.user.email) {
-      console.log("Username taken:", username);
       return NextResponse.json(
         { error: "Username is already taken" },
         { status: 400 }
@@ -47,24 +45,33 @@ export async function POST(req: Request) {
       {
         username,
         hasCompletedOnboarding: true,
+        socialMedia: {
+          twitter: socialMedia?.twitter || "",
+          linkedin: socialMedia?.linkedin || "",
+          instagram: socialMedia?.instagram || "",
+          email: socialMedia?.email || session.user.email || "",
+        },
+        location: location || "",
+        website: website || "",
       },
       { new: true }
     );
 
     if (!user) {
-      console.log("User not found for email:", session.user.email);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log("Successfully updated user:", user.email);
     return NextResponse.json({
       success: true,
       username: user.username,
+      location: user.location,
+      website: user.website,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         username: user.username,
+        socialMedia: user.socialMedia,
       },
     });
   } catch (error) {

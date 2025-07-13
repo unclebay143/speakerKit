@@ -24,7 +24,6 @@ export default function PricingGroup({
   ctaLink,
   ctaText,
 }: PricingGroupProps) {
-  console.log(plans);
   return (
     <div className='container mx-auto px-6'>
       <div className='text-center mb-12'>

@@ -191,6 +191,12 @@ export default async function Page({ params }: PageProps) {
       country: "",
       theme: user.theme,
       isVerified: user.isVerified,
+      socialMedia: user.socialMedia || {
+        twitter: "",
+        linkedin: "",
+        instagram: "",
+        email: user.email || "",
+      },
     };
 
     const transformedProfiles = publicProfiles.map((profile) => ({
@@ -224,7 +230,6 @@ export default async function Page({ params }: PageProps) {
 
     return (
       <SpeakerKitPreview
-        username={username}
         userData={userData}
         profiles={transformedProfiles}
         folders={transformedFolders}

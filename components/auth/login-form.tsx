@@ -53,8 +53,6 @@ export default function LoginForm() {
         callbackUrl: "/dashboard",
       });
 
-      console.log("SignIn result:", result);
-
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
           setError("Invalid email or password");
