@@ -1,18 +1,14 @@
-export const generateRandomSlug = (email?: string) => {
-  if (email) {
-    const [firstPart] = email.split('@');
-    const clean = firstPart
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 6);
-    const random = Math.floor(1000 + Math.random() * 9000).toString();
-    return `${clean}${random}`;
-  }
-
+export const generateRandomSlug = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let slug = '';
-  for (let i = 0; i < 8; i++) {
-    slug += chars.charAt(Math.floor(Math.random() * chars.length));
+  
+  for (let i = 0; i < 3; i++) {
+    slug += chars.charAt(Math.floor(Math.random() * 10) + 26); 
   }
-  return slug;
+  
+  for (let i = 0; i < 4; i++) {
+    slug += chars.charAt(Math.floor(Math.random() * 26));
+  }
+  
+  return slug.split('').sort(() => 0.5 - Math.random()).join('');
 };

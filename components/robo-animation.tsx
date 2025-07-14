@@ -30,7 +30,7 @@ export function RoboAnimation() {
               ease: "easeInOut",
             }}
           />
-          <ShieldCheck className="w-32 h-32 text-purple-500" />
+          <ShieldCheck className="w-32 h-32 text-purple-500 hidden" />
         </div>
       </motion.div>
     </div>

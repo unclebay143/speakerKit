@@ -20,7 +20,8 @@ const UserSchema = new Schema(
     slug: { 
       type: String,
       unique: true,
-      default: generateRandomSlug,
+      required: true,
+      default: generateRandomSlug, 
     },
     // username: {
     //   type: String,

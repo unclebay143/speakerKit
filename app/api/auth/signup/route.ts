@@ -1,5 +1,6 @@
 import connectViaMongoose from "@/lib/db";
 import User from "@/models/User";
+import { generateRandomSlug } from "@/utils/generateSlug";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 
@@ -33,12 +34,21 @@ export async function POST(req: Request) {
       );
     }
 
+     let userSlug;
+      let isUnique = false;
+      while (!isUnique) {
+        userSlug = generateRandomSlug();
+        const exists = await User.findOne({ slug: userSlug });
+        if (!exists) isUnique = true;
+      }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
       name,
       email,
       password: hashedPassword,
+      slug: userSlug,
       hasCompletedOnboarding: false,
       socialMedia: {
         twitter: "",

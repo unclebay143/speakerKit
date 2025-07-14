@@ -295,108 +295,108 @@ export function ImageGallery() {
 
       {/* Upload section  */}
       {currentFolder && currentFolder.images.length === 0 && (
-  <div className='mx-auto w-full max-w-md bg-white dark:bg-black/95 border border-gray-200 dark:border-white/10 rounded-xl p-6'>
-    <div className='text-center'>
-      <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-1'>
-        Upload Images
-      </h2>
-      <p className='text-sm text-gray-600 dark:text-gray-400 mb-6'>
-        Drag and drop your images here, or click to browse
-      </p>
-    </div>
+        <div className='mx-auto w-full max-w-md   rounded-xl p-6'>
+          <div className='text-center'>
+            <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-1'>
+              Upload Images
+            </h2>
+            <p className='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+              Drag and drop your images here, or click to browse
+            </p>
+          </div>
 
-    <div
-      {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
-        isDragActive
-          ? "border-purple-500 bg-purple-500/10"
-          : "border-gray-300 dark:border-white/10"
-      }`}
-    >
-      <input {...getInputProps()} />
-      <Upload className='w-12 h-12 mx-auto mb-4 text-gray-400' />
-      <p className='text-gray-600 dark:text-gray-400'>
-        {isDragActive
-          ? "Drop the files here"
-          : "Drag & drop images here, or click to select"}
-      </p>
-      <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
-        Supported formats: JPG, PNG, WebP. Max size: 10MB
-      </p>
-      <Button
-        type='button'
-        onClick={(e) => {
-          e.stopPropagation();
-          openFileDialog();
-        }}
-        variant='outline'
-        className='mt-4 border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
-      >
-        Choose Files
-      </Button>
-    </div>
-
-    {selectedFiles.length > 0 && (
-      <div className='space-y-2 max-h-60 overflow-y-auto mt-6'>
-        <h4 className='font-medium text-gray-900 dark:text-white'>
-          Selected Files
-        </h4>
-        {selectedFiles.map((file, index) => (
           <div
-            key={index}
-            className='flex items-center justify-between p-2 bg-gray-50 dark:bg-white/5 rounded'
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+              isDragActive
+                ? "border-purple-500 bg-purple-500/10"
+                : "border-gray-300 dark:border-white/10"
+            }`}
           >
-            <div className='flex items-center gap-3 min-w-0'>
-              <div className='relative w-10 h-10 flex-shrink-0'>
-                <Image
-                  src={URL.createObjectURL(file)}
-                  alt={file.name}
-                  fill
-                  className='object-cover rounded'
-                  unoptimized
-                />
-              </div>
-              <span className='truncate text-sm flex-1 text-gray-900 dark:text-white'>
-                {file.name}
-              </span>
-            </div>
+            <input {...getInputProps()} />
+            <Upload className='w-12 h-12 mx-auto mb-4 text-gray-400' />
+            <p className='text-gray-600 dark:text-gray-400'>
+              {isDragActive
+                ? "Drop the files here"
+                : "Drag & drop images here, or click to select"}
+            </p>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
+              Supported formats: JPG, PNG, WebP. Max size: 10MB
+            </p>
             <Button
-              variant='ghost'
-              size='icon'
-              className='h-6 w-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+              type='button'
               onClick={(e) => {
                 e.stopPropagation();
-                removeFile(index);
+                openFileDialog();
               }}
-              disabled={uploading}
+              variant='outline'
+              className='mt-4 border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
             >
-              <X className='w-4 h-4' />
+              Choose Files
             </Button>
           </div>
-        ))}
-      </div>
-    )}
 
-    {selectedFiles.length > 0 && (
-      <div className='flex justify-end space-x-2 mt-6'>
-        <Button
-          variant='outline'
-          onClick={handleCancelUpload}
-          className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleUploadFiles}
-          disabled={selectedFiles.length === 0 || uploading}
-          className='bg-purple-600 hover:bg-purple-700 text-white'
-        >
-          {uploading ? "Uploading..." : "Upload"}
-        </Button>
-      </div>
-    )}
-  </div>
-)}
+          {selectedFiles.length > 0 && (
+            <div className='space-y-2 max-h-60 overflow-y-auto mt-6'>
+              <h4 className='font-medium text-gray-900 dark:text-white'>
+                Selected Files
+              </h4>
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className='flex items-center justify-between p-2 bg-gray-50 dark:bg-white/5 rounded'
+                >
+                  <div className='flex items-center gap-3 min-w-0'>
+                    <div className='relative w-10 h-10 flex-shrink-0'>
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt={file.name}
+                        fill
+                        className='object-cover rounded'
+                        unoptimized
+                      />
+                    </div>
+                    <span className='truncate text-sm flex-1 text-gray-900 dark:text-white'>
+                      {file.name}
+                    </span>
+                  </div>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-6 w-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(index);
+                    }}
+                    disabled={uploading}
+                  >
+                    <X className='w-4 h-4' />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {selectedFiles.length > 0 && (
+            <div className='flex justify-end space-x-2 mt-6'>
+              <Button
+                variant='outline'
+                onClick={handleCancelUpload}
+                className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUploadFiles}
+                disabled={selectedFiles.length === 0 || uploading}
+                className='bg-purple-600 hover:bg-purple-700 text-white'
+              >
+                {uploading ? "Uploading..." : "Upload"}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
 
       {currentFolder ? (

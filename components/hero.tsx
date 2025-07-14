@@ -148,7 +148,7 @@ export default function Hero() {
               <span className='text-purple-400 font-semibold'>
                 2,800+ speakers
               </span>{" "}
-              who've made the switch.
+              who&apos;ve made the switch.
             </span>
           </motion.div>
 
