@@ -151,13 +151,15 @@ export function DefaultTemplate({
   const [downloadingImage, setDownloadingImage] = useState<string | null>(null);
   const [activeProfile, setActiveProfile] =
     useState<string>(initialActiveProfile);
+    console.log("Current activeProfile ID:", activeProfile);
+
 
   // Get theme configuration
   const theme = THEMES[userData.theme as keyof typeof THEMES] || THEMES.teal;
 
   const getActiveProfile = () => {
     if (!profiles || profiles.length === 0) return null;
-    const publicProfiles = profiles.filter((profile) => profile.isVerified);
+    const publicProfiles = profiles.filter((profile) => profile.isPublic);
     return (
       publicProfiles.find((profile) => profile._id === activeProfile) ||
       profiles[0]
