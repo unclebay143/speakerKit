@@ -9,6 +9,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
 
-export default nextConfig
+  async rewrites() {
+    return [
+      {
+        source: "/@:path",
+        destination: `/profile/:path`,
+      },
+    ];
+  },
+};
+
+export default nextConfig;

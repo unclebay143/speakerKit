@@ -1,69 +1,131 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Menu } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import { cn } from "@/lib/utils";
+import { Check, Copy, Menu, Moon, PanelLeftOpen, Sun } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 interface HeaderProps {
-  setSidebarOpen: (open: boolean) => void
-  sidebarOpen: boolean
-  setMobileSidebarOpen: (open: boolean) => void
-  mobileSidebarOpen: boolean
-  activeTab: string
+  setSidebarOpen: (open: boolean) => void;
+  sidebarOpen: boolean;
+  setMobileSidebarOpen: (open: boolean) => void;
+  mobileSidebarOpen: boolean;
+  activeTab: string;
 }
 
-export function DashboardHeader({ 
-  setMobileSidebarOpen, 
-  activeTab 
-}: HeaderProps) {    
+export function DashboardHeader({
+  setMobileSidebarOpen,
+  setSidebarOpen,
+  sidebarOpen,
+  activeTab,
+}: HeaderProps) {
+  const { data: user } = useCurrentUser();
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const toggleTheme = () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", !isDark);
+    localStorage.setItem("speakerkit-theme", !isDark ? "dark" : "light");
+  };
+
+  const handleCopyProfileUrl = async () => {
+    const url = `${window.location.origin}/@${user?.username}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast({
+        title: "Profile URL copied!",
+        description: url,
+      });
+
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy URL",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <header className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-4 mx-auto max-w-screen-2xl">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <header
+      className={cn(
+        "bg-white/80 dark:bg-black/20 backdrop-blur-sm border-b border-gray-200 dark:border-white/10",
+        "p-4 mx-auto h-[74px] flex items-center",
+        sidebarOpen ? "lg:pr-16" : "lg:pl-16"
+      )}
+    >
+      <div className='w-full flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
           <Button
-            variant="ghost"
-            size="icon"
+            variant='ghost'
+            size='icon'
             onClick={() => setMobileSidebarOpen(true)}
-            className="text-white hover:bg-white/10 lg:hidden"
+            className={cn(
+              "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10",
+              "lg:hidden"
+            )}
           >
-            <Menu className="w-5 h-5" />
+            <Menu className='w-5 h-5' />
           </Button>
 
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-white hover:bg-white/10 hidden lg:inline-flex"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-           */}
-          <div className="">
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="text-gray-400">Manage your {activeTab === "images" ? "images" : "profile"}</p>
-          </div>
+          {sidebarOpen ? null : (
+            <PanelLeftOpen
+              className='w-4 h-4 ml-3 cursor-pointer text-gray-500 dark:text-gray-400'
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            />
+          )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          {/* {activeTab === "overview" && (
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              New Profile
-            </Button>
+        <div className='flex items-center space-x-4'>
+          {user?.username && (
+            <div className='flex rounded-md overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40'>
+              <Link
+                href={`/@${user.username}`}
+                target='_blank'
+                className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none focus:bg-gray-100 dark:focus:bg-white/10 border-r border-gray-200 dark:border-white/10 flex items-center'
+                style={{ textDecoration: "none" }}
+              >
+                View Profile
+              </Link>
+              <button
+                onClick={handleCopyProfileUrl}
+                className={cn(
+                  "px-3 py-2 flex items-center text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none transition-colors",
+                  copied &&
+                    "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20"
+                )}
+                title={copied ? "Copied!" : "Copy profile URL"}
+                type='button'
+              >
+                {copied ? (
+                  <Check className='w-4 h-4' />
+                ) : (
+                  <Copy className='w-4 h-4' />
+                )}
+              </button>
+            </div>
           )}
 
-          {activeTab === "images" && (
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-              <FolderPlus className="w-4 h-4 mr-2" />
-              Add Folder
-            </Button>
-          )} */}
-          <Avatar>
-            <AvatarImage src="/placeholder.svg?height=40&width=40" />
-            <AvatarFallback className="bg-purple-600 text-white">UA</AvatarFallback>
-          </Avatar>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={toggleTheme}
+            className='text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+          >
+            <Moon className='w-5 h-5 dark:hidden' />
+            <Sun className='w-5 h-5 hidden dark:block' />
+          </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }
