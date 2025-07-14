@@ -7,7 +7,7 @@ import Image from "@/models/Images";
 
 export async function GET(
   request: Request,
-  { params }: { params: { username: string } }
+  { params }: { params: { slug: string } }
 ) {
   try {
     await connectViaMongoose();
@@ -16,7 +16,7 @@ export async function GET(
       throw new Error("Image model not registered");
     }
     
-    const user = await User.findOne({ username: params.username });
+    const user = await User.findOne({ slug: params.slug });
     
     if (!user) {
       return NextResponse.json(
@@ -25,8 +25,11 @@ export async function GET(
       );
     }
 
-     const folders = await Folder.find({ userId: user._id })
-      .populate("images");
+    const allImages = await mongoose.model("Image").find({});
+    console.log("All Images in DB:", allImages.length);
+
+    const folders = await Folder.find({ userId: user._id })
+    .populate("images");
 
     return NextResponse.json(folders);
   } catch (error) {

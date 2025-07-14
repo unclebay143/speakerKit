@@ -33,7 +33,7 @@ export function DashboardHeader({
   };
 
   const handleCopyProfileUrl = async () => {
-    const url = `${window.location.origin}/@${user?.username}`;
+    const url = `${window.location.origin}/@${user?.slug}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);

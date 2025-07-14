@@ -1,3 +1,4 @@
+import { generateRandomSlug } from "@/utils/generateSlug";
 import { Schema, model, models } from "mongoose";
 
 const UserSchema = new Schema(
@@ -16,17 +17,21 @@ const UserSchema = new Schema(
     password: {
       type: String,
     },
-    username: {
+    slug: { 
       type: String,
       unique: true,
-      trim: true,
-      lowercase: true,
-      sparse: true,
-      match: [
-        /^[a-z0-9-]{3,30}$/,
-        "Username must be 3-30 characters with only letters, numbers, and hyphens",
-      ],
+      default: generateRandomSlug,
     },
+    // username: {
+    //   type: String,
+    //   trim: true,
+    //   lowercase: true,
+    //   sparse: true,
+    //   match: [
+    //     /^[a-z0-9-]{3,30}$/,
+    //     "Username must be 3-30 characters with only letters, numbers, and hyphens",
+    //   ],
+    // },
     hasCompletedOnboarding: {
       type: Boolean,
       default: false,

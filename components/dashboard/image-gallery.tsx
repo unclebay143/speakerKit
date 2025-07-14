@@ -18,9 +18,11 @@ import {
   Eye,
   Folder,
   FolderPlus,
+  Loader2,
   MoreVertical,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -29,6 +31,8 @@ import { useState } from "react";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { CreateFolderModal } from "../modals/folder-modal";
 import { UploadModal } from "../UploadModal";
+import { useDropzone } from "react-dropzone";
+import Image from "next/image";
 
 interface Folder {
   _id: string;
@@ -49,8 +53,37 @@ interface Image {
 export function ImageGallery() {
   const { data: session, update } = useSession();
   const { deleteImage } = useImage();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  
   const pathname = usePathname();
+
+  const { getRootProps, getInputProps, isDragActive, open: openFileDialog } = useDropzone({
+    noClick: true, 
+    noKeyboard: true,
+    onDrop: (acceptedFiles) => {
+      setSelectedFiles(acceptedFiles);
+      // handleImageUploaded(acceptedFiles);
+    },
+    accept: {
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+    },
+    maxSize: 10 * 1024 * 1024,
+    multiple: true,
+     onDropRejected: (rejectedFiles) => {
+      const firstError = rejectedFiles[0].errors[0];
+      if (firstError.code === "file-too-large") {
+        alert(`File is too large. Max size is 10MB`);
+      } else if (firstError.code === "file-invalid-type") {
+        alert("Only JPG, PNG, and WebP images are allowed");
+      }
+    },
+  });
+
   const folderId = pathname.startsWith("/gallery/")
     ? pathname.split("/").pop()
     : null;
@@ -121,14 +154,17 @@ export function ImageGallery() {
     if (!deleteModalState.id) return;
 
     try {
+      setDeletingId(deleteModalState.id);
       if (deleteModalState.type === "folder") {
         await deleteFolder.mutateAsync(deleteModalState.id);
       } else if (deleteModalState.type === "image") {
         await deleteImage.mutateAsync(deleteModalState.id);
       }
       setDeleteModalState({ open: false });
-    } catch (error) {
-      console.error("Failed to delete:", error);
+      } catch (error) {
+        console.error("Failed to delete:", error);
+      } finally {
+      setDeletingId(null);
     }
   };
 
@@ -184,6 +220,30 @@ export function ImageGallery() {
     );
   }
 
+  
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCancelUpload = () => {
+    setSelectedFiles([]);
+  };
+
+  const handleUploadFiles = async () => {
+    if (selectedFiles.length === 0) return;
+    
+    setUploading(true);
+    try {
+      await handleImageUploaded(selectedFiles);
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error("Upload error:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className='flex flex-col gap-4 mx-auto max-w-screen-lg'>
       {/* Header part */}
@@ -235,30 +295,109 @@ export function ImageGallery() {
 
       {/* Upload section  */}
       {currentFolder && currentFolder.images.length === 0 && (
-        <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 border-dashed'>
-          <CardContent className='p-8'>
-            <div className='text-center'>
-              <Upload className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 dark:text-white mb-2'>
-                Upload Images to {currentFolder.name}
-              </h3>
-              <p className='text-gray-600 dark:text-gray-400 mb-4'>
-                Drag and drop your images here, or click to browse
-              </p>
-              <Button
-                variant='outline'
-                className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
-                onClick={() => setShowUploadModal(true)}
-              >
-                Choose Files
-              </Button>
-              <p className='text-xs text-gray-500 mt-2'>
-                Supported formats: JPG, PNG, WebP. Max size: 10MB
-              </p>
+  <div className='mx-auto w-full max-w-md bg-white dark:bg-black/95 border border-gray-200 dark:border-white/10 rounded-xl p-6'>
+    <div className='text-center'>
+      <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-1'>
+        Upload Images
+      </h2>
+      <p className='text-sm text-gray-600 dark:text-gray-400 mb-6'>
+        Drag and drop your images here, or click to browse
+      </p>
+    </div>
+
+    <div
+      {...getRootProps()}
+      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+        isDragActive
+          ? "border-purple-500 bg-purple-500/10"
+          : "border-gray-300 dark:border-white/10"
+      }`}
+    >
+      <input {...getInputProps()} />
+      <Upload className='w-12 h-12 mx-auto mb-4 text-gray-400' />
+      <p className='text-gray-600 dark:text-gray-400'>
+        {isDragActive
+          ? "Drop the files here"
+          : "Drag & drop images here, or click to select"}
+      </p>
+      <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
+        Supported formats: JPG, PNG, WebP. Max size: 10MB
+      </p>
+      <Button
+        type='button'
+        onClick={(e) => {
+          e.stopPropagation();
+          openFileDialog();
+        }}
+        variant='outline'
+        className='mt-4 border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
+      >
+        Choose Files
+      </Button>
+    </div>
+
+    {selectedFiles.length > 0 && (
+      <div className='space-y-2 max-h-60 overflow-y-auto mt-6'>
+        <h4 className='font-medium text-gray-900 dark:text-white'>
+          Selected Files
+        </h4>
+        {selectedFiles.map((file, index) => (
+          <div
+            key={index}
+            className='flex items-center justify-between p-2 bg-gray-50 dark:bg-white/5 rounded'
+          >
+            <div className='flex items-center gap-3 min-w-0'>
+              <div className='relative w-10 h-10 flex-shrink-0'>
+                <Image
+                  src={URL.createObjectURL(file)}
+                  alt={file.name}
+                  fill
+                  className='object-cover rounded'
+                  unoptimized
+                />
+              </div>
+              <span className='truncate text-sm flex-1 text-gray-900 dark:text-white'>
+                {file.name}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <Button
+              variant='ghost'
+              size='icon'
+              className='h-6 w-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+              onClick={(e) => {
+                e.stopPropagation();
+                removeFile(index);
+              }}
+              disabled={uploading}
+            >
+              <X className='w-4 h-4' />
+            </Button>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {selectedFiles.length > 0 && (
+      <div className='flex justify-end space-x-2 mt-6'>
+        <Button
+          variant='outline'
+          onClick={handleCancelUpload}
+          className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={handleUploadFiles}
+          disabled={selectedFiles.length === 0 || uploading}
+          className='bg-purple-600 hover:bg-purple-700 text-white'
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </Button>
+      </div>
+    )}
+  </div>
+)}
+
 
       {currentFolder ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4'>
@@ -344,9 +483,16 @@ export function ImageGallery() {
                       <Button
                         variant='ghost'
                         size='icon'
-                        className='h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                        className={`h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 ${
+                          deletingId === folder._id ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        disabled={deletingId === folder._id}
                       >
-                        <MoreVertical className='w-4 h-4' />
+                        {deletingId === folder._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <MoreVertical className='w-4 h-4' />
+                        )}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
@@ -379,6 +525,7 @@ export function ImageGallery() {
                           });
                         }}
                         className='text-red-400'
+                        disabled={deletingId === folder._id}
                       >
                         <Trash2 className='w-4 h-4' />
                         Delete
@@ -448,6 +595,7 @@ export function ImageGallery() {
         onConfirm={handleDeleteConfirm}
         title={deleteModalState.name}
         type={deleteModalState.type || "folder"}
+        loading={deletingId === deleteModalState.id}
       />
     </div>
   );

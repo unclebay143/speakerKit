@@ -5,7 +5,8 @@ declare module "next-auth" {
     id: string;
     name: string;
     email: string;
-    username?: string;
+    slug?: string;
+    // username?: string;
     image?: string;
     isPublic?: boolean;
     theme?: string;
@@ -24,7 +25,8 @@ declare module "next-auth" {
       id: string;
       name: string;
       email: string;
-      username?: string;
+      slug?: string
+      // username?: string;
       image?: string;
       isPublic?: boolean;
       theme?: string;
@@ -45,7 +47,8 @@ declare module "next-auth/jwt" {
     id: string;
     name: string;
     email: string;
-    username?: string;
+    slug: string;
+    // username?: string;
     image?: string;
     isPublic?: boolean;
     theme?: string;

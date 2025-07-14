@@ -12,7 +12,7 @@ import {
 import { useFolders } from "@/lib/hooks/useFolders";
 import { useProfiles } from "@/lib/hooks/useProfiles";
 import { format } from "date-fns";
-import { Edit, FileText, Globe, ImageIcon, Trash2 } from "lucide-react";
+import { Edit, FileText, Globe, ImageIcon, Loader2, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
@@ -58,6 +58,8 @@ export function ProfilesOverview() {
     useProfiles();
 
   const [, setEditingProfile] = useState<Profile | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
 
   const [profileModalState, setProfileModalState] = useState<{
     open: boolean;
@@ -121,10 +123,13 @@ export function ProfilesOverview() {
   const handleDeleteProfile = async () => {
     if (!deleteModalState.id) return;
     try {
+      setDeletingId(deleteModalState.id);
       await deleteProfile.mutateAsync(deleteModalState.id);
       setDeleteModalState({ open: false });
-    } catch (error) {
-      console.error("Failed to delete profile:", error);
+      } catch (error) {
+        console.error("Failed to delete profile:", error);
+      } finally {
+      setDeletingId(null);
     }
   };
 
@@ -284,12 +289,17 @@ export function ProfilesOverview() {
                     <Button
                       variant='ghost'
                       size='icon'
-                      className='text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10'
-                      onClick={() =>
-                        handleDeleteClick(profile._id, profile.title)
-                      }
+                      className={`text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 ${
+                        deletingId === profile._id ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      onClick={() => handleDeleteClick(profile._id, profile.title)}
+                      disabled={deletingId === profile._id}
                     >
-                      <Trash2 className='w-4 h-4' />
+                       {deletingId === profile._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className='w-4 h-4' />
+                        )}
                     </Button>
                   </div>
                 </div>
@@ -354,6 +364,7 @@ export function ProfilesOverview() {
         onConfirm={handleDeleteProfile}
         title={deleteModalState.name}
         type='profile'
+        loading={deletingId === deleteModalState.id}
       />
     </div>
   );

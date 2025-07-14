@@ -41,9 +41,20 @@ export function UploadModal({
   } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
     },
     maxSize: 10 * 1024 * 1024,
+    multiple: true,
+    onDropRejected: (rejectedFiles) => {
+      const firstError = rejectedFiles[0].errors[0];
+      if (firstError.code === "file-too-large") {
+        alert(`File is too large. Max size is 10MB`);
+      } else if (firstError.code === "file-invalid-type") {
+        alert("Only JPG, PNG, and WebP images are allowed");
+      }
+    },
   });
 
   const removeFile = (index: number) => {
@@ -79,6 +90,7 @@ export function UploadModal({
 
         <div
           {...getRootProps()}
+          
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer ${
             isDragActive
               ? "border-purple-500 bg-purple-500/10"
@@ -128,6 +140,7 @@ export function UploadModal({
                       className='object-cover rounded'
                       unoptimized
                     />
+                    
                   </div>
 
                   {/* File Name */}
@@ -143,6 +156,7 @@ export function UploadModal({
                     e.stopPropagation();
                     removeFile(index);
                   }}
+                  disabled={uploading}
                 >
                   <X className='w-4 h-4' />
                 </Button>

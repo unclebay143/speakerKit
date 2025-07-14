@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { Loader2 } from "lucide-react";
 
 interface DeleteConfirmationModalProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface DeleteConfirmationModalProps {
   title?: string;
   description?: string;
   type?: "profile" | "folder" | "image";
+  loading?: boolean;
 }
 
 export function DeleteConfirmationModal({
@@ -19,6 +21,7 @@ export function DeleteConfirmationModal({
   title,
   description,
   type = "profile",
+  loading = false,
 }: DeleteConfirmationModalProps) {
   const defaultDescriptions = {
     profile: title
@@ -46,6 +49,7 @@ export function DeleteConfirmationModal({
         variant='outline'
         onClick={() => onOpenChange(false)}
         className='flex-1 border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
+        disabled={loading}
       >
         Cancel
       </Button>
@@ -54,10 +58,18 @@ export function DeleteConfirmationModal({
         className='flex-1'
         onClick={() => {
           onConfirm();
-          onOpenChange(false);
+          // onOpenChange(false);
         }}
+        disabled={loading}
       >
-        Delete
+         {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Deleting...
+          </>
+        ) : (
+          "Delete"
+        )}
       </Button>
     </div>
   );
@@ -65,7 +77,7 @@ export function DeleteConfirmationModal({
   return (
     <ResponsiveModal
       open={open}
-      onOpenChange={onOpenChange}
+       onOpenChange={(open) => !loading && onOpenChange(open)}
       heading={modalTitle}
       description={displayDescription}
       footer={footer}

@@ -3,7 +3,8 @@ import connectViaMongoose from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import Folder from "@/models/Folders";
-import "../../../models/Images";
+import  "@/models/Images";
+// import "../../../models/Images";
 
 
 export async function GET() {
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+    
 
     const { name } = await req.json();
     

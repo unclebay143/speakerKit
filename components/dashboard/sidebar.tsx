@@ -30,7 +30,7 @@ const menuItems = [
 
 function SidebarNavSection({
   activeTab,
-  setActiveTab,
+  // setActiveTab,
   isOpen,
   setIsOpen,
   mobile,

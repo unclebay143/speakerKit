@@ -130,7 +130,7 @@ export async function DELETE(
     const folder = await Folder.findOne({
       _id: id,
       userId: session.user.id,
-    });
+    }).populate('images');
     
     if (!folder) {
       return NextResponse.json(
@@ -139,12 +139,18 @@ export async function DELETE(
       );
     }
 
-    for (const imageId of folder.images) {
-      const image = await Image.findById(imageId);
-      if (image) {
-        await cloudinary.uploader.destroy(image.publicId);
-        await Image.deleteOne({ _id: imageId });
-      }
+     if (folder.images && folder.images.length > 0) {
+      await Promise.all(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        folder.images.map(async (image: any) => {
+          try {
+            await cloudinary.uploader.destroy(image.publicId);
+            await Image.deleteOne({ _id: image._id });
+          } catch (error) {
+            console.error(`Error deleting image ${image._id}:`, error);
+          }
+        })
+      );
     }
 
     await Folder.deleteOne({ _id: id });

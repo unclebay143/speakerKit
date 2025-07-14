@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import { generateRandomSlug } from "./generateSlug";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -52,7 +53,8 @@ export const authOptions: AuthOptions = {
             id: user._id.toString(),
             email: user.email,
             name: user.name,
-            username: user.username,
+            slug: user.slug,
+            // username: user.username,
             image: user.image,
             isPublic: user.isPublic,
             theme: user.theme,
@@ -86,7 +88,8 @@ export const authOptions: AuthOptions = {
           const newUser = await User.create({
             name: user.name,
             email: user.email,
-            username: null,
+            slug: generateRandomSlug(user.email),
+            // username: null,
             image: user.image,
             isPublic: true,
             theme: "teal",
@@ -96,7 +99,8 @@ export const authOptions: AuthOptions = {
           });
 
           user.id = newUser._id.toString();
-          user.username = newUser.username;
+          user.slug = newUser.slug;
+          // user.username = newUser.username;
           user.image = newUser.image;
           user.isPublic = newUser.isPublic;
           user.theme = newUser.theme;
@@ -105,7 +109,8 @@ export const authOptions: AuthOptions = {
           user.socialMedia = newUser.socialMedia;
         } else {
           user.id = existingUser._id.toString();
-          user.username = existingUser.username;
+          user.slug = existingUser.slug;
+          // user.username = existingUser.username;
           user.image = existingUser.image;
           user.isPublic = existingUser.isPublic;
           user.theme = existingUser.theme;
@@ -121,8 +126,9 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.sub || (token.id as string);
-        session.user.username = token.username as string;
+        // session.user.username = token.username as string;
         session.user.location = token.location;
+        session.user.slug = token.slug;
         session.user.website = token.website;
         session.user.socialMedia = token.socialMedia as {
           twitter?: string;
@@ -141,7 +147,8 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.username = user.username;
+        token.slug = user.slug;
+        // token.username = user.username;
         token.location = user.location;
         token.website = user.website;
         token.socialMedia = user.socialMedia;
@@ -160,7 +167,8 @@ export const authOptions: AuthOptions = {
       }
 
       if (trigger === "update" && session) {
-        if (session.username) token.username = session.username;
+        // if (session.username) token.username = session.username;
+        if (session.slug) token.slug = session.slug;
         if (session.name) token.name = session.name;
         if (session.image) token.image = session.image;
         if (session.isPublic !== undefined) token.isPublic = session.isPublic;

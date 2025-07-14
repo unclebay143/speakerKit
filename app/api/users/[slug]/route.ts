@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { username: string } }
+  { params }: { params: { slug: string } }
 ) {
   try {
     await connectViaMongoose();
 
-    const user = await User.findOne({ username: params.username });
+    const user = await User.findOne({ slug: params.slug });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

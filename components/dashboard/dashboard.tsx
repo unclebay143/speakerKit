@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { UsernameModal } from "../modals/username-modal";
+// import { UsernameModal } from "../modals/username-modal";
 import { Spinner } from "../ui/spinner";
 import { DashboardHeader } from "./header";
 import { DashboardSidebar } from "./sidebar";
@@ -17,7 +17,7 @@ export default function Dashboard({ children }: DashboardProps) {
   const { data: session, status, update } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  // const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [, setUpdatingSession] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -46,11 +46,11 @@ export default function Dashboard({ children }: DashboardProps) {
     setMobileSidebarOpen(false);
   };
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      setShowUsernameModal(!session?.user?.username);
-    }
-  }, [status, session]);
+  // useEffect(() => {
+  //   if (status === "authenticated") {
+  //     setShowUsernameModal(!session?.user?.username);
+  //   }
+  // }, [status, session]);
 
   // Handle theme persistence and system preference
   useEffect(() => {
@@ -146,13 +146,13 @@ export default function Dashboard({ children }: DashboardProps) {
           </motion.div>
         </main>
       </div>
-      {showUsernameModal && (
+      {/* {showUsernameModal && (
         <UsernameModal
           open={showUsernameModal}
           onOpenChange={(open) => !open && setShowUsernameModal(false)}
           onComplete={handleUsernameComplete}
         />
-      )}
+      )} */}
     </div>
   );
 }

@@ -15,6 +15,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 export async function POST(req: Request) {
   try {
     await connectViaMongoose();
@@ -38,6 +41,20 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Only JPG, PNG, and WebP images are allowed" },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `File size exceeds the limit of ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+        { status: 400 }
+      );
+    }
+
     const folder = await Folder.findOne({
       _id: folderId,
       userId: session.user.id,
@@ -57,6 +74,8 @@ export async function POST(req: Request) {
 
     const result = await cloudinary.uploader.upload(path, {
       folder: `user_uploads/${session.user.id}/${folderId}`,
+      allowed_formats: ["jpg", "png", "webp"],
+      format: "auto",
     });
 
     const image = await Image.create({
@@ -70,6 +89,9 @@ export async function POST(req: Request) {
       height: result.height,
       format: result.format,
     });
+
+    console.log("Created image ID:", image._id);
+
 
     folder.images.push(image._id);
     await folder.save();

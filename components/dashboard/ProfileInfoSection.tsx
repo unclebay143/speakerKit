@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 function ProfileInfoSection() {
-  const { data: user, isLoading: userLoading, refetch } = useCurrentUser();
+  const { data: user, isLoading: refetch } = useCurrentUser();
   const updateUser = useUpdateCurrentUser();
   const [isInitialized, setIsInitialized] = useState(false);
   const { register, handleSubmit, formState, setValue } = useForm({
@@ -31,7 +31,8 @@ function ProfileInfoSection() {
   useEffect(() => {
     if (user && !isInitialized) {
       setValue("fullName", user.name || "");
-      setValue("username", user.username || "");
+      setValue("slug", user.slug || ""); 
+      // setValue("username", user.username || "");
       setValue("email", user.email || "");
       setIsInitialized(true);
     }
@@ -41,7 +42,7 @@ function ProfileInfoSection() {
     try {
       await updateUser.mutateAsync({
         name: values.fullName,
-        username: values.username,
+        // username: values.username,
       });
       setMessage({
         text: "Profile information updated successfully!",
@@ -94,15 +95,17 @@ function ProfileInfoSection() {
             </div>
             <div className='space-y-2'>
               <Label
-                htmlFor='username'
+                htmlFor='slug'
                 className='text-gray-900 dark:text-white'
               >
                 Profile URL
               </Label>
               <InputWithPrefix
-                id='username'
+                id='slug'
                 prefix='speakerkit.com/'
-                {...register("username", { required: true, minLength: 3 })}
+                value={user?.slug || ''}
+                readOnly disabled
+                // {...register("username", { required: true, minLength: 3 })}
               />
             </div>
           </div>

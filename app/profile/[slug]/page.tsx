@@ -8,7 +8,7 @@ import { Metadata } from "next";
 
 interface PageProps {
   params: {
-    username: string;
+    slug: string;
   };
 }
 
@@ -17,10 +17,10 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   try {
-    const { username } = await params;
+    const { slug } = await params;
     await connectViaMongoose();
 
-    const user = await User.findOne({ username }).select("-password");
+    const user = await User.findOne({ slug }).select("-password");
 
     if (!user || user.isPublic === false) {
       return {
@@ -54,7 +54,7 @@ export async function generateMetadata({
     const title = `${user.name} | SpeakerKit`;
     const url = `${
       process.env.NEXT_PUBLIC_APP_URL || "https://speakerkit.com"
-    }/@${username}`;
+    }/@${slug}`;
 
     return {
       title,
@@ -128,13 +128,13 @@ export async function generateMetadata({
 export default async function Page({ params }: PageProps) {
   try {
     // Await params to get the username
-    const { username } = await params;
+    const { slug } = await params;
 
     // Connect to database
     await connectViaMongoose();
 
     // Find user by username
-    const user = await User.findOne({ username }).select("-password");
+    const user = await User.findOne({ slug }).select("-password");
 
     if (!user || user.isPublic === false) {
       return (
@@ -144,7 +144,7 @@ export default async function Page({ params }: PageProps) {
               Profile Not Found
             </h1>
             <p className='text-gray-600'>
-              The profile you're looking for doesn't exist or is not available.
+              The profile you&apos;re looking for doesn&apos;t exist or is not available.
             </p>
           </div>
         </div>
@@ -166,7 +166,7 @@ export default async function Page({ params }: PageProps) {
               Profile Not Found
             </h1>
             <p className='text-gray-600'>
-              The profile you're looking for doesn't exist or is not available.
+              The profile you&apos;re looking for doesn&apos;t exist or is not available.
             </p>
           </div>
         </div>

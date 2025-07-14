@@ -87,7 +87,7 @@ export function FolderForm({
           {isLoading
             ? isEditMode
               ? "Updating..."
-              : "Creating"
+              : "Creating..."
             : isEditMode
             ? "Update Folder"
             : "Create Folder"}

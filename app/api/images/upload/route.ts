@@ -1,4 +1,3 @@
-// app/api/images/upload/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/utils/auth-options"
@@ -13,7 +12,10 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+});
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: Request) {
   try {
@@ -38,10 +40,28 @@ export async function POST(req: Request) {
       )
     }
 
+    for (const file of files) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        return NextResponse.json(
+          { error: `File type not allowed: ${file.name}` },
+          { status: 400 }
+        );
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: `File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB): ${file.name}` },
+          { status: 400 }
+        );
+      }
+    }
+
     const folder = await Folder.findOne({
       _id: folderId,
       userId: session.user.id,
     })
+
+    console.log("📁 Folder after push:", folder);
+
 
     if (!folder) {
       return NextResponse.json(
@@ -53,7 +73,6 @@ export async function POST(req: Request) {
     const uploadedImages = []
     
     for (const file of files) {
-      // Save file temporarily
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
       const path = join("/tmp", file.name)
@@ -64,7 +83,6 @@ export async function POST(req: Request) {
         folder: `user_uploads/${session.user.id}/${folderId}`,
       })
 
-      // Create image record
       const image = await Image.create({
         name: file.name,
         url: result.secure_url,
@@ -77,11 +95,16 @@ export async function POST(req: Request) {
         format: result.format,
       })
 
+      console.log("✅ Image created:", image);
+
       uploadedImages.push(image)
-      folder.images.push(image._id)
-    }
+        folder.images.push(image._id)
+      }
+
 
     await folder.save()
+
+    console.log("✅ Folder saved with images:", folder.images);
 
     return NextResponse.json(uploadedImages, { status: 201 })
   } catch (error) {
