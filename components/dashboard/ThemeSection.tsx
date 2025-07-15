@@ -10,16 +10,16 @@ import {
   useCurrentUser,
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
-import { Check, Palette } from "lucide-react";
+import { Check, Palette, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-const themeOptions = [
+const allThemeOptions = [
+  { key: "teal", name: "Teal", bg: "bg-teal-500", text: "text-white" },
   { key: "light", name: "Light", bg: "bg-gray-100", text: "text-gray-900" },
   { key: "dark", name: "Dark", bg: "bg-gray-800", text: "text-white" },
   { key: "blue", name: "Blue", bg: "bg-blue-600", text: "text-white" },
   { key: "purple", name: "Purple", bg: "bg-purple-600", text: "text-white" },
-  { key: "teal", name: "Teal", bg: "bg-teal-500", text: "text-white" },
   { key: "green", name: "Green", bg: "bg-green-500", text: "text-white" },
   {
     key: "gradient",
@@ -43,19 +43,22 @@ function ThemeSection() {
     type: "success" | "error";
   } | null>(null);
 
+  const isPremiumUser = user?.plan === "pro" || user?.plan === "lifetime";
+
   useEffect(() => {
     if (user && !isInitialized) {
-      const userTheme = user.theme || "teal";
+      const userTheme = isPremiumUser ? user.theme || "teal" : "teal";
       setValue("theme", userTheme);
       setIsInitialized(true);
     }
-  }, [user, isInitialized, setValue]);
+  }, [user, isInitialized, setValue, isPremiumUser]);
 
   const selectedTheme = watch("theme");
 
   const onSubmit = async (values: any) => {
     try {
-      await updateUser.mutateAsync({ theme: values.theme });
+      const themeToSave = isPremiumUser ? values.theme : "teal";
+      await updateUser.mutateAsync({ theme: themeToSave });
       setMessage({ text: "Theme updated successfully!", type: "success" });
       refetch();
     } catch (error) {
@@ -71,7 +74,9 @@ function ThemeSection() {
           Profile Theme
         </CardTitle>
         <CardDescription className='text-gray-600 dark:text-gray-400'>
-          Choose the theme for your public profile page
+          {isPremiumUser
+            ? "Choose the theme for your public profile page"
+            : "Teal is your current theme. Upgrade to Pro or Lifetime to unlock all color options!"}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -87,11 +92,16 @@ function ThemeSection() {
               {message.text}
             </div>
           )}
+
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
-            {themeOptions.map((theme) => (
+            {allThemeOptions.map((theme) => (
               <label
                 key={theme.key}
-                className={`relative p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                className={`relative p-4 rounded-lg border-2 transition-all ${
+                  isPremiumUser || theme.key === "teal" 
+                    ? "cursor-pointer" 
+                    : "cursor-not-allowed opacity-70"
+                } ${
                   selectedTheme === theme.key
                     ? "border-purple-500 ring-2 ring-purple-200 dark:ring-purple-800"
                     : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
@@ -102,6 +112,7 @@ function ThemeSection() {
                   value={theme.key}
                   {...register("theme")}
                   className='hidden'
+                  disabled={!isPremiumUser && theme.key !== "teal"}
                 />
                 <div className='text-center'>
                   <div className='text-sm font-medium'>{theme.name}</div>
@@ -109,6 +120,12 @@ function ThemeSection() {
                     <Check className='w-4 h-4 mx-auto mt-2' />
                   )}
                 </div>
+                {!isPremiumUser && theme.key !== "teal" && (
+                  <div className="absolute inset-0 bg-black/40 rounded-lg flex flex-col items-center justify-center gap-1">
+                    <Lock className="w-4 h-4 text-white" />
+                    <span className="text-xs font-medium text-white">Premium</span>
+                  </div>
+                )}
               </label>
             ))}
           </div>
@@ -116,7 +133,10 @@ function ThemeSection() {
             <Button
               type='submit'
               disabled={
-                !formState.isDirty || !formState.isValid || updateUser.isPending
+                (!formState.isDirty && isPremiumUser) || 
+                !formState.isValid || 
+                updateUser.isPending ||
+                !isPremiumUser
               }
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useSession } from "next-auth/react";
 
 interface Folder {
@@ -42,8 +42,25 @@ export function useFolders() {
   };
 
   // Create folder
-  const createFolder = useMutation({
-    mutationFn: (name: string) => axios.post("/api/folders", { name }),
+  // const createFolder = useMutation({
+  //   mutationFn: (name: string) => axios.post("/api/folders", { name }),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ["folders"] });
+  //   },
+  // });
+
+   const createFolder = useMutation({
+    mutationFn: async (name: string) => {
+      try {
+        const response = await axios.post("/api/folders", { name });
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response?.data?.limitReached) {
+          throw new Error("FOLDER_LIMIT_REACHED");
+        }
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["folders"] });
     },
@@ -59,6 +76,7 @@ export function useFolders() {
     },
   });
 
+
   // Delete folder
   const deleteFolder = useMutation({
     mutationFn: (id: string) => axios.delete(`/api/folders/${id}`),
@@ -68,12 +86,35 @@ export function useFolders() {
   });
 
   // Upload image
-  const uploadImage = useMutation({
-    mutationFn: ({ folderId, file }: { folderId: string; file: File }) => {
-      const formData = new FormData();
-      formData.append("folderId", folderId);
-      formData.append("file", file);
-      return axios.post("/api/images/upload", formData);
+  // const uploadImage = useMutation({
+  //   mutationFn: ({ folderId, file }: { folderId: string; file: File }) => {
+  //     const formData = new FormData();
+  //     formData.append("folderId", folderId);
+  //     formData.append("file", file);
+  //     return axios.post("/api/images/upload", formData);
+  //   },
+  //   onSuccess: (_, variables) => {
+  //     queryClient.invalidateQueries({ queryKey: ["folders"] });
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["folder", variables.folderId],
+  //     });
+  //   },
+  // });
+
+   const uploadImage = useMutation({
+    mutationFn: async ({ folderId, file }: { folderId: string; file: File }) => {
+      try {
+        const formData = new FormData();
+        formData.append("folderId", folderId);
+        formData.append("file", file);
+        const response = await axios.post("/api/images/upload", formData);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response?.data?.limitReached) {
+          throw new Error("IMAGE_LIMIT_REACHED");
+        }
+        throw error;
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["folders"] });

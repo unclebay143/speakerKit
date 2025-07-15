@@ -1,6 +1,8 @@
 import { generateRandomSlug } from "@/utils/generateSlug";
 import { Schema, model, models } from "mongoose";
 
+const ALLOWED_PLAN = ["free", "pro", "lifetime"]
+
 const UserSchema = new Schema(
   {
     name: {
@@ -67,6 +69,16 @@ const UserSchema = new Schema(
     website: {
       type: String,
       default: "",
+    },
+    plan: {
+      type: String,
+      enum: ALLOWED_PLAN,
+      default: "free"
+    },
+    planLimits: {
+      profiles: { type: Number, default: 1 },
+      folders: { type: Number, default: 1 },
+      imagesPerFolder: { type: Number, default: 3 }
     },
   },
   {

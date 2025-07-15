@@ -28,6 +28,9 @@ function ProfileInfoSection() {
     type: "success" | "error";
   } | null>(null);
 
+  const canEditSlug = user?.plan === "pro" || user?.plan === "lifetime";
+
+
   useEffect(() => {
     if (user && !isInitialized) {
       setValue("fullName", user.name || "");
@@ -44,6 +47,11 @@ function ProfileInfoSection() {
         name: values.fullName,
         // username: values.username,
       });
+      if (canEditSlug && values.slug !== user?.slug) {
+        updateData.slug = values.slug;
+      }
+     await updateUser.mutateAsync(updateData);
+
       setMessage({
         text: "Profile information updated successfully!",
         type: "success",
@@ -100,13 +108,33 @@ function ProfileInfoSection() {
               >
                 Profile URL
               </Label>
-              <InputWithPrefix
-                id='slug'
-                prefix='speakerkit.com/'
-                value={user?.slug || ''}
-                readOnly disabled
-                // {...register("username", { required: true, minLength: 3 })}
-              />
+               {canEditSlug ? (
+                <InputWithPrefix
+                  id='slug'
+                  prefix='speakerkit.com/'
+                  {...register("slug", { 
+                    required: true,
+                    minLength: 3,
+                    pattern: {
+                      value: /^[a-z0-9-]+$/,
+                      message: "Slug can only contain lowercase letters, numbers, and hyphens"
+                    }
+                  })}
+                />
+              ) : (
+                <InputWithPrefix
+                  id='slug'
+                  prefix='speakerkit.com/'
+                  value={user?.slug || ''}
+                  readOnly 
+                  disabled
+                />
+              )}
+               {!canEditSlug && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Upgrade to Pro or Lifetime plan to customize your profile URL.
+                </p>
+              )}
             </div>
           </div>
           <div className='space-y-2'>

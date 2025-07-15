@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/utils/auth-options";
 import Folder from "@/models/Folders";
 import  "@/models/Images";
+import { checkPlanLimits } from "@/middleware/planLimits";
 // import "../../../models/Images";
 
 
@@ -41,7 +42,23 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    
+
+    const limitCheck = await checkPlanLimits({
+      userId: session.user.id,
+      resourceType: "folder"
+    });
+
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: limitCheck.error || "Folder creation not allowed",
+          limitReached: true,
+          current: limitCheck.current,
+          limit: limitCheck.limit
+        },
+        { status: 403 }
+      );
+    }
 
     const { name } = await req.json();
     

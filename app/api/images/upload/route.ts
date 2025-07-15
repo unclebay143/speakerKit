@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/utils/auth-options"
-import Image from "@/models/Images"
-import connectViaMongoose from "@/lib/db"
-import { v2 as cloudinary } from "cloudinary"
-import { writeFile } from "fs/promises"
-import { join } from "path"
-import Folder from "@/models/Folders"
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/utils/auth-options";
+import Image from "@/models/Images";
+import connectViaMongoose from "@/lib/db";
+import { v2 as cloudinary } from "cloudinary";
+import { writeFile } from "fs/promises";
+import { join } from "path";
+import Folder from "@/models/Folders";
+import { checkPlanLimits } from "@/middleware/planLimits";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,25 +20,19 @@ const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: Request) {
   try {
-    await connectViaMongoose()
-    const session = await getServerSession(authOptions)
+    await connectViaMongoose();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await req.formData()
-    const folderId = formData.get("folderId") as string
-    const files = formData.getAll("file") as File[]
+    const formData = await req.formData();
+    const folderId = formData.get("folderId") as string;
+    const files = formData.getAll("file") as File[];
 
     if (!folderId || files.length === 0) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     for (const file of files) {
@@ -58,30 +53,67 @@ export async function POST(req: Request) {
     const folder = await Folder.findOne({
       _id: folderId,
       userId: session.user.id,
-    })
-
-    console.log("📁 Folder after push:", folder);
-
+    });
 
     if (!folder) {
-      return NextResponse.json(
-        { error: "Folder not found" },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
 
-    const uploadedImages = []
-    
-    for (const file of files) {
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      const path = join("/tmp", file.name)
-      await writeFile(path, buffer)
+    let currentImageCount = folder.images.length;
 
-      // Upload to Cloudinary
+    if (session.user.plan === "free" && currentImageCount + files.length > 3) {
+      return NextResponse.json(
+        {
+          error: "Free plan limited to 3 images per folder",
+          limitReached: true,
+          current: currentImageCount,
+          limit: 3,
+        },
+        { status: 403 }
+      );
+    }
+
+    const limitCheck = await checkPlanLimits({
+      userId: session.user.id,
+      resourceType: "image",
+      folderId: folderId,
+    });
+
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: limitCheck.error || "Image creation not allowed",
+          limitReached: true,
+          current: limitCheck.current,
+          limit: limitCheck.limit,
+        },
+        { status: 403 }
+      );
+    }
+
+    const uploadedImages = [];
+
+    for (const file of files) {
+      if (session.user.plan === "free" && currentImageCount >= 3) {
+        return NextResponse.json(
+          {
+            error: "Free plan limited to 3 images per folder",
+            limitReached: true,
+            current: currentImageCount,
+            limit: 3,
+          },
+          { status: 403 }
+        );
+      }
+
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const path = join("/tmp", file.name);
+      await writeFile(path, buffer);
+
       const result = await cloudinary.uploader.upload(path, {
         folder: `user_uploads/${session.user.id}/${folderId}`,
-      })
+      });
 
       const image = await Image.create({
         name: file.name,
@@ -93,25 +125,18 @@ export async function POST(req: Request) {
         width: result.width,
         height: result.height,
         format: result.format,
-      })
+      });
 
-      console.log("✅ Image created:", image);
+      uploadedImages.push(image);
+      folder.images.push(image._id);
+      currentImageCount++;
+    }
 
-      uploadedImages.push(image)
-        folder.images.push(image._id)
-      }
+    await folder.save();
 
-
-    await folder.save()
-
-    console.log("✅ Folder saved with images:", folder.images);
-
-    return NextResponse.json(uploadedImages, { status: 201 })
+    return NextResponse.json(uploadedImages, { status: 201 });
   } catch (error) {
-    console.error("Upload error:", error)
-    return NextResponse.json(
-      { error: "Error uploading image" },
-      { status: 500 }
-    )
+    console.error("Upload error:", error);
+    return NextResponse.json({ error: "Error uploading image" }, { status: 500 });
   }
 }

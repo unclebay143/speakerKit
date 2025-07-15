@@ -18,6 +18,9 @@ import { useState } from "react";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { ProfileModal } from "../modals/profile-modal";
 import { Skeleton } from "../ui/skeleton";
+import { UpgradeModal } from "../modals/upgrade-modal";
+import { checkPlanLimits } from "@/middleware/planLimits";
+
 
 interface Profile {
   _id: string;
@@ -56,6 +59,12 @@ export function ProfilesOverview() {
 
   const { profiles, isLoading, createProfile, updateProfile, deleteProfile } =
     useProfiles();
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [limitData, setLimitData] = useState({
+    limitType: "",
+    current: 0,
+    limit: 0
+  });
 
   const [, setEditingProfile] = useState<Profile | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -79,16 +88,47 @@ export function ProfilesOverview() {
       0
     ) || 0;
 
-  const handleProfileCreated = async (
+   const handleProfileCreated = async (
     newProfile: Omit<Profile, "_id" | "updatedAt">
   ) => {
     try {
-      await createProfile.mutateAsync(newProfile);
+      const result = await createProfile.mutateAsync(newProfile);
+      
+      if (result?.error && result.limitReached) {
+        setLimitData({
+          limitType: "profile",
+          current: result.current,
+          limit: result.limit
+        });
+        setUpgradeModalOpen(true);
+        return;
+      }
+      
       setProfileModalState({ open: false });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create profile:", error);
+      
+      if (error?.response?.data?.limitReached) {
+        setLimitData({
+          limitType: "profile",
+          current: error.response.data.current,
+          limit: error.response.data.limit
+        });
+        setUpgradeModalOpen(true);
+      }
     }
   };
+
+  // const handleProfileCreated = async (
+  //   newProfile: Omit<Profile, "_id" | "updatedAt">
+  // ) => {
+  //   try {
+  //     await createProfile.mutateAsync(newProfile);
+  //     setProfileModalState({ open: false });
+  //   } catch (error) {
+  //     console.error("Failed to create profile:", error);
+  //   }
+  // };
 
   const handleProfileUpdated = async (
     id: string,
@@ -104,8 +144,38 @@ export function ProfilesOverview() {
   };
 
   const handleCreateProfile = () => {
+    if (session?.user?.plan === "free" && profiles && profiles.length >= 1) {
+      setLimitData({
+        limitType: "profile",
+        current: profiles.length,
+        limit: 1
+      });
+      setUpgradeModalOpen(true);
+      return; 
+    }
     setProfileModalState({ open: true });
   };
+
+  // const handleCreateProfile = () => {
+  //   const isFreeUser = session?.user?.plan === "free";
+  //   const hasReachedLimit = profiles && profiles.length >= 1;
+
+  //   if (isFreeUser && hasReachedLimit) {
+  //     setLimitData({
+  //       limitType: "profiles",
+  //       current: profiles.length,
+  //       limit: 1,
+  //     });
+  //     setUpgradeModalOpen(true);
+  //     return;
+  //   }
+
+  //   setProfileModalState({ open: true });
+  // };
+
+
+  const isFreeUserAtLimit = session?.user?.plan === "free" && profiles && profiles.length >= 1;
+
 
   const handleEditProfile = (profile: Profile) => {
     setProfileModalState({ open: true, profileToEdit: profile });
@@ -242,9 +312,16 @@ export function ProfilesOverview() {
           </h3>
           <Button
             onClick={handleCreateProfile}
-            className='bg-purple-600 hover:bg-purple-700 text-white'
+            className={`bg-purple-600 hover:bg-purple-700 text-white ${
+              session?.user?.plan === "free" && profiles && profiles.length >= 1 
+                ? 'opacity-50 cursor-not-allowed' 
+                : ''
+            }`}
           >
             Create New Profile
+            {session?.user?.plan === "free" && profiles && profiles.length >= 1 && (
+              <span className="ml-2 text-xs">(Upgrade to create more)</span>
+            )}
           </Button>
         </div>
 
@@ -335,10 +412,10 @@ export function ProfilesOverview() {
               <p className='text-gray-600 dark:text-gray-400 mb-6'>
                 Create your first speaker profile to get started
               </p>
-              <Button
-                onClick={handleCreateProfile}
-                className='bg-purple-600 hover:bg-purple-700 text-white'
-              >
+               <Button
+                  onClick={handleCreateProfile}
+                  className='bg-purple-600 hover:bg-purple-700 text-white'
+                >
                 Create Your First Profile
               </Button>
             </CardContent>
@@ -346,16 +423,19 @@ export function ProfilesOverview() {
         )}
       </div>
 
-      <ProfileModal
-        open={profileModalState.open}
-        onOpenChange={(open) =>
-          setProfileModalState({ ...profileModalState, open })
-        }
-        onProfileCreated={handleProfileCreated}
-        onProfileUpdated={handleProfileUpdated}
-        profileToEdit={profileModalState.profileToEdit}
-        isEditing={!!profileModalState.profileToEdit}
-      />
+      {(session?.user?.plan !== "free" || (profiles?.length ?? 0) < 1) && (
+        <ProfileModal
+          open={profileModalState.open}
+          onOpenChange={(open) =>
+            setProfileModalState({ ...profileModalState, open })
+          }
+          onProfileCreated={handleProfileCreated}
+          onProfileUpdated={handleProfileUpdated}
+          profileToEdit={profileModalState.profileToEdit}
+          isEditing={!!profileModalState.profileToEdit}
+        />
+      )}
+
       <DeleteConfirmationModal
         open={deleteModalState.open}
         onOpenChange={(open) =>
@@ -365,6 +445,14 @@ export function ProfilesOverview() {
         title={deleteModalState.name}
         type='profile'
         loading={deletingId === deleteModalState.id}
+      />
+
+       <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        limitType={limitData.limitType}
+        currentCount={limitData.current}
+        limit={limitData.limit}
       />
     </div>
   );

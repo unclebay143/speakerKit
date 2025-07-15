@@ -1,6 +1,6 @@
 import { Profile } from "@/types/profile";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useSession } from "next-auth/react";
 
 export function useProfiles() {
@@ -18,9 +18,26 @@ export function useProfiles() {
   });
 
   // Create
-  const createProfile = useMutation({
-    mutationFn: (newProfile: Omit<Profile, "_id" | "userId" | "createdAt" | "updatedAt">) => 
-      axios.post("/api/profiles", newProfile),
+  // const createProfile = useMutation({
+  //   mutationFn: (newProfile: Omit<Profile, "_id" | "userId" | "createdAt" | "updatedAt">) => 
+  //     axios.post("/api/profiles", newProfile),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries(["profiles"]);
+  //   }
+  // });
+
+   const createProfile = useMutation({
+    mutationFn: async (newProfile: Omit<Profile, "_id" | "userId" | "createdAt" | "updatedAt">) => {
+      try {
+        const response = await axios.post("/api/profiles", newProfile);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          throw error;
+        }
+        throw new Error("Failed to create profile");
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(["profiles"]);
     }

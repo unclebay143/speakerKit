@@ -8,6 +8,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import User from "@/models/User";
+import { checkPlanLimits } from "@/middleware/planLimits";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -30,6 +31,23 @@ export async function POST(req: Request) {
       );
     }
 
+     const limitCheck = await checkPlanLimits({
+          userId: session.user.id,
+          resourceType: "image"
+        });
+    
+        if (!limitCheck.allowed) {
+          return NextResponse.json(
+            { 
+              error: limitCheck.error || "Image creation not allowed",
+              limitReached: true,
+              current: limitCheck.current,
+              limit: limitCheck.limit
+            },
+            { status: 403 }
+          );
+        }
+ 
     const formData = await req.formData();
     const folderId = formData.get("folderId") as string;
     const file = formData.get("file") as File;

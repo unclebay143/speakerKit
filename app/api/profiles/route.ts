@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import Profile from "@/models/Profile";
 import connectViaMongoose from "@/lib/db";
 import { authOptions } from "@/utils/auth-options";
+import { checkPlanLimits } from "@/middleware/planLimits";
 
 export async function GET() {
   try {
@@ -37,6 +38,23 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+     const limitCheck = await checkPlanLimits({
+      userId: session.user.id,
+      resourceType: "profile"
+    });
+
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: limitCheck.error || "Profile creation not allowed",
+          limitReached: true,
+          current: limitCheck.current,
+          limit: limitCheck.limit
+        },
+        { status: 403 }
       );
     }
 
