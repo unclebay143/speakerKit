@@ -12,6 +12,7 @@ declare module "next-auth" {
     theme?: string;
     location?: string;
     website?: string;
+    plan?: "free" | "pro" | "lifetime"; 
     socialMedia?: {
       twitter?: string;
       linkedin?: string;
@@ -32,6 +33,7 @@ declare module "next-auth" {
       theme?: string;
       location?: string;
       website?: string;
+      plan?: "free" | "pro" | "lifetime"; 
       socialMedia?: {
         twitter?: string;
         linkedin?: string;
@@ -54,6 +56,7 @@ declare module "next-auth/jwt" {
     theme?: string;
     location?: string;
     website?: string;
+    plan?: "free" | "pro" | "lifetime"; 
     socialMedia?: {
       twitter?: string;
       linkedin?: string;

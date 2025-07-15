@@ -58,6 +58,7 @@ export const authOptions: AuthOptions = {
             image: user.image,
             isPublic: user.isPublic,
             theme: user.theme,
+            plan: user.plan || "free",
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -93,6 +94,7 @@ export const authOptions: AuthOptions = {
             image: user.image,
             isPublic: true,
             theme: "teal",
+            plan: "free", 
             location: user.location,
             website: user.website,
             socialMedia: user.socialMedia,
@@ -117,6 +119,7 @@ export const authOptions: AuthOptions = {
           user.location = existingUser.location;
           user.website = existingUser.website;
           user.socialMedia = existingUser.socialMedia;
+          user.plan = existingUser.plan || "free"; 
         }
       }
 
@@ -141,6 +144,7 @@ export const authOptions: AuthOptions = {
         session.user.image = token.image;
         session.user.isPublic = token.isPublic as boolean;
         session.user.theme = token.theme as string;
+        session.user.plan = token.plan as "free" | "pro" | "lifetime";
       }
       return session;
     },
@@ -157,6 +161,7 @@ export const authOptions: AuthOptions = {
         token.image = user.image;
         token.isPublic = user.isPublic;
         token.theme = user.theme;
+        token.plan = user.plan || "free";
       }
       if (trigger === "update" && session?.username) {
         token.username = session.username;

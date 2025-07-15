@@ -19,7 +19,6 @@ import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { ProfileModal } from "../modals/profile-modal";
 import { Skeleton } from "../ui/skeleton";
 import { UpgradeModal } from "../modals/upgrade-modal";
-import { checkPlanLimits } from "@/middleware/planLimits";
 
 
 interface Profile {
@@ -119,17 +118,6 @@ export function ProfilesOverview() {
     }
   };
 
-  // const handleProfileCreated = async (
-  //   newProfile: Omit<Profile, "_id" | "updatedAt">
-  // ) => {
-  //   try {
-  //     await createProfile.mutateAsync(newProfile);
-  //     setProfileModalState({ open: false });
-  //   } catch (error) {
-  //     console.error("Failed to create profile:", error);
-  //   }
-  // };
-
   const handleProfileUpdated = async (
     id: string,
     updates: Partial<Profile>
@@ -155,26 +143,6 @@ export function ProfilesOverview() {
     }
     setProfileModalState({ open: true });
   };
-
-  // const handleCreateProfile = () => {
-  //   const isFreeUser = session?.user?.plan === "free";
-  //   const hasReachedLimit = profiles && profiles.length >= 1;
-
-  //   if (isFreeUser && hasReachedLimit) {
-  //     setLimitData({
-  //       limitType: "profiles",
-  //       current: profiles.length,
-  //       limit: 1,
-  //     });
-  //     setUpgradeModalOpen(true);
-  //     return;
-  //   }
-
-  //   setProfileModalState({ open: true });
-  // };
-
-
-  const isFreeUserAtLimit = session?.user?.plan === "free" && profiles && profiles.length >= 1;
 
 
   const handleEditProfile = (profile: Profile) => {
@@ -319,9 +287,9 @@ export function ProfilesOverview() {
             }`}
           >
             Create New Profile
-            {session?.user?.plan === "free" && profiles && profiles.length >= 1 && (
+            {/* {session?.user?.plan === "free" && profiles && profiles.length >= 1 && (
               <span className="ml-2 text-xs">(Upgrade to create more)</span>
-            )}
+            )} */}
           </Button>
         </div>
 
@@ -423,7 +391,7 @@ export function ProfilesOverview() {
         )}
       </div>
 
-      {(session?.user?.plan !== "free" || (profiles?.length ?? 0) < 1) && (
+      {/* {(session?.user?.plan !== "free" || (profiles?.length ?? 0) < 1) && ( */}
         <ProfileModal
           open={profileModalState.open}
           onOpenChange={(open) =>
@@ -434,7 +402,7 @@ export function ProfilesOverview() {
           profileToEdit={profileModalState.profileToEdit}
           isEditing={!!profileModalState.profileToEdit}
         />
-      )}
+      {/* )} */}
 
       <DeleteConfirmationModal
         open={deleteModalState.open}

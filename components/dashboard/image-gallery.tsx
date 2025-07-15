@@ -117,23 +117,13 @@ export function ImageGallery() {
     uploadImage,
   } = useFolders();
 
-  // Use the new useFolder hook for individual folder data
   const { data: currentFolder, isLoading: folderLoading } = useFolder(
     folderId || null
   );
 
-  // const handleFolderCreated = async (folderName: string) => {
-  //   try {
-  //     await createFolder.mutateAsync(folderName);
-  //   } catch (error) {
-  //     console.error("Error creating folder:", error);
-  //   }
-  // };
-
   const handleFolderCreated = async (folderName: string) => {
   try {
-    const result = await createFolder.mutateAsync(folderName);
-    // If successful, the modal will close automatically
+     await createFolder.mutateAsync(folderName);
   } catch (error) {
     if (error instanceof Error && error.message === "FOLDER_LIMIT_REACHED") {
       setLimitData({
@@ -144,7 +134,6 @@ export function ImageGallery() {
       setUpgradeModalOpen(true);
     } else {
       console.error("Error creating folder:", error);
-      // Optionally show a toast/notification about the error
     }
   }
 };
@@ -215,65 +204,6 @@ export function ImageGallery() {
     }
   };
 
-  // const handleImageUploaded = async (files: File[]) => {
-  //   if (!currentFolder) return;
-
-  //   try {
-  //      if (currentFolder.images.length + files.length > 3 && session?.user?.plan === "free") {
-  //       setLimitData({
-  //         limitType: "images",
-  //         current: currentFolder.images.length,
-  //         limit: 3
-  //       });
-  //       setUpgradeModalOpen(true);
-  //       return;
-  //     }
-
-  //     const validUploads: any[] = [];
-
-  //     for (const file of files) {
-  //       try {
-  //         const response = await uploadImage.mutateAsync({
-  //           folderId: currentFolder._id.toString(),
-  //           file,
-  //         });
-
-  //         validUploads.push(response);
-  //       } catch (error: any) {
-  //         if (error.response?.data?.limitReached) {
-  //           setLimitData({
-  //             limitType: "images",
-  //             current: error.response.data.current,
-  //             limit: error.response.data.limit,
-  //           });
-  //           setUpgradeModalOpen(true);
-  //           break; 
-  //         } else {
-  //           console.error("Unexpected upload error:", error);
-  //         }
-  //       }
-  //     }
-
-  //     if (validUploads.length > 0 && !session?.user?.image) {
-  //     const firstResponse = validUploads[0];
-  //     const updateResponse = await axios.put(
-  //       "/api/users/update-from-gallery",
-  //       {
-  //         imageUrl: firstResponse.data.image.url,
-  //       }
-  //     );
-
-  //     if (updateResponse.data?.success) {
-  //       await update({
-  //         image: updateResponse.data.image,
-  //       });
-  //     }
-  //   }
-  //   } catch (error) {
-  //     console.error("Error uploading images:", error);
-  //   }
-  // };
-
   const handleImageUploaded = async (files: File[]) => {
   if (!currentFolder) return;
 
@@ -313,25 +243,6 @@ export function ImageGallery() {
         }
       }
     }
-
-    //  To Set profile image but no more in use or what do you think UncleBigbay.
-
-
-    // if (validUploads.length > 0 && !session?.user?.image) {
-    //   const firstResponse = validUploads[0];
-    //   const updateResponse = await axios.put(
-    //     "/api/users/update-from-gallery",
-    //     {
-    //       imageUrl: firstResponse.data.image.url,
-    //     }
-    //   );
-
-    //   if (updateResponse.data?.success) {
-    //     await update({
-    //       image: updateResponse.data.image,
-    //     });
-    //   }
-    // }
   } catch (error) {
     console.error("General upload error:", error);
   }

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { plans } from "@/app/pricing/page";
-import { Check } from "lucide-react";
+import { Check, XIcon } from "lucide-react";
 import Link from "next/link";
 import { SparklesCore } from "@/components/sparkles";
 
@@ -27,7 +27,7 @@ export function UpgradeModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl bg-black/[0.98] border-0 p-0 overflow-hidden">
+      <DialogContent className="max-w-3xl bg-black/[0.98] bg-grid-white/[0.02] border-0 p-0 overflow-hidden">
         {/* Sparkles background */}
         <div className="absolute inset-0 w-full h-full z-0">
           <SparklesCore
@@ -71,14 +71,20 @@ export function UpgradeModal({
                     {proPlan.features.map((feature) => (
                         <li
                         key={feature.label}
-                        className="flex items-center justify-between text-gray-300 text-sm border-b border-white/10 py-2"
+                        className="flex items-center text-lg justify-between text-gray-300  py-1"
                         >
                         <div className="flex items-center">
-                            <Check className="w-4 h-4 text-purple-400 mr-2" />
+                            {/* <Check className="w-4 h-4 text-purple-400 mr-2" /> */}
                             <span>{feature.label}</span>
                         </div>
-                        <span className="text-white font-medium">
-                            {feature.value === true ? "✓" : feature.value === false ? "✕" : feature.value}
+                        <span className='font-semibold flex items-center'>
+                            {feature.value === true && (
+                            <Check className='w-5 h-5 text-green-400' />
+                            )}
+                            {feature.value === false && (
+                            <XIcon className='w-5 h-5 text-red-400' />
+                            )}
+                            {typeof feature.value === "string" && feature.value}
                         </span>
                         </li>
                     ))}
@@ -93,7 +99,7 @@ export function UpgradeModal({
             )}
 
             {lifetimePlan && (
-              <div className="rounded-xl p-8  bg-gray-900/50 relative overflow-hidden">
+              <div className="rounded-xl p-8  relative overflow-hidden border-white/[0.08] bg-black/80">
                 <h3 className="text-2xl font-semibold text-white mb-4 text-center">{lifetimePlan.name}</h3>
                 <div className="flex justify-center items-end mb-6">
                   <span className="text-4xl font-bold text-white">{lifetimePlan.price}</span>
@@ -103,14 +109,20 @@ export function UpgradeModal({
                   {lifetimePlan.features.map((feature) => (
                     <li
                         key={feature.label}
-                        className="flex items-center justify-between text-gray-300 text-sm border-b border-white/10 py-2"
+                        className="flex items-center justify-between text-lg text-gray-300 py-1"
                         >
                         <div className="flex items-center">
-                            <Check className="w-4 h-4 text-purple-400 mr-2" />
+                            {/* <Check className="w-4 h-4 text-purple-400 mr-2" /> */}
                             <span>{feature.label}</span>
                         </div>
-                        <span className="text-white font-medium">
-                            {feature.value === true ? "✓" : feature.value === false ? "✕" : feature.value}
+                        <span className='font-semibold flex items-center'>
+                            {feature.value === true && (
+                            <Check className='w-5 h-5 text-green-400' />
+                            )}
+                            {feature.value === false && (
+                            <XIcon className='w-5 h-5 text-red-400' />
+                            )}
+                            {typeof feature.value === "string" && feature.value}
                         </span>
                     </li>
                   ))}
