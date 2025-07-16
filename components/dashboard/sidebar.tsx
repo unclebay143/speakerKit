@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  CreditCard,
   ImageIcon,
   LayoutDashboard,
   LogOut,
@@ -182,6 +183,20 @@ export function DashboardSidebar({
           />
         </div>
         <div className='absolute bottom-4 left-4 right-4 space-y-2'>
+          <Button
+            variant='ghost'
+            className={`w-full justify-start text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 ${
+              activeTab === "billing"
+                ? "bg-purple-600/10 dark:bg-purple-600/20 text-purple-700 dark:text-purple-400"
+                : ""
+            } ${!isOpen ? "px-2" : ""}`}
+            asChild
+          >
+            <Link href='/billing'>
+              <CreditCard className='w-5 h-5' />
+              <span>Billing</span>
+            </Link>
+          </Button>
           <Button
             variant='ghost'
             className={`w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${

@@ -194,6 +194,12 @@ export function UpgradeModal({
                     Go Lifetime
                   </Button>
                 </Link>
+
+                {lifetimePlan.note && (
+                  <div className='absolute bottom-2 mx-auto left-0 right-0 text-xs text-gray-500 font-medium text-center'>
+                    {lifetimePlan.note}
+                  </div>
+                )}
               </div>
             )}
           </div>
