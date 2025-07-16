@@ -15,6 +15,7 @@ import {
 } from "@/lib/hooks/useCurrentUser";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { UpgradeModal } from "../modals/upgrade-modal";
 
 function ProfileInfoSection() {
   const { data: user, isLoading: refetch } = useCurrentUser();
@@ -27,14 +28,14 @@ function ProfileInfoSection() {
     text: string;
     type: "success" | "error";
   } | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const canEditSlug = user?.plan === "pro" || user?.plan === "lifetime";
-
 
   useEffect(() => {
     if (user && !isInitialized) {
       setValue("fullName", user.name || "");
-      setValue("slug", user.slug || ""); 
+      setValue("slug", user.slug || "");
       // setValue("username", user.username || "");
       setValue("email", user.email || "");
       setIsInitialized(true);
@@ -50,7 +51,7 @@ function ProfileInfoSection() {
       if (canEditSlug && values.slug !== user?.slug) {
         updateData.slug = values.slug;
       }
-     await updateUser.mutateAsync(updateData);
+      await updateUser.mutateAsync(updateData);
 
       setMessage({
         text: "Profile information updated successfully!",
@@ -104,34 +105,43 @@ function ProfileInfoSection() {
             <div className='space-y-2'>
               <Label
                 htmlFor='slug'
-                className='text-gray-900 dark:text-white'
+                className='text-gray-900 dark:text-white flex items-center'
               >
                 Profile URL
+                <button
+                  type='button'
+                  className='ml-2 px-2 py-0.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-yellow-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
+                  onClick={() => setShowUpgradeModal(true)}
+                  title='Upgrade to Pro to unlock this feature'
+                >
+                  PRO
+                </button>
               </Label>
-               {canEditSlug ? (
+              {canEditSlug ? (
                 <InputWithPrefix
                   id='slug'
                   prefix='speakerkit.com/'
-                  {...register("slug", { 
+                  {...register("slug", {
                     required: true,
                     minLength: 3,
                     pattern: {
                       value: /^[a-z0-9-]+$/,
-                      message: "Slug can only contain lowercase letters, numbers, and hyphens"
-                    }
+                      message:
+                        "Slug can only contain lowercase letters, numbers, and hyphens",
+                    },
                   })}
                 />
               ) : (
                 <InputWithPrefix
                   id='slug'
                   prefix='speakerkit.com/'
-                  value={user?.slug || ''}
-                  readOnly 
+                  value={user?.slug || ""}
+                  readOnly
                   disabled
                 />
               )}
-               {!canEditSlug && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {!canEditSlug && (
+                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
                   Upgrade to Pro or Lifetime plan to customize your profile URL.
                 </p>
               )}
@@ -156,6 +166,14 @@ function ProfileInfoSection() {
           </div>
         </CardContent>
       </form>
+      {/* Render the upgrade modal for profile URL */}
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        currentCount={0}
+        limit={0}
+        isPro={user?.isPro === "pro"}
+      />
     </Card>
   );
 }

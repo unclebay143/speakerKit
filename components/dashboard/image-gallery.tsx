@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useFolders } from "@/lib/hooks/useFolders";
 import { useImage } from "@/lib/hooks/useImage";
 import axios from "axios";
@@ -24,17 +25,15 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { CreateFolderModal } from "../modals/folder-modal";
-import { UploadModal } from "../UploadModal";
-import { useDropzone } from "react-dropzone";
-import Image from "next/image";
 import { UpgradeModal } from "../modals/upgrade-modal";
-
+import { UploadModal } from "../UploadModal";
 
 interface Folder {
   _id: string;
@@ -53,7 +52,8 @@ interface Image {
 }
 
 export function ImageGallery() {
-  const { data: session, update } = useSession();
+  // const { data: session } = useSession();
+  const { data: user } = useCurrentUser();
   const { deleteImage } = useImage();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -61,15 +61,20 @@ export function ImageGallery() {
   const [uploading, setUploading] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [limitData, setLimitData] = useState({
-    limitType: "",
+    limitType: "folder" as "folder" | "profile" | "images",
     current: 0,
-    limit: 0
+    limit: 0,
   });
-  
+
   const pathname = usePathname();
 
-  const { getRootProps, getInputProps, isDragActive, open: openFileDialog } = useDropzone({
-    noClick: true, 
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    open: openFileDialog,
+  } = useDropzone({
+    noClick: true,
     noKeyboard: true,
     onDrop: (acceptedFiles) => {
       setSelectedFiles(acceptedFiles);
@@ -82,7 +87,7 @@ export function ImageGallery() {
     },
     maxSize: 10 * 1024 * 1024,
     multiple: true,
-     onDropRejected: (rejectedFiles) => {
+    onDropRejected: (rejectedFiles) => {
       const firstError = rejectedFiles[0].errors[0];
       if (firstError.code === "file-too-large") {
         alert(`File is too large. Max size is 10MB`);
@@ -122,21 +127,21 @@ export function ImageGallery() {
   );
 
   const handleFolderCreated = async (folderName: string) => {
-  try {
-     await createFolder.mutateAsync(folderName);
-  } catch (error) {
-    if (error instanceof Error && error.message === "FOLDER_LIMIT_REACHED") {
-      setLimitData({
-        limitType: "folder",
-        current: folders?.length || 0,
-        limit: 1,
-      });
-      setUpgradeModalOpen(true);
-    } else {
-      console.error("Error creating folder:", error);
+    try {
+      await createFolder.mutateAsync(folderName);
+    } catch (error) {
+      if (error instanceof Error && error.message === "FOLDER_LIMIT_REACHED") {
+        setLimitData({
+          limitType: "folder",
+          current: folders?.length || 0,
+          limit: 1,
+        });
+        setUpgradeModalOpen(true);
+      } else {
+        console.error("Error creating folder:", error);
+      }
     }
-  }
-};
+  };
 
   const handleFolderUpdated = async (folderName: string) => {
     if (!folderModalState.folderToEdit) return;
@@ -152,29 +157,24 @@ export function ImageGallery() {
     }
   };
 
-  // const handleCreateFolder = () => {
-  //   setFolderModalState({ open: true, folderToEdit: null });
-  // };
+  const handleCreateFolder = async () => {
+    if (!user?._id) return;
+    try {
+      if (!user.isPro && folders && folders.length >= 1) {
+        setLimitData({
+          limitType: "folder",
+          current: folders.length,
+          limit: 1,
+        });
+        setUpgradeModalOpen(true);
+        return;
+      }
 
- const handleCreateFolder = async () => {
-  if (!session?.user?.id) return;
-
-  try {
-    if (session.user.plan === "free" && folders && folders.length >= 1) {
-      setLimitData({
-        limitType: "folder",
-        current: folders.length,
-        limit: 1,
-      });
-      setUpgradeModalOpen(true);
-      return;
+      setFolderModalState({ open: true, folderToEdit: null });
+    } catch (error) {
+      console.error("Error checking folder limits:", error);
     }
-
-    setFolderModalState({ open: true, folderToEdit: null });
-  } catch (error) {
-    console.error("Error checking folder limits:", error);
-  }
-};
+  };
 
   const handleEditFolder = (folder: { id: string; name: string }) => {
     setFolderModalState({
@@ -197,57 +197,58 @@ export function ImageGallery() {
         await deleteImage.mutateAsync(deleteModalState.id);
       }
       setDeleteModalState({ open: false });
-      } catch (error) {
-        console.error("Failed to delete:", error);
-      } finally {
+    } catch (error) {
+      console.error("Failed to delete:", error);
+    } finally {
       setDeletingId(null);
     }
   };
 
   const handleImageUploaded = async (files: File[]) => {
-  if (!currentFolder) return;
+    if (!currentFolder) return;
 
-  try {
-    if (session?.user?.plan === "free" && currentFolder.images.length + files.length > 3) {
-      setLimitData({
-        limitType: "images",
-        current: currentFolder.images.length,
-        limit: 3
-      });
-      setUpgradeModalOpen(true);
-      return;
-    }
-    
-    const validUploads: any[] = [];
-
-    for (const file of files) {
-      try {
-        const response = await uploadImage.mutateAsync({
-          folderId: currentFolder._id.toString(),
-          file,
+    try {
+      if (!user?.isPro && currentFolder.images.length + files.length >= 3) {
+        setLimitData({
+          limitType: "images",
+          current: currentFolder.images.length,
+          limit: 3,
         });
+        setUpgradeModalOpen(true);
+        return;
+      }
 
-        validUploads.push(response);
-      } catch (error: any) {
-       if (error.message === "IMAGE_LIMIT_REACHED") {
-          const updatedFolder = await axios.get(`/api/folders/${currentFolder._id}`);
-          setLimitData({
-            limitType: "images",
-            current: updatedFolder.data.images.length,
-            limit: 3
+      const validUploads: any[] = [];
+
+      for (const file of files) {
+        try {
+          const response = await uploadImage.mutateAsync({
+            folderId: currentFolder._id.toString(),
+            file,
           });
-          setUpgradeModalOpen(true);
-          break;
-        } else {
-          console.error("Unexpected upload error:", error);
+
+          validUploads.push(response);
+        } catch (error: any) {
+          if (error.message === "IMAGE_LIMIT_REACHED") {
+            const updatedFolder = await axios.get(
+              `/api/folders/${currentFolder._id}`
+            );
+            setLimitData({
+              limitType: "images",
+              current: updatedFolder.data.images.length,
+              limit: 3,
+            });
+            setUpgradeModalOpen(true);
+            break;
+          } else {
+            console.error("Unexpected upload error:", error);
+          }
         }
       }
+    } catch (error) {
+      console.error("General upload error:", error);
     }
-  } catch (error) {
-    console.error("General upload error:", error);
-  }
-};
-
+  };
 
   if (foldersLoading || folderLoading) {
     return (
@@ -278,7 +279,7 @@ export function ImageGallery() {
 
   const handleUploadFiles = async () => {
     if (selectedFiles.length === 0) return;
-    
+
     setUploading(true);
     try {
       await handleImageUploaded(selectedFiles);
@@ -330,7 +331,18 @@ export function ImageGallery() {
           {currentFolder && (
             <Button
               className='bg-purple-600 hover:bg-purple-700 text-white'
-              onClick={() => setShowUploadModal(true)}
+              onClick={() => {
+                if (!user?.isPro && currentFolder.images.length >= 3) {
+                  setLimitData({
+                    limitType: "images",
+                    current: currentFolder.images.length,
+                    limit: 3,
+                  });
+                  setUpgradeModalOpen(true);
+                } else {
+                  setShowUploadModal(true);
+                }
+              }}
             >
               <Upload className='w-4 h-4' />
               Upload Images
@@ -444,7 +456,6 @@ export function ImageGallery() {
         </div>
       )}
 
-
       {currentFolder ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4'>
           {currentFolder.images.map((image) => (
@@ -530,12 +541,14 @@ export function ImageGallery() {
                         variant='ghost'
                         size='icon'
                         className={`h-8 w-8 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 ${
-                          deletingId === folder._id ? "opacity-50 cursor-not-allowed" : ""
+                          deletingId === folder._id
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
                         }`}
                         disabled={deletingId === folder._id}
                       >
                         {deletingId === folder._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className='w-4 h-4 animate-spin' />
                         ) : (
                           <MoreVertical className='w-4 h-4' />
                         )}
@@ -624,7 +637,7 @@ export function ImageGallery() {
           }
           initialName={folderModalState.folderToEdit?.name || ""}
         />
-       )}
+      )}
 
       {currentFolder && (
         <UploadModal
@@ -634,7 +647,6 @@ export function ImageGallery() {
           onUploadComplete={handleImageUploaded}
         />
       )}
-   
 
       <DeleteConfirmationModal
         open={deleteModalState.open}
@@ -646,12 +658,13 @@ export function ImageGallery() {
         type={deleteModalState.type || "folder"}
         loading={deletingId === deleteModalState.id}
       />
-       <UpgradeModal
+      <UpgradeModal
         open={upgradeModalOpen}
         onOpenChange={setUpgradeModalOpen}
         limitType={limitData.limitType}
         currentCount={limitData.current}
         limit={limitData.limit}
+        isPro={user?.isPro === "pro"}
       />
     </div>
   );

@@ -9,17 +9,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useFolders } from "@/lib/hooks/useFolders";
 import { useProfiles } from "@/lib/hooks/useProfiles";
 import { format } from "date-fns";
-import { Edit, FileText, Globe, ImageIcon, Loader2, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import {
+  Edit,
+  FileText,
+  Globe,
+  ImageIcon,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { ProfileModal } from "../modals/profile-modal";
-import { Skeleton } from "../ui/skeleton";
 import { UpgradeModal } from "../modals/upgrade-modal";
-
+import { Skeleton } from "../ui/skeleton";
 
 interface Profile {
   _id: string;
@@ -53,21 +59,15 @@ const stats = [
 ];
 
 export function ProfilesOverview() {
-  const { data: session } = useSession();
   const { folders: allFolders } = useFolders();
+  const { data: user } = useCurrentUser();
 
   const { profiles, isLoading, createProfile, updateProfile, deleteProfile } =
     useProfiles();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [limitData, setLimitData] = useState({
-    limitType: "",
-    current: 0,
-    limit: 0
-  });
 
   const [, setEditingProfile] = useState<Profile | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
 
   const [profileModalState, setProfileModalState] = useState<{
     open: boolean;
@@ -87,32 +87,22 @@ export function ProfilesOverview() {
       0
     ) || 0;
 
-   const handleProfileCreated = async (
+  const handleProfileCreated = async (
     newProfile: Omit<Profile, "_id" | "updatedAt">
   ) => {
     try {
       const result = await createProfile.mutateAsync(newProfile);
-      
+
       if (result?.error && result.limitReached) {
-        setLimitData({
-          limitType: "profile",
-          current: result.current,
-          limit: result.limit
-        });
         setUpgradeModalOpen(true);
         return;
       }
-      
+
       setProfileModalState({ open: false });
     } catch (error: any) {
       console.error("Failed to create profile:", error);
-      
+
       if (error?.response?.data?.limitReached) {
-        setLimitData({
-          limitType: "profile",
-          current: error.response.data.current,
-          limit: error.response.data.limit
-        });
         setUpgradeModalOpen(true);
       }
     }
@@ -132,18 +122,12 @@ export function ProfilesOverview() {
   };
 
   const handleCreateProfile = () => {
-    if (session?.user?.plan === "free" && profiles && profiles.length >= 1) {
-      setLimitData({
-        limitType: "profile",
-        current: profiles.length,
-        limit: 1
-      });
+    if (!user?.isPro && profiles && profiles.length >= 1) {
       setUpgradeModalOpen(true);
-      return; 
+      return;
     }
     setProfileModalState({ open: true });
   };
-
 
   const handleEditProfile = (profile: Profile) => {
     setProfileModalState({ open: true, profileToEdit: profile });
@@ -164,9 +148,9 @@ export function ProfilesOverview() {
       setDeletingId(deleteModalState.id);
       await deleteProfile.mutateAsync(deleteModalState.id);
       setDeleteModalState({ open: false });
-      } catch (error) {
-        console.error("Failed to delete profile:", error);
-      } finally {
+    } catch (error) {
+      console.error("Failed to delete profile:", error);
+    } finally {
       setDeletingId(null);
     }
   };
@@ -234,7 +218,7 @@ export function ProfilesOverview() {
       {/* First Section */}
       <div className='bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-600/20 dark:to-pink-600/20 rounded-lg p-6 border border-purple-200 dark:border-white/10'>
         <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
-          Welcome back, {session?.user?.name || "User"}! 👋
+          Welcome back, {user?.name || "User"}! 👋
         </h2>
         <p className='text-gray-600 dark:text-gray-300'>
           You have {profiles?.length || 0} active profiles.
@@ -280,16 +264,9 @@ export function ProfilesOverview() {
           </h3>
           <Button
             onClick={handleCreateProfile}
-            className={`bg-purple-600 hover:bg-purple-700 text-white ${
-              session?.user?.plan === "free" && profiles && profiles.length >= 1 
-                ? 'opacity-50 cursor-not-allowed' 
-                : ''
-            }`}
+            className={`bg-purple-600 hover:bg-purple-700 text-white`}
           >
             Create New Profile
-            {/* {session?.user?.plan === "free" && profiles && profiles.length >= 1 && (
-              <span className="ml-2 text-xs">(Upgrade to create more)</span>
-            )} */}
           </Button>
         </div>
 
@@ -335,16 +312,20 @@ export function ProfilesOverview() {
                       variant='ghost'
                       size='icon'
                       className={`text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 ${
-                        deletingId === profile._id ? "opacity-50 cursor-not-allowed" : ""
+                        deletingId === profile._id
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
                       }`}
-                      onClick={() => handleDeleteClick(profile._id, profile.title)}
+                      onClick={() =>
+                        handleDeleteClick(profile._id, profile.title)
+                      }
                       disabled={deletingId === profile._id}
                     >
-                       {deletingId === profile._id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className='w-4 h-4' />
-                        )}
+                      {deletingId === profile._id ? (
+                        <Loader2 className='w-4 h-4 animate-spin' />
+                      ) : (
+                        <Trash2 className='w-4 h-4' />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -380,10 +361,10 @@ export function ProfilesOverview() {
               <p className='text-gray-600 dark:text-gray-400 mb-6'>
                 Create your first speaker profile to get started
               </p>
-               <Button
-                  onClick={handleCreateProfile}
-                  className='bg-purple-600 hover:bg-purple-700 text-white'
-                >
+              <Button
+                onClick={handleCreateProfile}
+                className='bg-purple-600 hover:bg-purple-700 text-white'
+              >
                 Create Your First Profile
               </Button>
             </CardContent>
@@ -391,17 +372,17 @@ export function ProfilesOverview() {
         )}
       </div>
 
-      {/* {(session?.user?.plan !== "free" || (profiles?.length ?? 0) < 1) && ( */}
-        <ProfileModal
-          open={profileModalState.open}
-          onOpenChange={(open) =>
-            setProfileModalState({ ...profileModalState, open })
-          }
-          onProfileCreated={handleProfileCreated}
-          onProfileUpdated={handleProfileUpdated}
-          profileToEdit={profileModalState.profileToEdit}
-          isEditing={!!profileModalState.profileToEdit}
-        />
+      {/* {(user?.plan !== "free" || (profiles?.length ?? 0) < 1) && ( */}
+      <ProfileModal
+        open={profileModalState.open}
+        onOpenChange={(open) =>
+          setProfileModalState({ ...profileModalState, open })
+        }
+        onProfileCreated={handleProfileCreated}
+        onProfileUpdated={handleProfileUpdated}
+        profileToEdit={profileModalState.profileToEdit}
+        isEditing={!!profileModalState.profileToEdit}
+      />
       {/* )} */}
 
       <DeleteConfirmationModal
@@ -415,12 +396,10 @@ export function ProfilesOverview() {
         loading={deletingId === deleteModalState.id}
       />
 
-       <UpgradeModal
+      <UpgradeModal
         open={upgradeModalOpen}
         onOpenChange={setUpgradeModalOpen}
-        limitType={limitData.limitType}
-        currentCount={limitData.current}
-        limit={limitData.limit}
+        limitType={"profile"}
       />
     </div>
   );

@@ -16,6 +16,14 @@ const nextConfig = {
         source: "/@:path",
         destination: `/profile/:path`,
       },
+      {
+        source: "/dashboard",
+        destination: "/overview",
+      },
+      {
+        source: "/dashboard/:path",
+        destination: "/overview/:path",
+      },
     ];
   },
 };

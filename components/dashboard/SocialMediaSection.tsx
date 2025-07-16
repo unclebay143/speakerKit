@@ -24,7 +24,6 @@ export default function SocialMediaSection() {
     type: "success" | "error";
   }>(null);
 
-  console.log(user);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);

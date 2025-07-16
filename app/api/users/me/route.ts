@@ -19,14 +19,8 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  console.log("GET /api/users/me - Full user data:", user);
-  console.log("User socialMedia field:", user.socialMedia);
-  console.log("User keys:", Object.keys(user.toObject()));
-
   // Return user without password and __v
   const { password, __v, ...userWithoutPassword } = user.toObject();
-
-  console.log("User without password:", userWithoutPassword);
 
   return NextResponse.json({
     success: true,

@@ -10,9 +10,10 @@ import {
   useCurrentUser,
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
-import { Check, Palette, Lock } from "lucide-react";
+import { Check, Lock, Palette } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { UpgradeModal } from "../modals/upgrade-modal";
 
 const allThemeOptions = [
   { key: "teal", name: "Teal", bg: "bg-teal-500", text: "text-white" },
@@ -42,8 +43,9 @@ function ThemeSection() {
     text: string;
     type: "success" | "error";
   } | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const isPremiumUser = user?.plan === "pro" || user?.plan === "lifetime";
+  const isPremiumUser = !!user?.isPro;
 
   useEffect(() => {
     if (user && !isInitialized) {
@@ -98,8 +100,8 @@ function ThemeSection() {
               <label
                 key={theme.key}
                 className={`relative p-4 rounded-lg border-2 transition-all ${
-                  isPremiumUser || theme.key === "teal" 
-                    ? "cursor-pointer" 
+                  isPremiumUser || theme.key === "teal"
+                    ? "cursor-pointer"
                     : "cursor-not-allowed opacity-70"
                 } ${
                   selectedTheme === theme.key
@@ -121,9 +123,14 @@ function ThemeSection() {
                   )}
                 </div>
                 {!isPremiumUser && theme.key !== "teal" && (
-                  <div className="absolute inset-0 bg-black/40 rounded-lg flex flex-col items-center justify-center gap-1">
-                    <Lock className="w-4 h-4 text-white" />
-                    <span className="text-xs font-medium text-white">Premium</span>
+                  <div
+                    className='absolute inset-0 bg-black/40 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer'
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
+                    <Lock className='w-4 h-4 text-white' />
+                    <span className='text-xs font-medium text-white'>
+                      Premium
+                    </span>
                   </div>
                 )}
               </label>
@@ -133,8 +140,8 @@ function ThemeSection() {
             <Button
               type='submit'
               disabled={
-                (!formState.isDirty && isPremiumUser) || 
-                !formState.isValid || 
+                (!formState.isDirty && isPremiumUser) ||
+                !formState.isValid ||
                 updateUser.isPending ||
                 !isPremiumUser
               }
@@ -145,6 +152,14 @@ function ThemeSection() {
           </div>
         </CardContent>
       </form>
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        limitType={"theme"}
+        currentCount={0}
+        limit={0}
+        isPro={isPremiumUser}
+      />
     </Card>
   );
 }

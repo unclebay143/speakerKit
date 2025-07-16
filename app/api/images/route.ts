@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/utils/auth-options";
+import connectViaMongoose from "@/lib/db";
+import { checkPlanLimits } from "@/middleware/planLimits";
 import Folder from "@/models/Folders";
 import Image from "@/models/Images";
-import connectViaMongoose from "@/lib/db";
+import User from "@/models/User";
+import { authOptions } from "@/utils/auth-options";
 import { v2 as cloudinary } from "cloudinary";
 import { writeFile } from "fs/promises";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 import { join } from "path";
-import User from "@/models/User";
-import { checkPlanLimits } from "@/middleware/planLimits";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -25,29 +25,26 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const limitCheck = await checkPlanLimits({
+      userId: session.user.id,
+      resourceType: "image",
+    });
+
+    if (!limitCheck.allowed) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        {
+          error: limitCheck.error || "Image creation not allowed",
+          limitReached: true,
+          current: limitCheck.current,
+          limit: limitCheck.limit,
+        },
+        { status: 403 }
       );
     }
 
-     const limitCheck = await checkPlanLimits({
-          userId: session.user.id,
-          resourceType: "image"
-        });
-    
-        if (!limitCheck.allowed) {
-          return NextResponse.json(
-            { 
-              error: limitCheck.error || "Image creation not allowed",
-              limitReached: true,
-              current: limitCheck.current,
-              limit: limitCheck.limit
-            },
-            { status: 403 }
-          );
-        }
- 
     const formData = await req.formData();
     const folderId = formData.get("folderId") as string;
     const file = formData.get("file") as File;
@@ -68,7 +65,11 @@ export async function POST(req: Request) {
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: `File size exceeds the limit of ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+        {
+          error: `File size exceeds the limit of ${
+            MAX_FILE_SIZE / 1024 / 1024
+          }MB`,
+        },
         { status: 400 }
       );
     }
@@ -79,10 +80,7 @@ export async function POST(req: Request) {
     });
 
     if (!folder) {
-      return NextResponse.json(
-        { error: "Folder not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -108,9 +106,6 @@ export async function POST(req: Request) {
       format: result.format,
     });
 
-    console.log("Created image ID:", image._id);
-
-
     folder.images.push(image._id);
     await folder.save();
 
@@ -121,18 +116,18 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(image, { status: 201 });
 
-  //  if (!session.user.image) {
-  // const user = await User.findByIdAndUpdate(
-  //   session.user.id,
-  //   { image: image.url },
-  //   { new: true }
-  // );
-  
-  // return NextResponse.json({
-  //   image: image,
-  //   updatedProfileImage: user?.image
-  // }, { status: 201 });
-}  catch (error) {
+    //  if (!session.user.image) {
+    // const user = await User.findByIdAndUpdate(
+    //   session.user.id,
+    //   { image: image.url },
+    //   { new: true }
+    // );
+
+    // return NextResponse.json({
+    //   image: image,
+    //   updatedProfileImage: user?.image
+    // }, { status: 201 });
+  } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Error uploading image" },

@@ -94,7 +94,7 @@ export const authOptions: AuthOptions = {
             image: user.image,
             isPublic: true,
             theme: "teal",
-            plan: "free", 
+            plan: "free",
             location: user.location,
             website: user.website,
             socialMedia: user.socialMedia,
@@ -119,7 +119,7 @@ export const authOptions: AuthOptions = {
           user.location = existingUser.location;
           user.website = existingUser.website;
           user.socialMedia = existingUser.socialMedia;
-          user.plan = existingUser.plan || "free"; 
+          user.plan = existingUser.plan || "free";
         }
       }
 
