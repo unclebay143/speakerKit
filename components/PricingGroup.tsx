@@ -7,6 +7,7 @@ interface Plan {
   period?: string;
   features: { label: string; value: string | boolean }[];
   highlight?: boolean;
+  note?: string;
 }
 
 interface PricingGroupProps {
@@ -36,7 +37,7 @@ export default function PricingGroup({
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`rounded-xl border border-white/[0.08] bg-black/80 p-8 flex flex-col items-center ${
+            className={`relative rounded-xl border border-white/[0.08] bg-black/80 p-8 flex flex-col items-center ${
               plan.highlight ? "ring-2 ring-purple-500" : ""
             }`}
           >
@@ -51,6 +52,13 @@ export default function PricingGroup({
                 <span className='text-gray-400 ml-1'>{plan.period}</span>
               )}
             </div>
+
+            {plan.highlight && (
+              <div className='absolute top-[-1rem] left-1/2 -translate-x-1/2 text-sm bg-purple-600 text-white px-2 py-1 rounded-full'>
+                Best Value
+              </div>
+            )}
+
             <ul className='mb-6 w-full'>
               {plan.features.map((f) => (
                 <li
@@ -84,6 +92,12 @@ export default function PricingGroup({
                 ? "Upgrade to Pro"
                 : "Go Lifetime"}
             </Link>
+
+            {plan.note && (
+              <div className='absolute bottom-2 mx-auto left-0 right-0 text-xs text-white purple-500 font-medium text-center'>
+                {plan.note}
+              </div>
+            )}
           </div>
         ))}
       </div>

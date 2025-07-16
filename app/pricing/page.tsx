@@ -19,8 +19,10 @@ export const plans = [
   },
   {
     name: "Pro",
-    price: "₦4,000",
-    period: "/mo",
+    price: "₦48,000",
+    billing: "yearly",
+    period: "/yr",
+    note: "Equivalent to ₦4,000/month",
     features: [
       { label: "Profiles", value: "Unlimited" },
       { label: "Photos", value: "Multiple" },
@@ -33,6 +35,7 @@ export const plans = [
     name: "Lifetime",
     price: "₦100,000",
     period: "once",
+    note: "Limited Slots (20 only)",
     features: [
       { label: "Profiles", value: "Unlimited" },
       { label: "Photos", value: "Multiple" },

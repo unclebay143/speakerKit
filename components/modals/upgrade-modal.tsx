@@ -88,7 +88,7 @@ export function UpgradeModal({
           <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
             {proPlan && (
               <div
-                className={`rounded-xl p-8 relative overflow-hidden ${
+                className={`rounded-xl p-8 relative ${
                   proPlan.highlight
                     ? "border-2 border-purple-500 bg-gradient-to-b from-purple-100/40 to-purple-200/10 dark:from-purple-900/20 dark:to-purple-900/10"
                     : "border border-black/10 dark:border-white/10 bg-gray-100/50 dark:bg-gray-900/50"
@@ -96,6 +96,11 @@ export function UpgradeModal({
               >
                 <h3 className='text-2xl font-semibold text-gray-900 dark:text-white mb-4 text-center'>
                   {proPlan.name}
+                  {proPlan.name === "Lifetime" && (
+                    <span className='text-xs text-purple-500 font-medium text-center'>
+                      (Early Supporters)
+                    </span>
+                  )}
                 </h3>
                 <div className='flex justify-center items-end mb-6'>
                   <span className='text-4xl font-bold text-gray-900 dark:text-white'>
@@ -105,6 +110,12 @@ export function UpgradeModal({
                     {proPlan.period}
                   </span>
                 </div>
+
+                {proPlan.highlight && (
+                  <div className='z-10 absolute top-[-1rem] left-1/2 -translate-x-1/2 text-sm bg-purple-600 text-white px-2 py-1 rounded-full'>
+                    Best Value
+                  </div>
+                )}
 
                 <ul className='space-y-3 mb-8'>
                   {proPlan.features.map((feature) => (
@@ -134,6 +145,12 @@ export function UpgradeModal({
                     Upgrade to Pro
                   </Button>
                 </Link>
+
+                {proPlan.note && (
+                  <div className='absolute bottom-2 mx-auto left-0 right-0 text-xs text-purple-500 font-medium text-center'>
+                    {proPlan.note}
+                  </div>
+                )}
               </div>
             )}
 
