@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,20 +11,102 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CheckCircle, Clock, CreditCard, XCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+type Transaction = {
+  id: string;
+  date: string;
+  status: string;
+  amount: string;
+};
+
 
 export function BillingDashboard() {
-  // Placeholder data
-  const currentPlan = {
-    name: "Pro",
-    price: "₦48,000/yr",
+
+  const { data: session } = useSession();
+  const router = useRouter();
+  // const [loading, setLoading] = useState(false);
+  const [, setError] = useState("");
+  const [currentPlan, setCurrentPlan] = useState({
+    name: "Free",
+    price: "₦0",
     status: "Active",
-    renewal: "2025-06-01",
+    renewal: "Never"
+  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  // Placeholder data
+  //  const currentPlan = {
+  //   name: session?.user?.plan || "Free",
+  //   price: session?.user?.plan === "pro" ? "₦48,000/yr" : session?.user?.plan === "lifetime" ? "₦100,000" : "₦0",
+  //   status: "Active",
+  //   renewal: session?.user?.plan === "pro" ? "2025-06-01" : "Never",
+  // };
+  // const currentPlan = {
+  //   name: "Pro",
+  //   price: "₦48,000/yr",
+  //   status: "Active",
+  //   renewal: "2025-06-01",
+  // };
+  // const transactions = [
+  //   { id: 1, date: "2024-06-01", status: "Success", amount: "₦48,000" },
+  //   { id: 2, date: "2023-06-01", status: "Success", amount: "₦48,000" },
+  //   { id: 3, date: "2022-06-01", status: "Failed", amount: "₦48,000" },
+  // ];
+
+   const handleUpgrade = async (plan: string) => {
+    if (!session) {
+      router.push("/signup");
+      return;
+    }
+
+    // setLoading(true);
+    setLoadingPlan(plan);
+    setError("");
+
+    try {
+      const response = await fetch("/api/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ plan }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.data?.authorization_url) {
+        window.location.href = data.data.authorization_url;
+      } else {
+        setError(data.error || "Payment initialization failed");
+      }
+    } catch (err) {
+      setError("An error occurred while processing your request");
+    } finally {
+       setLoadingPlan(null);
+    }
   };
-  const transactions = [
-    { id: 1, date: "2024-06-01", status: "Success", amount: "₦48,000" },
-    { id: 2, date: "2023-06-01", status: "Success", amount: "₦48,000" },
-    { id: 3, date: "2022-06-01", status: "Failed", amount: "₦48,000" },
-  ];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [planRes, txRes] = await Promise.all([
+          fetch('/api/users/plan'),
+          fetch('/api/transactions')
+        ]);
+        
+        if (planRes.ok) setCurrentPlan(await planRes.json());
+        if (txRes.ok) setTransactions(await txRes.json());
+        } catch (error) {
+          console.error("Failed to fetch billing data:", error);
+        }
+    };
+    
+    fetchData();
+  }, []);
 
   const statusBadge = (status: string) => {
     if (status === "Success")
@@ -34,7 +118,7 @@ export function BillingDashboard() {
     if (status === "Failed")
       return (
         <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-transparent text-gray-900 dark:text-white border border-gray-200 dark:border-white/10'>
-          <XCircle className='w-4 h-4 text-gray-400' /> Failed
+          <XCircle className='w-4 h-4 text-red-400' /> Failed
         </span>
       );
     return (
@@ -69,9 +153,53 @@ export function BillingDashboard() {
               Renews: {currentPlan.renewal}
             </div>
           </div>
-          <Button className='bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-2 rounded-lg shadow-none transition'>
+          {/* <Button className='bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-2 rounded-lg shadow-none transition'>
             Upgrade
-          </Button>
+          </Button> */}
+          <div className="flex flex-col gap-3 w-full max-w-xs">
+            <Button 
+              onClick={() => handleUpgrade("pro")}
+              disabled={loadingPlan !== null || currentPlan.name.toLowerCase() === "pro"}
+              className="relative bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-medium px-6 py-1.5 rounded-md shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
+              size="sm"
+            >
+              {loadingPlan === "pro" ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <>
+                  Upgrade to Pro
+                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-white/20 rounded-full">₦48,000/yr</span>
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={() => handleUpgrade("lifetime")}
+              disabled={loadingPlan !== null || currentPlan.name.toLowerCase() === "lifetime"}
+              className="relative bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-medium px-6 py-1.5 rounded-md shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
+              size="sm"
+            >
+              {loadingPlan === "lifetime" ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <>
+                  Upgrade to Lifetime
+                  <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-white/20 rounded-full">₦100,000</span>
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

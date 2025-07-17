@@ -80,6 +80,15 @@ const UserSchema = new Schema(
       folders: { type: Number, default: 1 },
       imagesPerFolder: { type: Number, default: 3 }
     },
+    planExpiresAt: { type: Date, default: null  },
+     paystackCustomerId: {
+      type: String,
+      default: null
+    },
+     paystackSubscriptionId: {
+      type: String,
+      default: null
+    }
   },
   {
     timestamps: true,

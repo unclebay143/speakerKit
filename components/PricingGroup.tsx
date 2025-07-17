@@ -1,5 +1,8 @@
-import { Check, X as XIcon } from "lucide-react";
+import { Check, CircleAlert, X as XIcon } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Plan {
   name: string;
@@ -25,6 +28,43 @@ export default function PricingGroup({
   ctaLink,
   ctaText,
 }: PricingGroupProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  const handlePayment = async (planName: string) => {
+    if (!session) {
+      router.push("/signup");
+      return;
+    }
+
+    setLoadingPlan(planName);
+    setError("");
+
+    try {
+      const response = await fetch("/api/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ plan: planName.toLowerCase() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.data?.authorization_url) {
+        window.location.href = data.data.authorization_url;
+      } else {
+        setError(data.error || "Payment initialization failed");
+      }
+    } catch (err) {
+      setError("An error occurred while processing your request");
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <div className='container mx-auto px-6'>
       <div className='text-center mb-12'>
@@ -33,6 +73,24 @@ export default function PricingGroup({
         </h2>
         <p className='text-gray-400 text-lg max-w-2xl mx-auto'>{subtitle}</p>
       </div>
+
+      {error && (
+        <div className="mb-6 bg-red-900/20 border border-red-800/30 text-red-100 px-4 py-3 rounded-lg max-w-4xl mx-auto">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <CircleAlert className="h-5 w-5 mr-2 text-red-400" />
+              <span>{error}</span>
+            </div>
+            {/* <button
+              onClick={() => handlePayment(loadingPlan!)}
+              className="ml-4 px-3 py-1 bg-red-800/50 hover:bg-red-700/70 rounded-md text-sm font-medium transition-colors"
+            >
+              Retry
+            </button> */}
+          </div>
+        </div>
+      )}
+
       <div className='grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto'>
         {plans.map((plan) => (
           <div
@@ -78,20 +136,28 @@ export default function PricingGroup({
                 </li>
               ))}
             </ul>
-            <Link
-              href={plan.name === "Free" ? "/signup" : "/pricing"}
+
+            <button
+              onClick={() => handlePayment(plan.name)}
+              disabled={loadingPlan === plan.name}
               className={`w-full py-2 rounded-lg font-semibold text-center transition-colors duration-200 ${
                 plan.highlight
                   ? "bg-purple-600 hover:bg-purple-700 text-white"
                   : "bg-white/10 hover:bg-white/20 text-white"
+              } ${
+                loadingPlan === plan.name ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {plan.name === "Free"
-                ? "Get Started"
-                : plan.name === "Pro"
-                ? "Upgrade to Pro"
-                : "Go Lifetime"}
-            </Link>
+              {loadingPlan === plan.name ? (
+                "Processing..."
+              ) : plan.name === "Free" ? (
+                "Get Started"
+              ) : plan.name === "Pro" ? (
+                "Upgrade to Pro"
+              ) : (
+                "Go Lifetime"
+              )}
+            </button>
 
             {plan.note && (
               <div className='absolute bottom-2 mx-auto left-0 right-0 text-xs text-white purple-500 font-medium text-center'>

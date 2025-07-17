@@ -134,19 +134,21 @@ export function DashboardSidebar({
           />
           <div className='absolute bottom-4 left-4 right-4 space-y-2'>
             <Button
-              variant={activeTab === "settings" ? "secondary" : "ghost"}
+              variant={activeTab === "billing" ? "secondary" : "ghost"}
               className={`w-full justify-start text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 ${
-                activeTab === "settings"
+                activeTab === "billing"
                   ? "bg-purple-600/10 dark:bg-purple-600/20 text-purple-700 dark:text-purple-400"
                   : ""
               }`}
               onClick={() => {
-                setActiveTab("settings");
+                setActiveTab("billing");
                 setMobileSidebarOpen(false);
               }}
             >
-              <Settings className='w-5 h-5' />
-              <span>Settings</span>
+              <Link href='/billing' className="flex items-center gap-2">
+                <CreditCard className='w-5 h-5' />
+                <span>Billing</span>
+              </Link>
             </Button>
             <Button
               variant='ghost'
