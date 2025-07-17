@@ -7,16 +7,22 @@ import { authOptions } from "@/utils/auth-options";
 
 export async function POST(req: Request) {
   try {
+    console.log("Payment request received");
     await connectViaMongoose();
+
     const session = await getServerSession(authOptions);
+     console.log("Session:", session?.user); 
 
     if (!session?.user?.id) {
+       console.log("Unauthorized request");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { plan } = await req.json();
+    console.log("Plan requested:", plan);
 
     if (!plan || !["pro", "lifetime"].includes(plan)) {
+        console.log("Invalid plan:", plan);
       return NextResponse.json(
         { error: "Invalid plan selected" },
         { status: 400 }
@@ -25,6 +31,7 @@ export async function POST(req: Request) {
 
     if (plan === "lifetime") {
       const lifetimeCount = await User.countDocuments({ plan: "lifetime" });
+      console.log("Lifetime slots count:", lifetimeCount);
       if (lifetimeCount >= 20) {
         return NextResponse.json(
           { error: "All lifetime slots have been taken" },
@@ -35,16 +42,31 @@ export async function POST(req: Request) {
 
     const user = await User.findById(session.user.id);
     if (!user) {
+      console.log("User not found:", session.user.id);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Define payment parameters
     const amount = plan === "pro" ? 48000 : 100000; 
     const metadata = {
+       custom_fields: [
+      {
+        display_name: "User ID",
+        variable_name: "userId",
+        value: user._id.toString()
+      },
+      {
+        display_name: "Plan",
+        variable_name: "plan",
+        value: plan
+      }
+    ],
       userId: user._id.toString(),
       plan,
       userEmail: user.email
     };
+
+    console.log("Initializing payment for:", user.email, amount, metadata);
 
     // Initialize payment
     const paymentData = await initializePayment(
@@ -55,12 +77,14 @@ export async function POST(req: Request) {
     );
 
     if (!paymentData.status) {
+      console.error("Payment initialization failed:", paymentData.message);
       return NextResponse.json(
         { error: paymentData.message || "Payment initialization failed" },
         { status: 400 }
       );
     }
-
+    
+    console.log("Payment initialized successfully");
     return NextResponse.json(paymentData);
   } catch (error) {
     console.error("Payment error:", error);

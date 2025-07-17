@@ -122,10 +122,13 @@ export function ProfilesOverview() {
   };
 
   const handleCreateProfile = () => {
-    if (!user?.isPro && profiles && profiles.length >= 1) {
+    const isPaidUser = user?.isPro || user?.isLifetime;
+
+    if (!isPaidUser && profiles && profiles.length >= 1) {
       setUpgradeModalOpen(true);
       return;
     }
+
     setProfileModalState({ open: true });
   };
 

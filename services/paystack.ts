@@ -1,6 +1,10 @@
 import https from "https";
 
+// Validate environment variable
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+if (!PAYSTACK_SECRET_KEY) {
+  throw new Error("PAYSTACK_SECRET_KEY is not defined in environment variables");
+}
 
 interface PaystackResponse {
   status: boolean;
@@ -8,13 +12,25 @@ interface PaystackResponse {
   data: any;
 }
 
+interface PaymentMetadata {
+  userId: string;
+  plan: string;
+  userEmail: string;
+  [key: string]: any;
+}
 
-export const paystackRequest = async (options: https.RequestOptions, data?: any): Promise<PaystackResponse> => {
+const DEFAULT_TIMEOUT = 15000; // 15 seconds
+
+export const paystackRequest = async (
+  options: https.RequestOptions & { timeout?: number },
+  data?: any
+): Promise<PaystackResponse> => {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
       let responseData = "";
 
-       if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+      // Handle HTTP errors
+      if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
         return reject(new Error(`Paystack API error: ${res.statusCode}`));
       }
 
@@ -25,11 +41,19 @@ export const paystackRequest = async (options: https.RequestOptions, data?: any)
       res.on("end", () => {
         try {
           const parsedData = JSON.parse(responseData);
+          if (!parsedData.status && parsedData.message) {
+            reject(new Error(parsedData.message));
+          }
           resolve(parsedData);
         } catch (error) {
           reject(new Error("Failed to parse Paystack response"));
         }
       });
+    });
+
+    // Set timeout
+    req.setTimeout(options.timeout || DEFAULT_TIMEOUT, () => {
+      req.destroy(new Error("Request timeout"));
     });
 
     req.on("error", (error) => {
@@ -44,15 +68,35 @@ export const paystackRequest = async (options: https.RequestOptions, data?: any)
   });
 };
 
-export const initializePayment = async (email: string, amount: number, metadata: any, planCode?: string) => {
-  const path = planCode ? "/transaction/initialize" : "/transaction/initialize";
-  
+export const initializePayment = async (
+  email: string,
+  amount: number,
+  metadata: PaymentMetadata,
+  planCode?: string
+): Promise<PaystackResponse> => {
+  // Validate inputs
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Invalid email address");
+  }
+
+  if (!amount || amount <= 0) {
+    throw new Error("Amount must be greater than 0");
+  }
+
+  if (!metadata?.userId || !metadata?.plan) {
+    throw new Error("Metadata must contain userId and plan");
+  }
+
+  const path = "/transaction/initialize";
+  const amountInKobo = Math.round(amount * 100); // Paystack uses kobo
+
   const data = {
     email,
-    amount: amount * 100,
+    amount: amountInKobo,
     currency: "NGN",
     metadata,
-    ...(planCode && { plan: planCode })
+    ...(planCode && { plan: planCode }),
+    callback_url: process.env.PAYSTACK_CALLBACK_URL,
   };
 
   const options = {
@@ -64,12 +108,28 @@ export const initializePayment = async (email: string, amount: number, metadata:
       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
       "Content-Type": "application/json",
     },
+    timeout: DEFAULT_TIMEOUT,
   };
 
-  return paystackRequest(options, data);
+  try {
+    return await paystackRequest(options, data);
+  } catch (error) {
+    console.error("Payment initialization failed:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to initialize payment"
+    );
+  }
 };
 
-export const verifyTransaction = async (reference: string) => {
+export const verifyTransaction = async (
+  reference: string,
+  maxRetries = 3,
+  retryCount = 0
+): Promise<PaystackResponse> => {
+  if (!reference) {
+    throw new Error("Transaction reference is required");
+  }
+
   const options = {
     hostname: "api.paystack.co",
     port: 443,
@@ -78,36 +138,31 @@ export const verifyTransaction = async (reference: string) => {
     headers: {
       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
     },
+    timeout: DEFAULT_TIMEOUT,
   };
 
   try {
     const response = await paystackRequest(options);
-    
-    if (response.data?.status === 'processing') {
-      await new Promise(resolve => setTimeout(resolve, 2000)); 
-      return verifyTransaction(reference); 
+
+    // Handle processing status with retries
+    if (response.data?.status === "processing") {
+      if (retryCount >= maxRetries) {
+        throw new Error(
+          "Transaction is still processing after maximum retries"
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return verifyTransaction(reference, maxRetries, retryCount + 1);
     }
-    
+
     return response;
   } catch (error) {
-    console.error('Verification error:', error);
-    throw error;
+    console.error("Verification error:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Transaction verification failed"
+    );
   }
 };
-
-// export const verifyTransaction = async (reference: string) => {
-//   const options = {
-//     hostname: "api.paystack.co",
-//     port: 443,
-//     path: `/transaction/verify/${reference}`,
-//     method: "GET",
-//     headers: {
-//       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-//     },
-//   };
-
-//   return paystackRequest(options);
-// };
 
 export const fetchPlans = async () => {
   const options = {
@@ -136,110 +191,3 @@ export const fetchPlan = async (planCode: string) => {
 
   return paystackRequest(options);
 };
-
-
-
-
-
-
-
-// import https from "https";
-
-// const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-
-// interface PaystackResponse {
-//   status: boolean;
-//   message: string;
-//   data: any;
-// }
-
-// export const initializePayment = async (params: {
-//   email: string;
-//   amount: number;
-//   plan?: string;
-//   metadata?: any;
-//   currency?: string;
-// }): Promise<PaystackResponse> => {
-//   const { email, amount, plan, metadata, currency = "USD" } = params;
-
-//   const payload = JSON.stringify({
-//     email,
-//     amount: amount * 100,
-//     currency,
-//     plan,
-//     metadata
-//   });
-
-//   return makePaystackRequest("/transaction/initialize", payload);
-// };
-
-// export const verifyTransaction = async (reference: string): Promise<PaystackResponse> => {
-//   return makePaystackRequest(`/transaction/verify/${reference}`, null, "GET");
-// };
-
-// export const createPlan = async (params: {
-//   name: string;
-//   amount: number;
-//   interval: string;
-//   description?: string;
-// }): Promise<PaystackResponse> => {
-//   const { name, amount, interval, description } = params;
-  
-//   const payload = JSON.stringify({
-//     name,
-//     amount: amount * 100,
-//     interval,
-//     description,
-//     currency: "USD"
-//   });
-
-//   return makePaystackRequest("/plan", payload);
-// };
-
-// export const listPlans = async (): Promise<PaystackResponse> => {
-//   return makePaystackRequest("/plan", null, "GET");
-// };
-
-// const makePaystackRequest = async (
-//   path: string,
-//   payload: string | null,
-//   method: string = "POST"
-// ): Promise<PaystackResponse> => {
-//   return new Promise((resolve, reject) => {
-//     const options = {
-//       hostname: "api.paystack.co",
-//       port: 443,
-//       path,
-//       method,
-//       headers: {
-//         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-//         "Content-Type": "application/json"
-//       }
-//     };
-
-//     const req = https.request(options, (res) => {
-//       let data = "";
-
-//       res.on("data", (chunk) => {
-//         data += chunk;
-//       });
-
-//       res.on("end", () => {
-//         try {
-//           resolve(JSON.parse(data));
-//         } catch (e) {
-//           reject(e);
-//         }
-//       });
-//     });
-
-//     req.on("error", (error) => {
-//       reject(error);
-//     });
-
-//     if (payload) {
-//       req.write(payload);
-//     }
-//     req.end();
-//   });
-// };

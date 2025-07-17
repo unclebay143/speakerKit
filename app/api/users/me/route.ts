@@ -22,9 +22,12 @@ export async function GET() {
   // Return user without password and __v
   const { password, __v, ...userWithoutPassword } = user.toObject();
 
+  const isPro = (user.plan === "pro" && (!user.planExpiresAt || new Date(user.planExpiresAt) > new Date()));
+  const isLifetime = user.plan === "lifetime";
+
   return NextResponse.json({
     success: true,
-    user: userWithoutPassword,
+    user: {...userWithoutPassword, isPro, isLifetime},
   });
 }
 

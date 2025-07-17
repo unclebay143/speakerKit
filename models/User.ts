@@ -95,6 +95,26 @@ const UserSchema = new Schema(
   }
 );
 
+UserSchema.pre("save", function (next) {
+  if (this.isModified("plan")) {
+    if (this.plan === "free") {
+      this.planLimits = {
+        profiles: 1,
+        folders: 1,
+        imagesPerFolder: 3,
+      };
+    } else if (this.plan === "pro" || this.plan === "lifetime") {
+      this.planLimits = {
+        profiles: Infinity, 
+        folders: Infinity, 
+        imagesPerFolder: Infinity,  
+      };
+    }
+  }
+  next();
+});
+
+
 const User = models.User || model("User", UserSchema);
 
 export default User;

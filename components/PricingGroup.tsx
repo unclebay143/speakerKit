@@ -1,7 +1,7 @@
 import { Check, CircleAlert, X as XIcon } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Plan {
@@ -33,27 +33,65 @@ export default function PricingGroup({
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const handlePayment = async (planName: string) => {
+  useEffect(() => {
+  const checkPaymentStatus = async () => {
+    const pendingPayment = localStorage.getItem('pendingPayment');
+    if (pendingPayment) {
+      const { plan, userId, timestamp } = JSON.parse(pendingPayment);
+      if (Date.now() - timestamp < 30 * 60 * 1000) { // 30 minutes
+        try {
+          const res = await fetch(`/api/verify-payment?reference=${reference}`);
+          if (res.ok) {
+            localStorage.removeItem('pendingPayment');
+            router.refresh(); // Refresh to show updated plan
+          }
+        } catch (error) {
+          console.error("Payment verification failed:", error);
+        }
+      }
+    }
+  };
+  
+  checkPaymentStatus();
+}, []);
+
+  const handlePayment = async (plan: string) => {
     if (!session) {
       router.push("/signup");
       return;
     }
 
-    setLoadingPlan(planName);
+    setLoadingPlan(plan);
     setError("");
 
     try {
+       console.log("Initiating payment for:", plan);
       const response = await fetch("/api/payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Cookie": document.cookie,
         },
-        body: JSON.stringify({ plan: planName.toLowerCase() }),
+        credentials: "include",
+        body: JSON.stringify({ plan: plan.toLowerCase() }),
       });
 
+      console.log("Payment API response status:", response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Payment error:", errorData);
+        throw new Error(errorData.error || "Payment failed");
+      }
+
       const data = await response.json();
+       console.log("Payment data:", data);
 
       if (response.ok && data.data?.authorization_url) {
+        localStorage.setItem('pendingPayment', JSON.stringify({
+          plan,
+          userId: session.user.id,
+          timestamp: Date.now()
+        }));
         window.location.href = data.data.authorization_url;
       } else {
         setError(data.error || "Payment initialization failed");
