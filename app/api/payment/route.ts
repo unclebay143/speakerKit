@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     // Define payment parameters
-    const amount = plan === "pro" ? 480000 : 100000; 
+    const amount = plan === "pro" ? 48000 : 100000; 
     const metadata = {
       userId: user._id.toString(),
       plan,

@@ -19,7 +19,7 @@ export async function GET() {
   return {
     id: plan.id,
     name: plan.name,
-    price: `$${(plan.amount / 100).toFixed(2)}`,
+    price: `₦${(plan.amount / 100).toLocaleString()}`,
     period: plan.interval === "one-time" ? "" : `/${plan.interval}`,
     features: isPro
       ? [

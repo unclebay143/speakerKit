@@ -1,4 +1,3 @@
-// services/paystack.ts
 import https from "https";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
@@ -9,10 +8,15 @@ interface PaystackResponse {
   data: any;
 }
 
+
 export const paystackRequest = async (options: https.RequestOptions, data?: any): Promise<PaystackResponse> => {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
       let responseData = "";
+
+       if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+        return reject(new Error(`Paystack API error: ${res.statusCode}`));
+      }
 
       res.on("data", (chunk) => {
         responseData += chunk;
@@ -20,9 +24,10 @@ export const paystackRequest = async (options: https.RequestOptions, data?: any)
 
       res.on("end", () => {
         try {
-          resolve(JSON.parse(responseData));
+          const parsedData = JSON.parse(responseData);
+          resolve(parsedData);
         } catch (error) {
-          reject(error);
+          reject(new Error("Failed to parse Paystack response"));
         }
       });
     });
@@ -68,15 +73,41 @@ export const verifyTransaction = async (reference: string) => {
   const options = {
     hostname: "api.paystack.co",
     port: 443,
-    path: `/transaction/verify/${reference}`,
+    path: `/transaction/verify/${encodeURIComponent(reference)}`,
     method: "GET",
     headers: {
       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
     },
   };
 
-  return paystackRequest(options);
+  try {
+    const response = await paystackRequest(options);
+    
+    if (response.data?.status === 'processing') {
+      await new Promise(resolve => setTimeout(resolve, 2000)); 
+      return verifyTransaction(reference); 
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Verification error:', error);
+    throw error;
+  }
 };
+
+// export const verifyTransaction = async (reference: string) => {
+//   const options = {
+//     hostname: "api.paystack.co",
+//     port: 443,
+//     path: `/transaction/verify/${reference}`,
+//     method: "GET",
+//     headers: {
+//       Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+//     },
+//   };
+
+//   return paystackRequest(options);
+// };
 
 export const fetchPlans = async () => {
   const options = {
