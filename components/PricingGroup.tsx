@@ -34,16 +34,29 @@ export default function PricingGroup({
   const [error, setError] = useState("");
 
   useEffect(() => {
+     const params = new URLSearchParams(window.location.search);
+    const paymentSuccess = params.get('payment_success');
+    const plan = params.get('plan');
+    
+    if (paymentSuccess) {
+      window.history.replaceState({}, '', window.location.pathname);
+      
+      toast.success(`Successfully upgraded to ${plan} plan!`);
+      
+      router.refresh();
+      
+      localStorage.removeItem('pendingPayment');
+    }
   const checkPaymentStatus = async () => {
     const pendingPayment = localStorage.getItem('pendingPayment');
     if (pendingPayment) {
       const { plan, userId, timestamp } = JSON.parse(pendingPayment);
-      if (Date.now() - timestamp < 30 * 60 * 1000) { // 30 minutes
+      if (Date.now() - timestamp < 30 * 60 * 1000) { 
         try {
           const res = await fetch(`/api/verify-payment?reference=${reference}`);
           if (res.ok) {
             localStorage.removeItem('pendingPayment');
-            router.refresh(); // Refresh to show updated plan
+            router.refresh(); 
           }
         } catch (error) {
           console.error("Payment verification failed:", error);
@@ -54,6 +67,8 @@ export default function PricingGroup({
   
   checkPaymentStatus();
 }, []);
+
+
 
   const handlePayment = async (plan: string) => {
     if (!session) {
@@ -73,7 +88,7 @@ export default function PricingGroup({
           "Cookie": document.cookie,
         },
         credentials: "include",
-        body: JSON.stringify({ plan: plan.toLowerCase() }),
+        body: JSON.stringify({ plan: plan.toLowerCase(),  success_redirect_url: `${window.location.origin}/billing?payment_success=true&plan=${plan}` }),
       });
 
       console.log("Payment API response status:", response.status);

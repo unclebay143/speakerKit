@@ -72,7 +72,8 @@ export const initializePayment = async (
   email: string,
   amount: number,
   metadata: PaymentMetadata,
-  planCode?: string
+  planCode?: string,
+   callback_url?: string
 ): Promise<PaystackResponse> => {
   // Validate inputs
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -95,6 +96,7 @@ export const initializePayment = async (
     amount: amountInKobo,
     currency: "NGN",
     metadata,
+    ...(callback_url && { callback_url }),
     ...(planCode && { plan: planCode }),
     callback_url: process.env.PAYSTACK_CALLBACK_URL,
   };
