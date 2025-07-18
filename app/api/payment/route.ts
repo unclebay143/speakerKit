@@ -42,11 +42,17 @@ export async function POST(req: Request) {
 
     // Check discount eligibility
     const discount = await SubscriptionDiscount.findOne({ 
-      email: session.user.email,
+      email: session.user.email.toLowerCase(),
       usedAt: { $exists: false }
     });
 
     if (plan === "pro" && discount) {
+      if (user.plan === "pro" && user.planExpiresAt && new Date() < user.planExpiresAt) {
+      return NextResponse.json(
+        { error: "You already have an active Pro plan" },
+        { status: 400 }
+      );
+    }
       user.plan = "pro";
       user.planExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
       await user.save();

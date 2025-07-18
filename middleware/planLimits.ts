@@ -4,6 +4,8 @@ import connectViaMongoose from "@/lib/db";
 import Folder from "@/models/Folders";
 import Profile from "@/models/Profile";
 import Image from "@/models/Images";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 interface CheckPlanLimitsParams {
   userId: string;
@@ -120,3 +122,27 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
     return { allowed: false, error: "Internal server error" };
   }
 }
+
+// export async function middleware(request: NextRequest) {
+//   const session = await getToken({ req: request });
+//   const { pathname } = request.nextUrl;
+
+//   // Protected admin routes
+//   if (pathname.startsWith('/admin')) {
+//     if (!session) {
+//       const url = new URL('/login', request.url);
+//       url.searchParams.set('callbackUrl', pathname);
+//       return NextResponse.redirect(url);
+//     }
+
+//     if (!session.user?.isAdmin) {
+//       return NextResponse.redirect(new URL('/', request.url));
+//     }
+//   }
+
+//   return NextResponse.next();
+// }
+
+// export const config = {
+//   matcher: ['/admin/:path*'],
+// };

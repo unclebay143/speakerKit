@@ -1,4 +1,5 @@
 import connectViaMongoose from "@/lib/db";
+import SubscriptionDiscount from "@/models/SubscriptionDiscount";
 import User from "@/models/User";
 import { generateRandomSlug } from "@/utils/generateSlug";
 import bcrypt from "bcryptjs";
@@ -34,6 +35,12 @@ export async function POST(req: Request) {
       );
     }
 
+     const discount = await SubscriptionDiscount.findOne({ 
+      email: email.toLowerCase(),
+      usedAt: { $exists: false }
+    });
+
+
      let userSlug;
       let isUnique = false;
       while (!isUnique) {
@@ -49,6 +56,8 @@ export async function POST(req: Request) {
       email,
       password: hashedPassword,
       slug: userSlug,
+      plan: discount ? "pro" : "free",
+      planExpiresAt: discount ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null,
       hasCompletedOnboarding: false,
       socialMedia: {
         twitter: "",
@@ -61,12 +70,19 @@ export async function POST(req: Request) {
     });
     await user.save();
 
+    if (discount) {
+      await SubscriptionDiscount.findByIdAndUpdate(discount._id, { 
+        usedAt: new Date() 
+      });
+    }
+
     return NextResponse.json({
       success: true,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        plan: user.plan,
         website: user.website,
         location: user.location,
         hasCompletedOnboarding: user.hasCompletedOnboarding,
