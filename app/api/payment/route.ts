@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ 
         success: true,
         message: "Free Pro plan activated",
-        redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/billing?payment_success=true`
+        redirect_url: `${process.env.NEXT_PUBLIC_API_URL}/billing?payment_success=true`
       });
     }
 
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       amount,
       metadata,
       plan === "pro" ? process.env.PAYSTACK_PRO_PLAN_CODE : undefined,
-      `${process.env.NEXT_PUBLIC_BASE_URL}/billing?payment_success=true`
+      `${process.env.NEXT_PUBLIC_API_URL}/billing?payment_success=true`
     );
 
     if (!paymentData.status) {
