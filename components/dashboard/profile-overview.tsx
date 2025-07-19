@@ -12,8 +12,11 @@ import {
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useFolders } from "@/lib/hooks/useFolders";
 import { useProfiles } from "@/lib/hooks/useProfiles";
+import { slugify } from "@/lib/utils";
 import { format } from "date-fns";
 import {
+  Check,
+  Copy,
   Edit,
   FileText,
   Globe,
@@ -143,6 +146,23 @@ export function ProfilesOverview() {
       id: profileId,
       name: profileTitle,
     });
+  };
+
+  const [copiedProfileId, setCopiedProfileId] = useState<string | null>(null);
+
+  const handleCopyProfileUrl = async (profile: Profile) => {
+    if (!user?.slug) return;
+
+    const profileSlug = slugify(profile.title);
+    const profileUrl = `${window.location.origin}/@${user.slug}?profile=${profileSlug}`;
+
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopiedProfileId(profile._id);
+      setTimeout(() => setCopiedProfileId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy profile URL:", error);
+    }
   };
 
   const handleDeleteProfile = async () => {
@@ -303,6 +323,27 @@ export function ProfilesOverview() {
                     </CardDescription>
                   </div>
                   <div className='flex md:space-x-2'>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className={`${
+                        copiedProfileId === profile._id
+                          ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-500/10"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                      }`}
+                      onClick={() => handleCopyProfileUrl(profile)}
+                      title={
+                        copiedProfileId === profile._id
+                          ? "Copied!"
+                          : "Copy profile URL"
+                      }
+                    >
+                      {copiedProfileId === profile._id ? (
+                        <Check className='w-4 h-4' />
+                      ) : (
+                        <Copy className='w-4 h-4' />
+                      )}
+                    </Button>
                     <Button
                       variant='ghost'
                       size='icon'

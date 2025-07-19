@@ -277,7 +277,7 @@ export default function Template2({
             {/* Short Bio */}
             <div className='bg-white rounded-xl shadow p-6 flex flex-col gap-3 border-t-4 border-teal-400 h-52'>
               <div className='flex items-center justify-between'>
-                <h3 className='text-lg font-bold text-gray-900'>Short Bio</h3>
+                <h3 className='text-lg font-bold text-gray-900'>Quick Bio</h3>
                 <CopyButton
                   text={getActiveProfile()?.shortBio || ""}
                   type='short'

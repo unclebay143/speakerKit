@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/utils/auth-options";
 import connectViaMongoose from "@/lib/db";
 import User from "@/models/User";
+import { authOptions } from "@/utils/auth-options";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
@@ -20,11 +20,17 @@ export async function GET() {
 
     return NextResponse.json({
       name: user.plan || "Free",
-      price: user.plan === "pro" ? "₦48,000/yr" : user.plan === "lifetime" ? "₦100,000" : "₦0",
+      price:
+        user.plan === "pro"
+          ? "₦48,000/yr"
+          : user.plan === "lifetime"
+          ? "₦100,000"
+          : "₦0",
       status: "Active",
-      renewal: user.plan === "pro" ? 
-        user.planExpiresAt?.toISOString().split('T')[0] : 
-        "Never"
+      renewal:
+        user.plan === "pro"
+          ? user.planExpiresAt?.toISOString().split("T")[0]
+          : "Always",
     });
   } catch (error) {
     console.error("Error fetching user plan:", error);

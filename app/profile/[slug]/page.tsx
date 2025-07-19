@@ -1,5 +1,6 @@
 import SpeakerKitPreview from "@/components/Preview";
 import connectViaMongoose from "@/lib/db";
+import { SPEAKERKIT_BASE_URL } from "@/lib/utils";
 import Folder from "@/models/Folders";
 import Image from "@/models/Images";
 import Profile from "@/models/Profile";
@@ -52,13 +53,12 @@ export async function generateMetadata({
       `${user.name}'s professional profile on SpeakerKit`;
 
     const title = `${user.name} | SpeakerKit`;
-    const url = `${
-      process.env.NEXT_PUBLIC_APP_URL || "https://speakerkit.com"
-    }/@${slug}`;
+    const url = `${SPEAKERKIT_BASE_URL}/@${slug}`;
 
     return {
       title,
       description,
+      icons: user.profileImage ? { icon: user.profileImage } : undefined,
       keywords: [
         user.name,
         "speaker",
@@ -144,7 +144,8 @@ export default async function Page({ params }: PageProps) {
               Profile Not Found
             </h1>
             <p className='text-gray-600'>
-              The profile you&apos;re looking for doesn&apos;t exist or is not available.
+              The profile you&apos;re looking for doesn&apos;t exist or is not
+              available.
             </p>
           </div>
         </div>
@@ -166,7 +167,8 @@ export default async function Page({ params }: PageProps) {
               Profile Not Found
             </h1>
             <p className='text-gray-600'>
-              The profile you&apos;re looking for doesn&apos;t exist or is not available.
+              The profile you&apos;re looking for doesn&apos;t exist or is not
+              available.
             </p>
           </div>
         </div>

@@ -62,9 +62,9 @@ export function DeleteConfirmationModal({
         }}
         disabled={loading}
       >
-         {loading ? (
+        {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className='h-4 w-4 animate-spin' />
             Deleting...
           </>
         ) : (
@@ -77,7 +77,7 @@ export function DeleteConfirmationModal({
   return (
     <ResponsiveModal
       open={open}
-       onOpenChange={(open) => !loading && onOpenChange(open)}
+      onOpenChange={(open) => !loading && onOpenChange(open)}
       heading={modalTitle}
       description={displayDescription}
       footer={footer}

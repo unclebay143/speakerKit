@@ -86,10 +86,10 @@ export function DashboardHeader({
         </div>
 
         <div className='flex items-center space-x-4'>
-          {user?.username && (
+          {user?.slug && (
             <div className='flex rounded-md overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40'>
               <Link
-                href={`/@${user.username}`}
+                href={`/@${user.slug}`}
                 target='_blank'
                 className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 focus:outline-none focus:bg-gray-100 dark:focus:bg-white/10 border-r border-gray-200 dark:border-white/10 flex items-center'
                 style={{ textDecoration: "none" }}

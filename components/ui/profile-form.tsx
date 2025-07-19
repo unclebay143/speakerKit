@@ -95,6 +95,12 @@ export function ProfileForm({
     onCancel();
   }, [onCancel]);
 
+  const maxLengths = {
+    shortBio: 350,
+    mediumBio: 900,
+    longBio: 2500,
+  };
+
   return (
     <div className='space-y-6'>
       <div className='space-y-4'>
@@ -129,17 +135,18 @@ export function ProfileForm({
               htmlFor='shortBio'
               className='text-gray-900 dark:text-white text-sm'
             >
-              Short Bio (200 characters max) *
+              Quick Bio ({maxLengths.shortBio} characters max) *
             </Label>
             <Textarea
               id='shortBio'
               placeholder='Brief introduction for quick references and social media'
               value={profileData.shortBio}
               onChange={(e) => handleInputChange("shortBio", e.target.value)}
-              maxLength={200}
+              maxLength={maxLengths.shortBio}
+              className='resize-none'
             />
             <p className='text-xs text-gray-600 dark:text-gray-400 text-right'>
-              {profileData.shortBio.length}/200 characters
+              {profileData.shortBio.length}/{maxLengths.shortBio} characters
             </p>
           </div>
 
@@ -149,17 +156,18 @@ export function ProfileForm({
               htmlFor='mediumBio'
               className='text-gray-900 dark:text-white text-sm'
             >
-              Medium Bio (1500 characters max)
+              Medium Bio ({maxLengths.mediumBio} characters max)
             </Label>
             <Textarea
               id='mediumBio'
               placeholder='Detailed bio for event programs and professional introductions'
               value={profileData.mediumBio}
               onChange={(e) => handleInputChange("mediumBio", e.target.value)}
-              maxLength={1500}
+              maxLength={maxLengths.mediumBio}
+              className='resize-none'
             />
             <p className='text-xs text-gray-600 dark:text-gray-400 text-right'>
-              {profileData.mediumBio.length}/1500 characters
+              {profileData.mediumBio.length}/{maxLengths.mediumBio} characters
             </p>
           </div>
 
@@ -169,17 +177,18 @@ export function ProfileForm({
               htmlFor='longBio'
               className='text-gray-900 dark:text-white text-sm'
             >
-              Long Bio (Full biography, 3000 characters max)
+              Full Bio (Full biography, {maxLengths.longBio} characters max)
             </Label>
             <Textarea
               id='longBio'
               placeholder='Complete biography with full background, achievements, and experience'
               value={profileData.longBio}
               onChange={(e) => handleInputChange("longBio", e.target.value)}
-              maxLength={3000}
+              maxLength={maxLengths.longBio}
+              className='resize-none'
             />
             <p className='text-xs text-gray-600 dark:text-gray-400 text-right'>
-              {profileData.longBio.length}/3000 characters
+              {profileData.longBio.length}/{maxLengths.longBio} characters
             </p>
           </div>
         </div>

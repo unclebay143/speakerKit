@@ -1,3 +1,4 @@
+import { OG_IMAGE, SPEAKERKIT_BASE_URL } from "@/lib/utils";
 import { Metadata } from "next";
 import FeaturesSection from "../components/FeaturesSection";
 import Hero from "../components/hero";
@@ -42,11 +43,11 @@ export const metadata: Metadata = {
     title: "SpeakerKit - Professional Speaker Profile Platform",
     description:
       "Create stunning professional speaker profiles, showcase your expertise, and connect with event organizers. Build your speaking brand with SpeakerKit's modern, customizable profile platform.",
-    url: "https://speakerkit.com",
+    url: SPEAKERKIT_BASE_URL,
     siteName: "SpeakerKit",
     images: [
       {
-        url: "/og-image.png", // You'll need to create this image
+        url: OG_IMAGE,
         width: 1200,
         height: 630,
         alt: "SpeakerKit - Professional Speaker Profile Platform",
@@ -59,12 +60,12 @@ export const metadata: Metadata = {
     title: "SpeakerKit - Professional Speaker Profile Platform",
     description:
       "Create stunning professional speaker profiles, showcase your expertise, and connect with event organizers.",
-    images: ["/og-image.png"], // You'll need to create this image
+    images: [OG_IMAGE],
     creator: "@speakerkit",
     site: "@speakerkit",
   },
   alternates: {
-    canonical: "https://speakerkit.com",
+    canonical: SPEAKERKIT_BASE_URL,
   },
   other: {
     "twitter:label1": "Platform",

@@ -1,5 +1,6 @@
 "use client";
 
+import { slugify } from "@/lib/utils";
 import {
   BadgeCheck,
   Check,
@@ -10,7 +11,8 @@ import {
   Mail,
   Twitter,
 } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Profile {
   _id: string;
@@ -151,9 +153,39 @@ export function DefaultTemplate({
   const [downloadingImage, setDownloadingImage] = useState<string | null>(null);
   const [activeProfile, setActiveProfile] =
     useState<string>(initialActiveProfile);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Get theme configuration
   const theme = THEMES[userData.theme as keyof typeof THEMES] || THEMES.teal;
+
+  // Handle URL query parameter for profile selection
+  useEffect(() => {
+    const profileFromUrl = searchParams.get("profile");
+    if (profileFromUrl) {
+      // Find profile by slug
+      const matchingProfile = findProfileBySlug(profileFromUrl);
+      if (matchingProfile && matchingProfile.isPublic) {
+        setActiveProfile(matchingProfile._id);
+      }
+    }
+  }, [searchParams, profiles]);
+
+  // Function to find profile by slug
+  const findProfileBySlug = (slug: string) => {
+    return profiles.find((profile) => slugify(profile.title) === slug);
+  };
+
+  // Function to update URL when switching profiles
+  const updateProfileInUrl = (profileId: string) => {
+    const profile = profiles.find((p) => p._id === profileId);
+    if (profile && profile.isPublic) {
+      const params = new URLSearchParams(searchParams);
+      params.set("profile", slugify(profile.title));
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  };
 
   const getActiveProfile = () => {
     if (!profiles || profiles.length === 0) return null;
@@ -331,7 +363,10 @@ export function DefaultTemplate({
                 <button
                   key={profile._id}
                   type='button'
-                  onClick={() => setActiveProfile(profile._id)}
+                  onClick={() => {
+                    setActiveProfile(profile._id);
+                    updateProfileInUrl(profile._id);
+                  }}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
                     activeProfile === profile._id
                       ? `bg-${theme.accent}-600 text-white shadow`
@@ -354,7 +389,7 @@ export function DefaultTemplate({
                 className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
               >
                 <div className='flex items-center justify-between mb-3'>
-                  <h3 className='text-lg font-bold'>Short Bio</h3>
+                  <h3 className='text-lg font-bold'>Quick Bio</h3>
                   <CopyButton
                     text={getActiveProfile()?.shortBio || ""}
                     type='short'
@@ -390,7 +425,7 @@ export function DefaultTemplate({
                 className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
               >
                 <div className='flex items-center justify-between mb-3'>
-                  <h3 className='text-lg font-bold'>Long Bio</h3>
+                  <h3 className='text-lg font-bold'>Full Bio</h3>
                   <CopyButton
                     text={getActiveProfile()?.longBio || ""}
                     type='long'

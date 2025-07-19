@@ -44,20 +44,20 @@ function ProfileInfoSection() {
 
   const onSubmit = async (values: any) => {
     try {
-      await updateUser.mutateAsync({
+      const updateData: any = {
         name: values.fullName,
-        // username: values.username,
-      });
+      };
+
       if (canEditSlug && values.slug !== user?.slug) {
         updateData.slug = values.slug;
       }
+
       await updateUser.mutateAsync(updateData);
 
       setMessage({
         text: "Profile information updated successfully!",
         type: "success",
       });
-      refetch();
     } catch (error) {
       setMessage({
         text: "Failed to update profile information",
