@@ -89,7 +89,7 @@ export const authOptions: AuthOptions = {
           const newUser = await User.create({
             name: user.name,
             email: user.email,
-            slug: generateRandomSlug(user.email),
+            slug: generateRandomSlug(),
             // username: null,
             image: user.image,
             isPublic: true,
@@ -151,7 +151,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.slug = user.slug;
+        token.slug = user.slug || "";
         // token.username = user.username;
         token.location = user.location;
         token.website = user.website;
