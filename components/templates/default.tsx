@@ -1,6 +1,7 @@
 "use client";
 
 import { slugify } from "@/lib/utils";
+import { type Event } from "@/lib/youtube-utils";
 import {
   BadgeCheck,
   Check,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import EventsSection from "../EventsSection";
 
 interface Profile {
   _id: string;
@@ -56,14 +58,6 @@ interface UserData {
     instagram?: string;
     email?: string;
   };
-}
-
-interface Event {
-  coverImage: string;
-  topic: string;
-  organizers: string[];
-  link: string;
-  date?: string;
 }
 
 interface UltimateProfileProps {
@@ -195,6 +189,7 @@ const events = [
     coverImage:
       "https://cdn.hashnode.com/res/hashnode/image/upload/v1735603811679/52213608-452d-4f06-a3ef-39032483085e.jpeg",
     link: "https://www.youtube.com/watch?v=62MGw4ybfJU",
+    youtubeVideo: "https://youtu.be/62MGw4ybfJU",
   },
   {
     title: "Job Opportunities for Junior Developers",
@@ -205,6 +200,18 @@ const events = [
     coverImage:
       "https://cdn.hashnode.com/res/hashnode/image/upload/v1735603823640/29cea940-5bb2-4f02-a4a2-83de61efa860.webp",
     link: "https://www.youtube.com/watch?v=NY6_2ozQilE",
+    youtubeVideo: "https://youtu.be/NY6_2ozQilE",
+  },
+  {
+    title: "Complete Developer Playlist",
+    event: "Tech Talks Collection",
+    date: "Ongoing",
+    location: "YouTube",
+    type: "Playlist",
+    coverImage: "https://img.youtube.com/vi/WoHwu20OZl8/maxresdefault.jpg",
+    link: "https://youtube.com/playlist?list=PL6kxQjlEC_5TfAmeC2UFOoGMYjKvtpXaa&si=kN-lqS-wR-bPyWuK",
+    youtubePlaylist:
+      "https://youtube.com/playlist?list=PL6kxQjlEC_5TfAmeC2UFOoGMYjKvtpXaa&si=kN-lqS-wR-bPyWuK",
   },
 
   // AI-powered Productivity: Boosting Productivity for Software Engineers using Open-Source LLMs
@@ -686,87 +693,7 @@ export function DefaultTemplate({
         {/* Conditional Content Rendering */}
         {searchParams.get("activities") ? (
           // Activities/Events Section
-          <section className='mb-16'>
-            {/* <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
-              My Talks & Events
-            </h2> */}
-
-            <div className='space-y-6 max-w-4xl mx-auto'>
-              {events.map((event, idx) => (
-                <div
-                  key={idx}
-                  className='bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow flex flex-col md:flex-row h-auto md:h-64'
-                >
-                  <div className='w-full md:w-64 h-48 md:h-full flex-shrink-0 order-1 md:order-2'>
-                    <img
-                      src={event.coverImage}
-                      alt={event.title}
-                      className='w-full h-full object-cover'
-                    />
-                  </div>
-
-                  <div className='flex-1 p-6 flex flex-col order-2 md:order-1'>
-                    <div className='flex items-center gap-3 mb-3'>
-                      <span className='flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full text-sm font-bold'>
-                        {idx + 1}
-                      </span>
-                      <span
-                        className={`inline-block bg-${theme.accent}-100 text-${theme.accent}-700 px-3 py-1 rounded-full text-xs font-semibold`}
-                      >
-                        {event.type}
-                      </span>
-                    </div>
-
-                    <h3 className='font-semibold text-xl mb-2 line-clamp-2 flex-shrink-0'>
-                      {event.title}
-                    </h3>
-
-                    <p className='font-medium text-gray-800 mb-3 flex-shrink-0'>
-                      {event.event}
-                    </p>
-
-                    <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 mb-4 flex-shrink-0'>
-                      <div className='flex items-center gap-2'>
-                        <span className='text-gray-500'>📅</span>
-                        <span>{event.date}</span>
-                      </div>
-
-                      <div className='flex items-center gap-2 min-w-0 flex-1'>
-                        <span className='text-gray-500 flex-shrink-0'>📍</span>
-                        <span className='truncate' title={event.location}>
-                          {event.location}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className='mt-auto'>
-                      <a
-                        href={event.link}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={`inline-flex items-center gap-2 px-4 py-2 bg-${theme.accent}-600 text-white rounded-lg text-sm font-semibold hover:bg-${theme.accent}-700 transition-colors`}
-                      >
-                        View Event
-                        <svg
-                          className='w-4 h-4'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14'
-                          />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <EventsSection events={events} theme={theme} />
         ) : (
           // Profile Content
           <>
