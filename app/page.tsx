@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     description:
       "Create stunning professional speaker profiles, showcase your expertise, and connect with event organizers. Build your speaking brand with SpeakerKit's modern, customizable profile platform.",
     url: SPEAKERKIT_BASE_URL,
-    siteName: "SpeakerKit",
+    siteName: "SpeakerKit.org",
     images: [
       {
         url: OG_IMAGE,

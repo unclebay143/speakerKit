@@ -19,3 +19,5 @@ export function slugify(text: string): string {
 
 export const OG_IMAGE =
   "https://res.cloudinary.com/dpkl4o58w/image/upload/v1752910329/user_uploads/687366a4d77d42b1c72dabc7/6873cf5f23188d64fa20ee56/mczllhwhhmzq6rf9iula.png";
+
+export const CLOUDINARY_FOLDER = "speakerkit";
