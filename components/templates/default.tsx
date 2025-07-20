@@ -9,6 +9,7 @@ import {
   Instagram,
   Linkedin,
   Mail,
+  Mic,
   Twitter,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -119,29 +120,109 @@ const THEMES = {
   },
 };
 
-// const DUMMY_EVENTS: Event[] = [
-//   {
-//     coverImage: "/placeholder.jpg",
-//     topic: "The Future of AI in Public Speaking",
-//     organizers: ["TechConf 2024", "AI Speakers Guild"],
-//     link: "https://example.com/event1",
-//     date: "2024-09-15",
-//   },
-//   {
-//     coverImage: "/placeholder.jpg",
-//     topic: "Storytelling for Impact",
-//     organizers: ["Impact Summit"],
-//     link: "https://example.com/event2",
-//     date: "2024-10-10",
-//   },
-//   {
-//     coverImage: "/placeholder.jpg",
-//     topic: "Mastering Virtual Presentations",
-//     organizers: ["WebinarPro"],
-//     link: "https://example.com/event3",
-//     date: "2024-11-05",
-//   },
-// ];
+const events = [
+  {
+    title: "GenAI Supercharges Your Vue Dev Workflow",
+    event: "Vue.js Global Summit'25 AI Edition",
+    date: "May 21st, 2025",
+    location: "Online",
+    type: "Conference",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1747854649536/a3515968-abbd-4e31-8386-8617c83ee55d.png",
+    link: "https://geekle.us/schedule/vue25",
+  },
+  {
+    title:
+      "AI-powered Productivity: Boosting Productivity for Software Engineers using Open-Source LLMs",
+    event: "Conf42 Machine Learning 2025 - Online",
+    date: "May 08th, 2025",
+    location: "Online",
+    type: "Conference",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1747834446844/bb21373d-f92f-48ac-a5f5-9d6a1611e020.jpeg",
+    link: "https://www.conf42.com/Machine_Learning_2025_Ayodele_Samuel_Adebayo_productivity_entrepreneurs_solo",
+  },
+  {
+    title:
+      "Supercharging Your Workflow with AI: Tools, Tips, and Best Practices",
+    event: "Build with AI - 2025, University of Ilorin",
+    date: "April 12th, 2025",
+    location:
+      "Physical - Ilorin Innovation Hub, Ahmadu Bello Way, Ilorin, 240101 ",
+    type: "Meetup",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1744064507202/0023be79-d838-40cd-b365-630808f0b264.jpeg",
+    link: "https://gdsc-unilorin.vercel.app/speakers",
+  },
+  {
+    title:
+      "Building Faster: Supercharging Development with Supabase & AI Coding Tools",
+    event: "Supabase Launch Week 14",
+    date: "Match 29th, 2025",
+    location: "Physical - MALhub, Ilorin, Kwara State",
+    type: "Meetup",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1742655257788/2a0924d2-c891-47fc-9652-96078357f8ed.jpeg",
+    link: "https://t.co/emVNXFKn7G",
+  },
+  {
+    title: "Becoming a better development in 2024",
+    event: "Lead DevRel",
+    date: "Feb 16th, 2024",
+    location: "Virtual",
+    type: "Podcast",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1735469108829/af94f334-cf99-4e71-92dd-5c62d531cd71.jpeg",
+    link: "https://open.spotify.com/episode/6Go2VbO3BevU3zHFi73hWU",
+  },
+  {
+    title: "Tech Career Accelerator - Strategies and Opportunities",
+    event: "CodeSquad LLC",
+    date: "May 20th, 2023",
+    location: "Physical - Ilorin, Kwara State",
+    type: "Meetup",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1735736957582/61f99d36-5b9d-40c0-a857-347dd60e0479.jpeg",
+    link: "https://www.canva.com/design/DAFjZYUeCm0/Qr-YgEqDGcXN56bt8h8gDw/view",
+  },
+  {
+    title: "Getting Started with W3Schools Spaces",
+    event: "W3Schools Event",
+    date: "Oct 30th, 2021",
+    location: "YouTube Live",
+    type: "Product Demo",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1735603811679/52213608-452d-4f06-a3ef-39032483085e.jpeg",
+    link: "https://www.youtube.com/watch?v=62MGw4ybfJU",
+  },
+  {
+    title: "Job Opportunities for Junior Developers",
+    event: "W3Schools Event",
+    date: "Oct 29th, 2021",
+    location: "YouTube Live",
+    type: "Interview",
+    coverImage:
+      "https://cdn.hashnode.com/res/hashnode/image/upload/v1735603823640/29cea940-5bb2-4f02-a4a2-83de61efa860.webp",
+    link: "https://www.youtube.com/watch?v=NY6_2ozQilE",
+  },
+
+  // AI-powered Productivity: Boosting Productivity for Software Engineers using Open-Source LLMs
+  // Conf42 Machine Learning 2025 - Online
+  // May 08 2025
+  // https://www.conf42.com/Machine_Learning_2025_Ayodele_Samuel_Adebayo_productivity_entrepreneurs_solo
+  // https://cdn.hashnode.com/res/hashnode/image/upload/v1747834446844/bb21373d-f92f-48ac-a5f5-9d6a1611e020.jpeg
+
+  // {
+  //   title: "AI in Modern Software Engineering",
+  //   event: "AI Dev Summit",
+  //   date: "November 10-12, 2025",
+  //   location: "London, UK",
+  //   type: "Podcast",
+  //   coverImage:
+  //     "https://kzmjkys2ll9nyn2sgbq0.lite.vusercontent.net/placeholder.svg",
+  //   link: "https://open.spotify.com/episode/6Go2VbO3BevU3zHFi73hWU",
+  // },
+];
 
 export function DefaultTemplate({
   userData,
@@ -158,7 +239,8 @@ export function DefaultTemplate({
   const pathname = usePathname();
 
   // Get theme configuration
-  const theme = THEMES[userData.theme as keyof typeof THEMES] || THEMES.teal;
+  // const theme = THEMES[userData.theme as keyof typeof THEMES] || THEMES.teal;
+  const theme = THEMES.teal;
 
   // Handle URL query parameter for profile selection
   useEffect(() => {
@@ -182,6 +264,7 @@ export function DefaultTemplate({
     const profile = profiles.find((p) => p._id === profileId);
     if (profile && profile.isPublic) {
       const params = new URLSearchParams(searchParams);
+      params.delete("activities");
       params.set("profile", slugify(profile.title));
       router.push(`${pathname}?${params.toString()}`);
     }
@@ -288,231 +371,345 @@ export function DefaultTemplate({
 
       {/* Main Content */}
       <div className='max-w-4xl mx-auto pt-24 px-4 md:px-8'>
-        {/* Profile Section */}
-        <section className='mb-16'>
-          <div className='text-center md:text-left mb-6'>
-            <h1 className={`text-3xl font-bold mb-2 text-center text-gray-900`}>
-              {userData.name}
-            </h1>
-            <h2
-              className={`text-xl text-center font-medium text-${theme.accent}-700 mb-4`}
-            >
-              {getActiveProfile()?.title}
-            </h2>
+        {/* Profile Header */}
+        <div className='text-center md:text-left mb-6'>
+          <h1 className={`text-3xl font-bold mb-2 text-center text-gray-900`}>
+            {userData.name}
+          </h1>
+          <h2
+            className={`text-xl text-center font-medium text-${theme.accent}-700 mb-4`}
+          >
+            {getActiveProfile()?.title}
+          </h2>
 
-            {/* Email and Social Links */}
-            {userData.socialMedia &&
-              (() => {
-                const { twitter, linkedin, instagram, email } =
-                  userData.socialMedia || {};
-                const hasAny = twitter || linkedin || instagram || email;
-                if (!hasAny) return null;
-                return (
-                  <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
-                    <div className='flex gap-2'>
-                      {linkedin && (
-                        <a
-                          href={linkedin}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className={socialStyles}
-                          aria-label='LinkedIn'
-                        >
-                          <Linkedin className='h-4 w-4' />
-                        </a>
-                      )}
-                      {twitter && (
-                        <a
-                          href={twitter}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className={socialStyles}
-                          aria-label='Twitter'
-                        >
-                          <Twitter className='h-4 w-4' />
-                        </a>
-                      )}
-                      {instagram && (
-                        <a
-                          href={instagram}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className={socialStyles}
-                          aria-label='Instagram'
-                        >
-                          <Instagram className='h-4 w-4' />
-                        </a>
-                      )}
-                      {email && (
-                        <a
-                          href={`mailto:${email}`}
-                          className={socialStyles}
-                          aria-label='Email'
-                        >
-                          <Mail className='h-4 w-4' />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-          </div>
-
-          {/* Profile Selector */}
-          <div className='flex flex-wrap gap-2 justify-center mb-8'>
-            {profiles.map((profile) => {
-              if (!profile.isPublic) return null;
+          {/* Email and Social Links */}
+          {userData.socialMedia &&
+            (() => {
+              const { twitter, linkedin, instagram, email } =
+                userData.socialMedia || {};
+              const hasAny = twitter || linkedin || instagram || email;
+              if (!hasAny) return null;
               return (
-                <button
-                  key={profile._id}
-                  type='button'
-                  onClick={() => {
-                    setActiveProfile(profile._id);
-                    updateProfileInUrl(profile._id);
-                  }}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
-                    activeProfile === profile._id
-                      ? `bg-${theme.accent}-600 text-white shadow`
-                      : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
-                  } focus:outline-none focus:ring-2 focus:ring-${
-                    theme.accent
-                  }-400`}
-                  aria-pressed={activeProfile === profile._id}
-                >
-                  {profile.title}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Bios */}
-          <div className='space-y-4 mb-8'>
-            {getActiveProfile()?.shortBio && (
-              <div
-                className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
-              >
-                <div className='flex items-center justify-between mb-3'>
-                  <h3 className='text-lg font-bold'>Quick Bio</h3>
-                  <CopyButton
-                    text={getActiveProfile()?.shortBio || ""}
-                    type='short'
-                    label='Copy'
-                  />
-                </div>
-                <p className='text-gray-700 leading-relaxed'>
-                  {getActiveProfile()?.shortBio}
-                </p>
-              </div>
-            )}
-
-            {getActiveProfile()?.mediumBio && (
-              <div
-                className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
-              >
-                <div className='flex items-center justify-between mb-3'>
-                  <h3 className='text-lg font-bold'>Medium Bio</h3>
-                  <CopyButton
-                    text={getActiveProfile()?.mediumBio || ""}
-                    type='medium'
-                    label='Copy'
-                  />
-                </div>
-                <p className='text-gray-700 leading-relaxed'>
-                  {getActiveProfile()?.mediumBio}
-                </p>
-              </div>
-            )}
-
-            {getActiveProfile()?.longBio && (
-              <div
-                className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
-              >
-                <div className='flex items-center justify-between mb-3'>
-                  <h3 className='text-lg font-bold'>Full Bio</h3>
-                  <CopyButton
-                    text={getActiveProfile()?.longBio || ""}
-                    type='long'
-                    label='Copy'
-                  />
-                </div>
-                <p className='text-gray-700 leading-relaxed'>
-                  {getActiveProfile()?.longBio}
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Image Gallery Section */}
-        <section className='mb-16'>
-          {folders.length > 0 ? (
-            <>
-              <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
-                Image Gallery
-              </h2>
-
-              <div className='space-y-8'>
-                {folders.map((folder) => (
-                  <div
-                    key={folder._id}
-                    className='bg-white rounded-xl shadow overflow-hidden'
-                  >
-                    <div className='p-6 border-b border-gray-100'>
-                      <h3 className='text-xl font-semibold mb-2'>
-                        {folder.name}
-                      </h3>
-                      <p className='text-gray-600'>{folder.description}</p>
-                    </div>
-
-                    {folder.images.length > 0 ? (
-                      <div className='p-6'>
-                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                          {folder.images.map((image) => (
-                            <div
-                              key={image._id}
-                              className='relative group rounded-lg overflow-hidden'
-                            >
-                              <img
-                                src={image.url}
-                                alt={image.name}
-                                className='w-full h-full object-cover'
-                              />
-                              <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
-                                <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                                  <button
-                                    onClick={() =>
-                                      downloadImage(image.url, image.name)
-                                    }
-                                    disabled={downloadingImage === image.name}
-                                    className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
-                                  >
-                                    {downloadingImage === image.name ? (
-                                      <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
-                                    ) : (
-                                      <Download className='h-4 w-4' />
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className='p-6 text-center text-gray-500'>
-                        No images in this folder
-                      </div>
+                <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
+                  <div className='flex gap-2'>
+                    {linkedin && (
+                      <a
+                        href={linkedin}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className={socialStyles}
+                        aria-label='LinkedIn'
+                      >
+                        <Linkedin className='h-4 w-4' />
+                      </a>
+                    )}
+                    {twitter && (
+                      <a
+                        href={twitter}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className={socialStyles}
+                        aria-label='Twitter'
+                      >
+                        <Twitter className='h-4 w-4' />
+                      </a>
+                    )}
+                    {instagram && (
+                      <a
+                        href={instagram}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className={socialStyles}
+                        aria-label='Instagram'
+                      >
+                        <Instagram className='h-4 w-4' />
+                      </a>
+                    )}
+                    {email && (
+                      <a
+                        href={`mailto:${email}`}
+                        className={socialStyles}
+                        aria-label='Email'
+                      >
+                        <Mail className='h-4 w-4' />
+                      </a>
                     )}
                   </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className='text-center text-gray-500 py-12'>
-              <p>No image galleries available</p>
+                </div>
+              );
+            })()}
+        </div>
+
+        {/* Profile Selector */}
+        <div className='flex flex-wrap gap-2 justify-center mb-8'>
+          {profiles.map((profile) => {
+            if (!profile.isPublic) return null;
+            return (
+              <button
+                key={profile._id}
+                type='button'
+                onClick={() => {
+                  setActiveProfile(profile._id);
+                  updateProfileInUrl(profile._id);
+                }}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                  activeProfile === profile._id &&
+                  !searchParams.get("activities")
+                    ? `bg-${theme.accent}-600 text-white shadow`
+                    : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
+                } focus:outline-none focus:ring-2 focus:ring-${
+                  theme.accent
+                }-400`}
+                aria-pressed={
+                  activeProfile === profile._id &&
+                  !searchParams.get("activities")
+                }
+              >
+                {profile.title}
+              </button>
+            );
+          })}
+
+          {/* Activities Tab */}
+          <button
+            type='button'
+            onClick={() => {
+              const params = new URLSearchParams(searchParams);
+              params.delete("profile");
+              params.set("activities", "true");
+              router.push(`${pathname}?${params.toString()}`);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition ${
+              searchParams.get("activities")
+                ? `bg-${theme.accent}-600 text-white shadow`
+                : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
+            } focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+            aria-pressed={!!searchParams.get("activities")}
+          >
+            <Mic className='h-4 w-4' /> My Talks
+          </button>
+        </div>
+
+        {/* Conditional Content Rendering */}
+        {searchParams.get("activities") ? (
+          // Activities/Events Section
+          <section className='mb-16'>
+            {/* <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
+              My Talks & Events
+            </h2> */}
+
+            <div className='space-y-6 max-w-4xl mx-auto'>
+              {events.map((event, idx) => (
+                <div
+                  key={idx}
+                  className='bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow flex flex-col md:flex-row h-auto md:h-64'
+                >
+                  <div className='w-full md:w-64 h-48 md:h-full flex-shrink-0 order-1 md:order-2'>
+                    <img
+                      src={event.coverImage}
+                      alt={event.title}
+                      className='w-full h-full object-cover'
+                    />
+                  </div>
+
+                  <div className='flex-1 p-6 flex flex-col order-2 md:order-1'>
+                    <div className='flex items-center gap-3 mb-3'>
+                      <span className='flex items-center justify-center w-8 h-8 bg-gray-100 text-gray-600 rounded-full text-sm font-bold'>
+                        {idx + 1}
+                      </span>
+                      <span
+                        className={`inline-block bg-${theme.accent}-100 text-${theme.accent}-700 px-3 py-1 rounded-full text-xs font-semibold`}
+                      >
+                        {event.type}
+                      </span>
+                    </div>
+
+                    <h3 className='font-semibold text-xl mb-2 line-clamp-2 flex-shrink-0'>
+                      {event.title}
+                    </h3>
+
+                    <p className='font-medium text-gray-800 mb-3 flex-shrink-0'>
+                      {event.event}
+                    </p>
+
+                    <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 mb-4 flex-shrink-0'>
+                      <div className='flex items-center gap-2'>
+                        <span className='text-gray-500'>📅</span>
+                        <span>{event.date}</span>
+                      </div>
+
+                      <div className='flex items-center gap-2 min-w-0 flex-1'>
+                        <span className='text-gray-500 flex-shrink-0'>📍</span>
+                        <span className='truncate' title={event.location}>
+                          {event.location}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className='mt-auto'>
+                      <a
+                        href={event.link}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className={`inline-flex items-center gap-2 px-4 py-2 bg-${theme.accent}-600 text-white rounded-lg text-sm font-semibold hover:bg-${theme.accent}-700 transition-colors`}
+                      >
+                        View Event
+                        <svg
+                          className='w-4 h-4'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14'
+                          />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </section>
+          </section>
+        ) : (
+          // Profile Content
+          <>
+            {/* Bios */}
+            <section className='mb-16'>
+              <div className='space-y-4 mb-8'>
+                {getActiveProfile()?.shortBio && (
+                  <div
+                    className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
+                  >
+                    <div className='flex items-center justify-between mb-3'>
+                      <h3 className='text-lg font-bold'>Quick Bio</h3>
+                      <CopyButton
+                        text={getActiveProfile()?.shortBio || ""}
+                        type='short'
+                        label='Copy'
+                      />
+                    </div>
+                    <p className='text-gray-700 leading-relaxed'>
+                      {getActiveProfile()?.shortBio}
+                    </p>
+                  </div>
+                )}
+
+                {getActiveProfile()?.mediumBio && (
+                  <div
+                    className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
+                  >
+                    <div className='flex items-center justify-between mb-3'>
+                      <h3 className='text-lg font-bold'>Medium Bio</h3>
+                      <CopyButton
+                        text={getActiveProfile()?.mediumBio || ""}
+                        type='medium'
+                        label='Copy'
+                      />
+                    </div>
+                    <p className='text-gray-700 leading-relaxed'>
+                      {getActiveProfile()?.mediumBio}
+                    </p>
+                  </div>
+                )}
+
+                {getActiveProfile()?.longBio && (
+                  <div
+                    className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
+                  >
+                    <div className='flex items-center justify-between mb-3'>
+                      <h3 className='text-lg font-bold'>Full Bio</h3>
+                      <CopyButton
+                        text={getActiveProfile()?.longBio || ""}
+                        type='long'
+                        label='Copy'
+                      />
+                    </div>
+                    <p className='text-gray-700 leading-relaxed'>
+                      {getActiveProfile()?.longBio}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Image Gallery Section */}
+            <section className='mb-16'>
+              {folders.length > 0 ? (
+                <>
+                  <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
+                    Image Gallery
+                  </h2>
+
+                  <div className='space-y-8'>
+                    {folders.map((folder) => (
+                      <div
+                        key={folder._id}
+                        className='bg-white rounded-xl shadow overflow-hidden'
+                      >
+                        <div className='p-6 border-b border-gray-100'>
+                          <h3 className='text-xl font-semibold mb-2'>
+                            {folder.name}
+                          </h3>
+                          <p className='text-gray-600'>{folder.description}</p>
+                        </div>
+
+                        {folder.images.length > 0 ? (
+                          <div className='p-6'>
+                            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                              {folder.images.map((image) => (
+                                <div
+                                  key={image._id}
+                                  className='relative group rounded-lg overflow-hidden'
+                                >
+                                  <img
+                                    src={image.url}
+                                    alt={image.name}
+                                    className='w-full h-full object-cover'
+                                  />
+                                  <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
+                                    <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                      <button
+                                        onClick={() =>
+                                          downloadImage(image.url, image.name)
+                                        }
+                                        disabled={
+                                          downloadingImage === image.name
+                                        }
+                                        className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
+                                      >
+                                        {downloadingImage === image.name ? (
+                                          <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
+                                        ) : (
+                                          <Download className='h-4 w-4' />
+                                        )}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className='p-6 text-center text-gray-500'>
+                            No images in this folder
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className='text-center text-gray-500 py-12'>
+                  <p>No image galleries available</p>
+                </div>
+              )}
+            </section>
+          </>
+        )}
 
         {/* Events Section */}
         {/* <section className='mb-16'>
