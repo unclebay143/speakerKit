@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface FolderFormProps {
@@ -84,13 +85,13 @@ export function FolderForm({
           disabled={!folderName.trim() || isLoading}
           className='flex-1 bg-purple-600 hover:bg-purple-700 text-white'
         >
-          {isLoading
-            ? isEditMode
-              ? "Updating..."
-              : "Creating..."
-            : isEditMode
-            ? "Update Folder"
-            : "Create Folder"}
+          {isLoading ? (
+            <Loader2 className='w-4 h-4 animate-spin' />
+          ) : isEditMode ? (
+            "Update Folder"
+          ) : (
+            "Create Folder"
+          )}
         </Button>
       </div>
     </div>

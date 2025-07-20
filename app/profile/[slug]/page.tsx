@@ -257,9 +257,12 @@ export default async function Page({ params }: PageProps) {
     return (
       <div className='min-h-screen bg-white flex items-center justify-center'>
         <div className='text-center'>
-          <h1 className='text-2xl font-bold text-gray-900 mb-2'>Error</h1>
+          <h1 className='text-2xl font-bold text-gray-900 mb-2'>
+            Ah! We didn&apos;t expect that to happen.
+          </h1>
           <p className='text-gray-600'>
-            Something went wrong while loading the profile.
+            Check if the profile you&apos;re looking for exists and is
+            available.
           </p>
         </div>
       </div>

@@ -16,11 +16,11 @@ import { slugify } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   Check,
-  Copy,
   Edit,
   FileText,
   Globe,
   ImageIcon,
+  Link2,
   Loader2,
   Trash2,
 } from "lucide-react";
@@ -308,18 +308,15 @@ export function ProfilesOverview() {
                         variant={profile.isPublic ? "default" : "secondary"}
                         className={`text-xs ${
                           profile.isPublic
-                            ? "bg-purple-100 dark:bg-purple-600/20 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-500/30"
+                            ? "bg-amber-100 dark:bg-amber-600/20 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30"
                             : "bg-gray-100 dark:bg-gray-600/20 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-500/30"
                         }`}
                       >
                         {profile.isPublic ? "Visible" : "Hidden"}
                       </Badge>
                     </CardTitle>
-                    <CardDescription className='text-[0.8rem] mt-1 text-gray-600 dark:text-gray-400'>
-                      {profile.shortBio &&
-                        (profile.shortBio.length > 50
-                          ? `${profile.shortBio.substring(0, 50)}...`
-                          : profile.shortBio)}
+                    <CardDescription className='text-[0.8rem] pt-1 pr-3 text-gray-600 dark:text-gray-400'>
+                      <span className='line-clamp-2'>{profile.shortBio}</span>
                     </CardDescription>
                   </div>
                   <div className='flex md:space-x-2'>
@@ -341,7 +338,7 @@ export function ProfilesOverview() {
                       {copiedProfileId === profile._id ? (
                         <Check className='w-4 h-4' />
                       ) : (
-                        <Copy className='w-4 h-4' />
+                        <Link2 className='w-4 h-4' />
                       )}
                     </Button>
                     <Button
