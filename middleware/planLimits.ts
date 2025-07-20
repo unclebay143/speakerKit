@@ -1,11 +1,9 @@
 // import { NextResponse } from "next/server";
-import User from "@/models/User";
 import connectViaMongoose from "@/lib/db";
 import Folder from "@/models/Folders";
-import Profile from "@/models/Profile";
 import Image from "@/models/Images";
-import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import Profile from "@/models/Profile";
+import User from "@/models/User";
 
 interface CheckPlanLimitsParams {
   userId: string;
@@ -15,22 +13,26 @@ interface CheckPlanLimitsParams {
 
 export async function checkPlanLimits(params: CheckPlanLimitsParams) {
   const { userId, resourceType, folderId } = params;
-  
+
   try {
     await connectViaMongoose();
     const user = await User.findById(userId);
-    
+
     if (!user) {
       return { allowed: false, error: "User not found" };
     }
 
-    if (user.plan === "pro" && user.planExpiresAt && new Date() > user.planExpiresAt) {
+    if (
+      user.plan === "pro" &&
+      user.planExpiresAt &&
+      new Date() > user.planExpiresAt
+    ) {
       await User.findByIdAndUpdate(userId, { plan: "free" });
-      return { 
-        allowed: false, 
+      return {
+        allowed: false,
         error: "Your Pro plan has expired. Please renew.",
         limit: 0,
-        current: 0
+        current: 0,
       };
     }
 
@@ -39,37 +41,40 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
       return { allowed: true };
     }
 
-     switch(resourceType) {
+    switch (resourceType) {
       case "profile":
         const profileCount = await Profile.countDocuments({ userId });
         return {
           allowed: profileCount < 1,
-          error: "Free plan limited to 1 profile. Upgrade to Pro for unlimited profiles.",
+          error:
+            "Free plan limited to 1 profile. Upgrade to Pro for unlimited profiles.",
           limit: 1,
-          current: profileCount
+          current: profileCount,
         };
-      
+
       case "folder":
         const folderCount = await Folder.countDocuments({ userId });
         return {
-          allowed: folderCount < 1,
-          error: "Free plan limited to 1 folder. Upgrade to Pro for unlimited folders.",
-          limit: 1,
-          current: folderCount
+          allowed: folderCount < 2,
+          error:
+            "Free plan limited to 2 folders. Upgrade to Pro for unlimited folders.",
+          limit: 2,
+          current: folderCount,
         };
-      
+
       case "image":
         if (folderId) {
           const imageCount = await Image.countDocuments({ folderId, userId });
           return {
             allowed: imageCount < 3,
-            error: "Free plan limited to 3 images per folder. Upgrade to Pro for unlimited images.",
+            error:
+              "Free plan limited to 3 images per folder. Upgrade to Pro for unlimited images.",
             limit: 3,
-            current: imageCount
+            current: imageCount,
           };
         }
         return { allowed: true };
-      
+
       default:
         return { allowed: false, error: "Invalid resource type" };
     }
@@ -77,9 +82,9 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
     // Free plan checks
     // if (resourceType === "profile") {
     //   const profileCount = await Profile.countDocuments({ userId });
-    //   if (profileCount >= 1) { 
-    //     return { 
-    //       allowed: false, 
+    //   if (profileCount >= 1) {
+    //     return {
+    //       allowed: false,
     //       error: "Profile limit reached",
     //       limit: 1,
     //       current: profileCount
@@ -90,8 +95,8 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
     // if (resourceType === "folder") {
     //   const folderCount = await Folder.countDocuments({ userId });
     //   if (folderCount >= 1) {
-    //     return { 
-    //       allowed: false, 
+    //     return {
+    //       allowed: false,
     //       error: "Folder limit reached",
     //       limit: 1,
     //       current: folderCount
@@ -104,11 +109,11 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
     //  if (!folderId) {
     //     return { allowed: true };
     //   }
-      
+
     //   const imageCount = await Image.countDocuments({ folderId, userId });
-    //   if (imageCount >= 3) { 
-    //     return { 
-    //       allowed: false, 
+    //   if (imageCount >= 3) {
+    //     return {
+    //       allowed: false,
     //       error: "Image limit reached",
     //       limit: 3,
     //       current: imageCount

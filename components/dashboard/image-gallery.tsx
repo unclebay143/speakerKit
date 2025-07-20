@@ -60,6 +60,7 @@ export function ImageGallery() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [uploadModalFiles, setUploadModalFiles] = useState<File[]>([]);
   const [limitData, setLimitData] = useState({
     limitType: "folder" as "folder" | "profile" | "images",
     current: 0,
@@ -160,11 +161,11 @@ export function ImageGallery() {
   const handleCreateFolder = async () => {
     if (!user?._id) return;
     try {
-      if (!user.isPro && folders && folders.length >= 1) {
+      if (!user.isPro && folders && folders.length >= 2) {
         setLimitData({
           limitType: "folder",
           current: folders.length,
-          limit: 1,
+          limit: 2,
         });
         setUpgradeModalOpen(true);
         return;
@@ -208,14 +209,15 @@ export function ImageGallery() {
     if (!currentFolder) return;
 
     try {
-      if (!user?.isPro && currentFolder.images.length + files.length >= 3) {
+      if (!user?.isPro && currentFolder.images.length + files.length > 3) {
         setLimitData({
           limitType: "images",
           current: currentFolder.images.length,
           limit: 3,
         });
         setUpgradeModalOpen(true);
-        return;
+        // Throw an error to prevent the upload modal from closing
+        throw new Error("IMAGE_LIMIT_REACHED");
       }
 
       const validUploads: any[] = [];
@@ -239,14 +241,18 @@ export function ImageGallery() {
               limit: 3,
             });
             setUpgradeModalOpen(true);
-            break;
+            // Re-throw the error to prevent the upload modal from closing
+            throw error;
           } else {
             console.error("Unexpected upload error:", error);
+            throw error;
           }
         }
       }
     } catch (error) {
       console.error("General upload error:", error);
+      // Re-throw the error to prevent the upload modal from closing
+      throw error;
     }
   };
 
@@ -353,15 +359,15 @@ export function ImageGallery() {
 
       {/* Upload section  */}
       {currentFolder && currentFolder.images.length === 0 && (
-        <div className='mx-auto w-full max-w-md   rounded-xl p-6'>
-          <div className='text-center'>
+        <div className='mx-auto w-full rounded-xl'>
+          {/* <div className='text-center'>
             <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-1'>
               Upload Images
             </h2>
             <p className='text-sm text-gray-600 dark:text-gray-400 mb-6'>
               Drag and drop your images here, or click to browse
             </p>
-          </div>
+          </div> */}
 
           <div
             {...getRootProps()}
@@ -383,9 +389,17 @@ export function ImageGallery() {
             </p>
             <Button
               type='button'
-              onClick={(e) => {
-                e.stopPropagation();
-                openFileDialog();
+              onClick={() => {
+                if (!user?.isPro && currentFolder.images.length >= 3) {
+                  setLimitData({
+                    limitType: "images",
+                    current: currentFolder.images.length,
+                    limit: 3,
+                  });
+                  setUpgradeModalOpen(true);
+                } else {
+                  setShowUploadModal(true);
+                }
               }}
               variant='outline'
               className='mt-4 border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
@@ -525,7 +539,7 @@ export function ImageGallery() {
                       <div className='flex items-center space-x-3 mb-2'>
                         <Folder className='w-8 h-8 text-purple-600 dark:text-purple-400' />
                         <div>
-                          <h4 className='font-medium text-gray-900 dark:text-white truncate max-w-[110px] hover:text-purple-600 dark:hover:text-purple-400 transition-colors'>
+                          <h4 className='font-medium text-gray-900 dark:text-white truncate max-w-[280px] md:max-w-[210px] hover:text-purple-600 dark:hover:text-purple-400 transition-colors'>
                             {folder.name}
                           </h4>
                           <p className='text-sm text-gray-600 dark:text-gray-400'>
@@ -638,13 +652,14 @@ export function ImageGallery() {
           initialName={folderModalState.folderToEdit?.name || ""}
         />
       )}
-
-      {currentFolder && (
+      {currentFolder && !upgradeModalOpen && (
         <UploadModal
           open={showUploadModal}
           onOpenChange={setShowUploadModal}
           folderId={currentFolder._id}
           onUploadComplete={handleImageUploaded}
+          files={uploadModalFiles}
+          onFilesChange={setUploadModalFiles}
         />
       )}
 
@@ -658,9 +673,12 @@ export function ImageGallery() {
         type={deleteModalState.type || "folder"}
         loading={deletingId === deleteModalState.id}
       />
+
       <UpgradeModal
         open={upgradeModalOpen}
-        onOpenChange={setUpgradeModalOpen}
+        onOpenChange={(open) => {
+          setUpgradeModalOpen(open);
+        }}
         limitType={limitData.limitType}
         currentCount={limitData.current}
         limit={limitData.limit}

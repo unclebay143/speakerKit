@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Upload, X } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -18,6 +18,8 @@ interface UploadModalProps {
   onOpenChange: (open: boolean) => void;
   folderId: string;
   onUploadComplete: (files: File[]) => void;
+  files?: File[];
+  onFilesChange?: (files: File[]) => void;
   // onUploadComplete: () => void;
 }
 
@@ -25,13 +27,22 @@ export function UploadModal({
   open,
   onOpenChange,
   onUploadComplete,
+  files: externalFiles,
+  onFilesChange,
 }: UploadModalProps) {
-  const [files, setFiles] = useState<File[]>([]);
+  const [internalFiles, setInternalFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles((prev) => [...prev, ...acceptedFiles]);
-  }, []);
+  // Use external files if provided, otherwise use internal state
+  const files = externalFiles || internalFiles;
+  const setFiles = onFilesChange || setInternalFiles;
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      setFiles([...files, ...acceptedFiles]);
+    },
+    [files, setFiles]
+  );
 
   const {
     getRootProps,
@@ -58,7 +69,7 @@ export function UploadModal({
   });
 
   const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setFiles(files.filter((_, i) => i !== index));
   };
 
   const handleUpload = async () => {
@@ -67,10 +78,12 @@ export function UploadModal({
     setUploading(true);
     try {
       await onUploadComplete(files);
+      // Only close the modal if upload was successful (no errors)
       setFiles([]);
       onOpenChange(false);
     } catch (error) {
       console.error("Upload error:", error);
+      // Don't close the modal on error, let user fix the issue
     } finally {
       setUploading(false);
     }
@@ -90,7 +103,6 @@ export function UploadModal({
 
         <div
           {...getRootProps()}
-          
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer ${
             isDragActive
               ? "border-purple-500 bg-purple-500/10"
@@ -140,7 +152,6 @@ export function UploadModal({
                       className='object-cover rounded'
                       unoptimized
                     />
-                    
                   </div>
 
                   {/* File Name */}
@@ -151,7 +162,7 @@ export function UploadModal({
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='h-6 w-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
+                  className='h-6 w-6 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
                   onClick={(e) => {
                     e.stopPropagation();
                     removeFile(index);
@@ -181,7 +192,11 @@ export function UploadModal({
             disabled={files.length === 0 || uploading}
             className='bg-purple-600 hover:bg-purple-700 text-white'
           >
-            {uploading ? "Uploading..." : "Upload"}
+            {uploading ? (
+              <Loader2 className='w-4 h-4 animate-spin' />
+            ) : (
+              "Upload"
+            )}
           </Button>
         </div>
       </DialogContent>
