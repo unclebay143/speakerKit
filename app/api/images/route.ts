@@ -1,4 +1,5 @@
 import connectViaMongoose from "@/lib/db";
+import { CLOUDINARY_FOLDER } from "@/lib/utils";
 import { checkPlanLimits } from "@/middleware/planLimits";
 import Folder from "@/models/Folders";
 import Image from "@/models/Images";
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
     await writeFile(path, buffer);
 
     const result = await cloudinary.uploader.upload(path, {
-      folder: `user_uploads/${session.user.id}/${folderId}`,
+      folder: CLOUDINARY_FOLDER,
       allowed_formats: ["jpg", "png", "webp"],
       format: "auto",
     });

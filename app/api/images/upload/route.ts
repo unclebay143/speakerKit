@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/utils/auth-options";
-import Image from "@/models/Images";
 import connectViaMongoose from "@/lib/db";
+import { CLOUDINARY_FOLDER } from "@/lib/utils";
+import { checkPlanLimits } from "@/middleware/planLimits";
+import Folder from "@/models/Folders";
+import Image from "@/models/Images";
+import { authOptions } from "@/utils/auth-options";
 import { v2 as cloudinary } from "cloudinary";
 import { writeFile } from "fs/promises";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 import { join } from "path";
-import Folder from "@/models/Folders";
-import { checkPlanLimits } from "@/middleware/planLimits";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -32,7 +33,10 @@ export async function POST(req: Request) {
     const files = formData.getAll("file") as File[];
 
     if (!folderId || files.length === 0) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     for (const file of files) {
@@ -44,7 +48,11 @@ export async function POST(req: Request) {
       }
       if (file.size > MAX_FILE_SIZE) {
         return NextResponse.json(
-          { error: `File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB): ${file.name}` },
+          {
+            error: `File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB): ${
+              file.name
+            }`,
+          },
           { status: 400 }
         );
       }
@@ -112,7 +120,7 @@ export async function POST(req: Request) {
       await writeFile(path, buffer);
 
       const result = await cloudinary.uploader.upload(path, {
-        folder: `user_uploads/${session.user.id}/${folderId}`,
+        folder: CLOUDINARY_FOLDER,
       });
 
       const image = await Image.create({
@@ -137,6 +145,9 @@ export async function POST(req: Request) {
     return NextResponse.json(uploadedImages, { status: 201 });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: "Error uploading image" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error uploading image" },
+      { status: 500 }
+    );
   }
 }
