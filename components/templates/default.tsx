@@ -258,6 +258,9 @@ export function DefaultTemplate({
   // Use dummy events if not provided
   //   const eventList = events && events.length > 0 ? events : DUMMY_EVENTS;
 
+  // const socialStyles = `rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`;
+  const socialStyles = `rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-white hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`;
+
   return (
     <div className={`min-h-screen bg-gradient-to-br ${theme.bg}`}>
       {/* Hero Banner */}
@@ -312,7 +315,7 @@ export function DefaultTemplate({
                           href={linkedin}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          className={socialStyles}
                           aria-label='LinkedIn'
                         >
                           <Linkedin className='h-4 w-4' />
@@ -323,7 +326,7 @@ export function DefaultTemplate({
                           href={twitter}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          className={socialStyles}
                           aria-label='Twitter'
                         >
                           <Twitter className='h-4 w-4' />
@@ -334,7 +337,7 @@ export function DefaultTemplate({
                           href={instagram}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          className={socialStyles}
                           aria-label='Instagram'
                         >
                           <Instagram className='h-4 w-4' />
@@ -343,7 +346,7 @@ export function DefaultTemplate({
                       {email && (
                         <a
                           href={`mailto:${email}`}
-                          className={`rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+                          className={socialStyles}
                           aria-label='Email'
                         >
                           <Mail className='h-4 w-4' />

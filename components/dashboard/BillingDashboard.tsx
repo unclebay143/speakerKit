@@ -75,11 +75,15 @@ export function BillingDashboard() {
     <div className='max-w-screen-lg mx-auto flex flex-col gap-6'>
       {/* Current Plan Card */}
       <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm'>
-        <CardHeader className='pb-2 flex flex-row items-center gap-2'>
-          <CreditCard className='w-5 h-5 text-purple-500' />
-          <CardTitle className='text-gray-900 dark:text-white text-xl font-bold'>
-            Current Plan
-          </CardTitle>
+        <CardHeader className='pb-2'>
+          <div className='flex items-center gap-2'>
+            <div>
+              <CreditCard className='w-5 h-5 text-purple-500' />
+            </div>
+            <CardTitle className='text-gray-900 dark:text-white text-xl font-bold'>
+              Current Plan
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent className='p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-0'>
           <div>
