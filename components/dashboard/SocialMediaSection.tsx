@@ -91,7 +91,7 @@ export default function SocialMediaSection() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className='space-y-4'>
+        <CardContent className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {message && (
             <div
               className={`text-sm p-3 rounded-md ${
@@ -103,7 +103,7 @@ export default function SocialMediaSection() {
               {message.text}
             </div>
           )}
-          <div className='space-y-2'>
+          <div className='flex flex-col gap-2'>
             <Label htmlFor='x' className='text-gray-900 dark:text-white'>
               X (Twitter)
             </Label>
@@ -115,7 +115,7 @@ export default function SocialMediaSection() {
               placeholder='yourhandle'
             />
           </div>
-          <div className='space-y-2'>
+          <div className='flex flex-col gap-2'>
             <Label htmlFor='linkedin' className='text-gray-900 dark:text-white'>
               LinkedIn
             </Label>
@@ -130,7 +130,7 @@ export default function SocialMediaSection() {
               placeholder='yourprofile'
             />
           </div>
-          <div className='space-y-2'>
+          <div className='flex flex-col gap-2'>
             <Label
               htmlFor='instagram'
               className='text-gray-900 dark:text-white'
@@ -148,7 +148,7 @@ export default function SocialMediaSection() {
               placeholder='yourhandle'
             />
           </div>
-          <div className='space-y-2'>
+          <div className='flex flex-col gap-2'>
             <Label htmlFor='email' className='text-gray-900 dark:text-white'>
               Contact Email
             </Label>
@@ -160,7 +160,7 @@ export default function SocialMediaSection() {
               type='email'
             />
           </div>
-          <div className='flex justify-end'>
+          <div className='md:col-span-2 flex justify-end'>
             <Button
               type='submit'
               disabled={isLoading}

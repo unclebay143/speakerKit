@@ -191,6 +191,7 @@ export default async function Page({ params }: PageProps) {
       createdAt: user.createdAt.toISOString(),
       website: "",
       country: "",
+      tools: user.tools,
       theme: user.theme,
       isVerified: user.isVerified,
       socialMedia: user.socialMedia

@@ -5,6 +5,7 @@ import PasswordSection from "./PasswordSection";
 import ProfileImageSection from "./ProfileImageSection";
 import ProfileInfoSection from "./ProfileInfoSection";
 import SocialMediaSection from "./SocialMediaSection";
+import SpeakerToolsSection from "./SpeakerToolsSection";
 import ThemeSection from "./ThemeSection";
 import VisibilitySection from "./VisibilitySection";
 
@@ -46,6 +47,7 @@ export function Settings() {
       {/* Account Information */}
       <ProfileInfoSection />
       <SocialMediaSection />
+      <SpeakerToolsSection />
       <ThemeSection />
       <VisibilitySection />
       <PasswordSection />

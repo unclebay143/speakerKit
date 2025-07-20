@@ -49,6 +49,7 @@ interface UserData {
   website: string;
   country: string;
   theme: string;
+  tools?: string[];
   socialMedia?: {
     twitter?: string;
     linkedin?: string;
@@ -338,13 +339,7 @@ export function DefaultTemplate({
     </button>
   );
 
-  const userIcons = [
-    "notion",
-    "canva",
-    "google-docs",
-    "figma",
-    "powerpoint",
-  ].slice(0, 5);
+  const userIcons = userData.tools || [];
 
   // Display name mapping for tooltips
   const iconDisplayNames = {
@@ -505,10 +500,6 @@ export function DefaultTemplate({
     ),
   };
 
-  // Use dummy events if not provided
-  //   const eventList = events && events.length > 0 ? events : DUMMY_EVENTS;
-
-  // const socialStyles = `rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-${theme.accent}-600 hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`;
   const socialStyles = `rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-white hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`;
 
   return (

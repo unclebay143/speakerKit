@@ -115,13 +115,7 @@ function ProfileImageSection() {
                         : ""
                     }
                   />
-                  <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400'>
-                    {user?.name
-                      ?.split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .toUpperCase() || "US"}
-                  </AvatarFallback>
+                  <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400' />
                 </>
               )}
             </Avatar>

@@ -1,7 +1,7 @@
 import { generateRandomSlug } from "@/utils/generateSlug";
 import { Schema, model, models } from "mongoose";
 
-const ALLOWED_PLAN = ["free", "pro", "lifetime"]
+const ALLOWED_PLAN = ["free", "pro", "lifetime"];
 
 const UserSchema = new Schema(
   {
@@ -19,11 +19,11 @@ const UserSchema = new Schema(
     password: {
       type: String,
     },
-    slug: { 
+    slug: {
       type: String,
       unique: true,
       required: true,
-      default: generateRandomSlug, 
+      default: generateRandomSlug,
     },
     // username: {
     //   type: String,
@@ -62,6 +62,10 @@ const UserSchema = new Schema(
       instagram: { type: String, default: "" },
       email: { type: String, default: "" },
     },
+    tools: {
+      type: [String],
+      enum: ["notion", "canva", "google-docs", "figma", "powerpoint"],
+    },
     location: {
       type: String,
       default: "",
@@ -73,22 +77,22 @@ const UserSchema = new Schema(
     plan: {
       type: String,
       enum: ALLOWED_PLAN,
-      default: "free"
+      default: "free",
     },
     planLimits: {
       profiles: { type: Number, default: 1 },
       folders: { type: Number, default: 1 },
-      imagesPerFolder: { type: Number, default: 3 }
+      imagesPerFolder: { type: Number, default: 3 },
     },
-    planExpiresAt: { type: Date, default: null  },
-     paystackCustomerId: {
+    planExpiresAt: { type: Date, default: null },
+    paystackCustomerId: {
       type: String,
-      default: null
+      default: null,
     },
-     paystackSubscriptionId: {
+    paystackSubscriptionId: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -105,15 +109,14 @@ UserSchema.pre("save", function (next) {
       };
     } else if (this.plan === "pro" || this.plan === "lifetime") {
       this.planLimits = {
-        profiles: Infinity, 
-        folders: Infinity, 
-        imagesPerFolder: Infinity,  
+        profiles: Infinity,
+        folders: Infinity,
+        imagesPerFolder: Infinity,
       };
     }
   }
   next();
 });
-
 
 const User = models.User || model("User", UserSchema);
 
