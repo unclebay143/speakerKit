@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
@@ -68,6 +68,7 @@ export function ImageGallery() {
   });
 
   const pathname = usePathname();
+  const router = useRouter();
 
   const {
     getRootProps,
@@ -129,7 +130,8 @@ export function ImageGallery() {
 
   const handleFolderCreated = async (folderName: string) => {
     try {
-      await createFolder.mutateAsync(folderName);
+      const result = await createFolder.mutateAsync(folderName);
+      router.push(`/gallery/${result._id}`);
     } catch (error) {
       if (error instanceof Error && error.message === "FOLDER_LIMIT_REACHED") {
         setLimitData({

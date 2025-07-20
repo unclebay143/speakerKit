@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import {
   CreditCard,
@@ -11,7 +12,6 @@ import {
   PanelLeftClose,
   Settings,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 interface SidebarProps {
@@ -44,7 +44,8 @@ function SidebarNavSection({
   mobile?: boolean;
   setMobileSidebarOpen?: (open: boolean) => void;
 }) {
-  const { data: session } = useSession();
+  const { data: user } = useCurrentUser();
+
   return (
     <>
       <div
@@ -58,14 +59,8 @@ function SidebarNavSection({
         )}
       >
         <Avatar>
-          {session?.user?.image && <AvatarImage src={session.user.image} />}
-          <AvatarFallback className='bg-purple-600 text-white text-lg'>
-            {session?.user?.name
-              ?.split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase() || "US"}
-          </AvatarFallback>
+          {user?.image && <AvatarImage src={user.image} />}
+          <AvatarFallback className='bg-gray-100' />
         </Avatar>
         {mobile ? (
           <PanelLeftClose
@@ -145,7 +140,7 @@ export function DashboardSidebar({
                 setMobileSidebarOpen(false);
               }}
             >
-              <Link href='/billing' className="flex items-center gap-2">
+              <Link href='/billing' className='flex items-center gap-2'>
                 <CreditCard className='w-5 h-5' />
                 <span>Billing</span>
               </Link>
