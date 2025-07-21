@@ -30,10 +30,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
+import { EmptyState } from "../EmptyState";
 import { CreateFolderModal } from "../modals/folder-modal";
 import { UpgradeModal } from "../modals/upgrade-modal";
 import { UploadModal } from "../UploadModal";
-import { EmptyState } from "../EmptyState";
 
 interface Folder {
   _id: string;
@@ -303,7 +303,11 @@ export function ImageGallery() {
   return (
     <div className='flex flex-col gap-4 mx-auto max-w-screen-lg'>
       {/* Header part */}
-      <div className={`flex ${!currentFolder ? 'flex-row items-center gap-3' : 'flex-col gap-4'} sm:flex-row sm:items-center sm:justify-between`}>
+      <div
+        className={`flex ${
+          !currentFolder ? "flex-row items-center gap-3" : "flex-col gap-4"
+        } sm:flex-row sm:items-center sm:justify-between`}
+      >
         {/* Title Section */}
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-2 flex-wrap'>
@@ -327,7 +331,8 @@ export function ImageGallery() {
         </div>
 
         {/* Actions Section */}
-        <div className={`flex ${!currentFolder ? 'flex-row' : 'flex-col'} gap-2 sm:gap-3`}>
+        <div {...getRootProps()}>
+          <input {...getInputProps()} />
           {!currentFolder ? (
             <Button
               onClick={handleCreateFolder}
@@ -335,15 +340,18 @@ export function ImageGallery() {
               size='sm'
               className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
             >
-              <FolderPlus className='w-4 h-4 mr-2' />
+              <FolderPlus className='w-4 h-4' />
               <span>New Folder</span>
             </Button>
           ) : (
             <Button
               size='sm'
               className='bg-purple-600 hover:bg-purple-700 text-white'
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("triggered");
                 if (!user?.isPro && currentFolder.images.length >= 3) {
+                  console.log("not allowed");
                   setLimitData({
                     limitType: "images",
                     current: currentFolder.images.length,
@@ -351,11 +359,12 @@ export function ImageGallery() {
                   });
                   setUpgradeModalOpen(true);
                 } else {
+                  console.log("allowed");
                   openFileDialog();
                 }
               }}
             >
-              <Upload className='w-4 h-4 mr-2' />
+              <Upload className='w-4 h-4' />
               <span>Upload Images</span>
             </Button>
           )}
@@ -550,18 +559,18 @@ export function ImageGallery() {
       )}
 
       {/* Empty State */}
-      <div className="space-y-4">
-      {!currentFolder && folders?.length === 0 && (
-        <EmptyState
-          icon={Folder}
-          title="No Folders Yet"
-          description="Create your first folder to organize your images"
-          action={{
-            label: "Create Folder",
-            onClick: handleCreateFolder
-          }}
-        />
-      )}
+      <div className='space-y-4'>
+        {!currentFolder && folders?.length === 0 && (
+          <EmptyState
+            icon={Folder}
+            title='No Folders Yet'
+            description='Create your first folder to organize your images'
+            action={{
+              label: "Create Folder",
+              onClick: handleCreateFolder,
+            }}
+          />
+        )}
       </div>
 
       {/* Create Folder Modal */}
@@ -585,7 +594,7 @@ export function ImageGallery() {
           onOpenChange={setShowUploadModal}
           folderId={currentFolder._id}
           onUploadComplete={handleImageUploaded}
-           files={selectedFiles}
+          files={selectedFiles}
           onFilesChange={setSelectedFiles}
         />
       )}

@@ -12,8 +12,8 @@ export const plans = [
     features: [
       { label: "Profiles", value: "1" },
       { label: "Photos", value: "1" },
+      { label: "Talks", value: "2" },
       { label: "Custom URLs", value: false },
-      { label: "Analytics", value: false },
     ],
     highlight: false,
   },
@@ -26,8 +26,8 @@ export const plans = [
     features: [
       { label: "Profiles", value: "Unlimited" },
       { label: "Photos", value: "Multiple" },
+      { label: "Talks", value: "Unlimited" },
       { label: "Custom URLs", value: true },
-      { label: "Analytics", value: true },
     ],
     highlight: true,
   },
@@ -39,8 +39,8 @@ export const plans = [
     features: [
       { label: "Profiles", value: "Unlimited" },
       { label: "Photos", value: "Multiple" },
+      { label: "Talks", value: "Unlimited" },
       { label: "Custom URLs", value: true },
-      { label: "Analytics", value: true },
     ],
     highlight: false,
   },
