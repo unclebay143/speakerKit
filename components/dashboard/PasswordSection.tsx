@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 function PasswordSection() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const { register, handleSubmit, formState, reset } = useForm({
     defaultValues: {
       currentPassword: "",
@@ -78,11 +78,20 @@ function PasswordSection() {
         return;
       }
 
-      await axios.post("/api/auth/set-password", {
+      const response = await axios.post("/api/auth/set-password", {
         newPassword: data.newPassword,
       });
       
-      toast.success("Password set successfully! You can now login with email and password");
+       if (response.data.success) {
+        toast.success("Password set successfully! You can now login with email and password");
+        await update({
+          ...session?.user,
+          hasPassword: true,
+          authProvider: "credentials"
+        });
+      } else {
+        toast.error(response.data.error || "Failed to set password");
+      }
       reset();
     } catch (error: any) {
       toast.error(error?.response?.data?.error || "Failed to set password");
