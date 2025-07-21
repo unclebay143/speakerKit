@@ -83,6 +83,7 @@ const UserSchema = new Schema(
       profiles: { type: Number, default: 1 },
       folders: { type: Number, default: 1 },
       imagesPerFolder: { type: Number, default: 3 },
+      events: {type: Number, default: 2}
     },
     planExpiresAt: { type: Date, default: null },
     paystackCustomerId: {
@@ -106,12 +107,14 @@ UserSchema.pre("save", function (next) {
         profiles: 1,
         folders: 1,
         imagesPerFolder: 3,
+        events: 2
       };
     } else if (this.plan === "pro" || this.plan === "lifetime") {
       this.planLimits = {
         profiles: Infinity,
         folders: Infinity,
         imagesPerFolder: Infinity,
+        events: Infinity
       };
     }
   }

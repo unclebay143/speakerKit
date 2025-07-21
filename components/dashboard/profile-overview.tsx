@@ -29,6 +29,7 @@ import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
 import { ProfileModal } from "../modals/profile-modal";
 import { UpgradeModal } from "../modals/upgrade-modal";
 import { Skeleton } from "../ui/skeleton";
+import { EmptyState } from "../EmptyState";
 
 interface Profile {
   _id: string;
@@ -393,23 +394,16 @@ export function ProfilesOverview() {
         </div>
 
         {profiles?.length === 0 && (
-          <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 border-dashed'>
-            <CardContent className='p-12 text-center'>
-              <FileText className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 dark:text-white mb-2'>
-                No profiles yet
-              </h3>
-              <p className='text-gray-600 dark:text-gray-400 mb-6'>
-                Create your first speaker profile to get started
-              </p>
-              <Button
-                onClick={handleCreateProfile}
-                className='bg-purple-600 hover:bg-purple-700 text-white'
-              >
-                Create Your First Profile
-              </Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={FileText}
+            title="No profiles yet"
+            description="Create your first speaker profile to get started"
+            action={{
+              label: "Create Your First Profile",
+              onClick: handleCreateProfile
+            }}
+            className="p-12"
+          />
         )}
       </div>
 

@@ -233,6 +233,8 @@ const events = [
   // },
 ];
 
+
+
 export function DefaultTemplate({
   userData,
   profiles,
@@ -248,6 +250,7 @@ export function DefaultTemplate({
   const router = useRouter();
   const pathname = usePathname();
 
+  
   // Get theme configuration
   const theme = THEMES[userData.theme as keyof typeof THEMES];
 

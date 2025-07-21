@@ -65,6 +65,10 @@ interface EventModalProps {
   editingEvent?: Event | null;
   onSave: (event: Event, formData?: FormData) => void;
   isLoading?: boolean;
+  isFreeUser?: boolean;
+  eventCount?: number;
+   maxFreeEvents?: number;
+  onUpgrade?: () => void;
 }
 
 const EVENT_TYPES = [
@@ -87,6 +91,10 @@ export default function EventModal({
   editingEvent,
   onSave,
   isLoading = false,
+  isFreeUser = false,
+  eventCount = 0,
+  maxFreeEvents = 2,
+  onUpgrade,
 }: EventModalProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [uploading, setUploading] = useState(false);
@@ -185,6 +193,11 @@ export default function EventModal({
   };
 
   const onSubmit = async (data: EventFormData) => {
+    if (isFreeUser && !editingEvent && eventCount >= maxFreeEvents) {
+      toast.error("Free plan limited to 2 events. Upgrade to Pro for unlimited events.");
+      onUpgrade?.();
+      return;
+    }
     setUploading(true);
 
     try {

@@ -9,6 +9,9 @@ import { Calendar, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EventsDashboardSkeleton } from "./EventsDashboardSkeleton";
+import { EmptyState } from "../EmptyState";
+import { UpgradeModal } from "../modals/upgrade-modal";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
 interface EventsDashboardProps {
   initialEvents?: Event[];
@@ -17,8 +20,15 @@ interface EventsDashboardProps {
 export default function EventsDashboard({
   initialEvents = [],
 }: EventsDashboardProps) {
+  const { data: user } = useCurrentUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [limitData, setLimitData] = useState({
+    limitType: "",
+    current: 0,
+    limit: 0,
+  });
 
   const { events, isLoading, createEvent, updateEvent, deleteEvent } =
     useEvents();
@@ -79,11 +89,19 @@ export default function EventsDashboard({
     }
   };
 
-  const handleAddEvent = () => {
-    setEditingEvent(null);
-    setIsModalOpen(true);
+   const handleAddEvent = () => {
+    if (user?.plan === "free" && events?.length >= 2) {
+      setLimitData({
+        limitType: "events",
+        current: events?.length || 0,
+        limit: 2,
+      });
+      setUpgradeModalOpen(true);
+    } else {
+      setEditingEvent(null);
+      setIsModalOpen(true);
+    }
   };
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingEvent(null);
@@ -120,21 +138,20 @@ export default function EventsDashboard({
       {/* Events List */}
       <div className='space-y-4'>
         {!events || events.length === 0 ? (
-          <div className='text-center py-12'>
-            <div className='flex flex-col items-center gap-3'>
-              <div className='w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
-                <Calendar className='w-6 h-6 text-gray-400' />
-              </div>
-              <div>
-                <p className='text-gray-900 dark:text-white font-medium'>
-                  No events yet
-                </p>
-                <p className='text-gray-500 dark:text-gray-400 text-sm'>
-                  Start by adding your first speaking engagement
-                </p>
-              </div>
-            </div>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="No events yet"
+            description={
+              user?.plan === "free" 
+                ? "Free plan allows up to 2 events"
+                : "Start by adding your first speaking engagement"
+            }
+            action={{
+              label: "Add Event",
+              onClick: handleAddEvent
+            }}
+            className="text-center py-12"
+          />
         ) : (
           <div className='space-y-4'>
             {events.map((event, index) => (
@@ -159,6 +176,14 @@ export default function EventsDashboard({
         onSave={handleSaveEvent}
         isLoading={createEvent.isPending || updateEvent.isPending}
       />
+
+       <UpgradeModal
+          open={upgradeModalOpen}
+          onOpenChange={setUpgradeModalOpen}
+          limitType={limitData.limitType}
+          currentCount={limitData.current}
+          limit={limitData.limit}
+        />
     </div>
   );
 }

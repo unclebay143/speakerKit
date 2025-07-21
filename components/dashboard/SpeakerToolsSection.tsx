@@ -125,9 +125,7 @@ export default function SpeakerToolsSection() {
                   </p>
                 </div>
                 <div className='ml-2'>
-                  {selectedTools.includes(tool.key) ? (
-                    <X className='h-4 w-4 text-gray-400' />
-                  ) : (
+                  {selectedTools.includes(tool.key) && (
                     <Check className='h-4 w-4 text-purple-600 dark:text-purple-400' />
                   )}
                 </div>

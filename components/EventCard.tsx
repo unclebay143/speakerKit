@@ -13,6 +13,7 @@ import {
 import { Edit, ExternalLink, Play, Trash2, Youtube } from "lucide-react";
 import { useState } from "react";
 import YouTubeModal from "./YouTubeModal";
+import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 
 interface EventCardProps {
   event: Event;
@@ -38,6 +39,8 @@ export default function EventCard({
   const [isYouTubeModalOpen, setIsYouTubeModalOpen] = useState(false);
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const [currentVideoTitle, setCurrentVideoTitle] = useState<string>("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
 
   const hasYouTubeVideo =
     event.youtubeVideo && isYouTubeUrl(event.youtubeVideo);
@@ -65,6 +68,15 @@ export default function EventCard({
     setIsYouTubeModalOpen(false);
     setCurrentVideoUrl(null);
     setCurrentVideoTitle("");
+  };
+
+   const handleDeleteClick = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete?.(event);
+    setDeleteModalOpen(false);
   };
 
   return (
@@ -107,7 +119,7 @@ export default function EventCard({
                   <Button
                     size='sm'
                     variant='ghost'
-                    onClick={() => onDelete?.(event)}
+                    onClick={handleDeleteClick}
                     className={`text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 ${
                       isDeleting ? "opacity-50 cursor-not-allowed" : ""
                     }`}
@@ -205,6 +217,15 @@ export default function EventCard({
           title={currentVideoTitle}
         />
       )}
+
+      <DeleteConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        onConfirm={handleConfirmDelete}
+        title={event.title}
+        type="event"
+        loading={isDeleting}
+      />
     </>
   );
 }

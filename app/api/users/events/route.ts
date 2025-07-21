@@ -1,5 +1,6 @@
 import { uploadToCloudinary } from "@/lib/cloudinary-utils";
 import connectViaMongoose from "@/lib/db";
+import { checkPlanLimits } from "@/middleware/planLimits";
 import Event from "@/models/Event";
 import User from "@/models/User";
 import { authOptions } from "@/utils/auth-options";
@@ -55,6 +56,31 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const limitCheck = await checkPlanLimits({
+      userId: user._id.toString(),
+      resourceType: "event"
+    });
+
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        { error: limitCheck.error },
+        { status: 403 }
+      );
+    }
+
+    if (user.plan === "free") {
+      const eventCount = await Event.countDocuments({ userId: user._id });
+      if (eventCount >= 2) {
+        return NextResponse.json(
+          { 
+            error: "Free plan limited to 2 events. Upgrade to Pro for unlimited events.",
+            limitReached: true
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const formData = await request.formData();
