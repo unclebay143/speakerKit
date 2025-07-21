@@ -5,6 +5,11 @@ const ALLOWED_PLAN = ["free", "pro", "lifetime"];
 
 const UserSchema = new Schema(
   {
+    authProvider: {
+      type: String,
+      enum: ["credentials", "google"],
+      default: "credentials",
+    },
     name: {
       type: String,
       required: true,
@@ -18,6 +23,10 @@ const UserSchema = new Schema(
     },
     password: {
       type: String,
+    },
+    hasPassword: {
+      type: Boolean,
+      default: false,
     },
     slug: {
       type: String,

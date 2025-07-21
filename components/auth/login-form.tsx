@@ -46,6 +46,17 @@ export default function LoginForm() {
     const password = formData.get("password") as string;
 
     try {
+      const userCheck = await fetch(`/api/auth/check-user?email=${email}`);
+      if (!userCheck.ok) throw new Error("Failed to check user");
+      
+      const userData = await userCheck.json();
+      
+      if (userData.authProvider === "google") {
+        setError('This account uses Google login. Please sign in with Google or set a password first.');
+        setIsLoading(false);
+        return;
+      }
+      
       const result = await signIn("credentials", {
         email,
         password,
