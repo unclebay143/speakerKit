@@ -3,15 +3,15 @@
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/modals/event-modal";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useEvents } from "@/lib/hooks/useEvents";
 import { type Event } from "@/lib/youtube-utils";
 import { Calendar, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { EventsDashboardSkeleton } from "./EventsDashboardSkeleton";
 import { EmptyState } from "../EmptyState";
 import { UpgradeModal } from "../modals/upgrade-modal";
-import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import { EventsDashboardSkeleton } from "./EventsDashboardSkeleton";
 
 interface EventsDashboardProps {
   initialEvents?: Event[];
@@ -89,7 +89,7 @@ export default function EventsDashboard({
     }
   };
 
-   const handleAddEvent = () => {
+  const handleAddEvent = () => {
     if (user?.plan === "free" && events?.length >= 2) {
       setLimitData({
         limitType: "events",
@@ -140,17 +140,17 @@ export default function EventsDashboard({
         {!events || events.length === 0 ? (
           <EmptyState
             icon={Calendar}
-            title="No events yet"
+            title='No events yet'
             description={
-              user?.plan === "free" 
+              user?.plan === "free"
                 ? "Free plan allows up to 2 events"
                 : "Start by adding your first speaking engagement"
             }
             action={{
               label: "Add Event",
-              onClick: handleAddEvent
+              onClick: handleAddEvent,
             }}
-            className="text-center py-12"
+            className='text-center py-12'
           />
         ) : (
           <div className='space-y-4'>
@@ -177,13 +177,13 @@ export default function EventsDashboard({
         isLoading={createEvent.isPending || updateEvent.isPending}
       />
 
-       <UpgradeModal
-          open={upgradeModalOpen}
-          onOpenChange={setUpgradeModalOpen}
-          limitType={limitData.limitType}
-          currentCount={limitData.current}
-          limit={limitData.limit}
-        />
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        limitType={limitData.limitType}
+        currentCount={limitData.current}
+        limit={limitData.limit}
+      />
     </div>
   );
 }

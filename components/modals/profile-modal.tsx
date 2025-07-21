@@ -56,7 +56,7 @@ export function ProfileModal({
       onOpenChange={onOpenChange}
       heading={heading}
       description={description}
-      className='max-w-2xl max-h-[90vh]'
+      className='md:max-w-2xl md:max-h-[90vh] md:overflow-y-auto'
     >
       <ProfileForm
         profileToEdit={profileToEdit}

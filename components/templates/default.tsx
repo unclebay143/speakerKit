@@ -116,7 +116,7 @@ const THEMES = {
   },
 };
 
-const events = [
+export const dummy_events = [
   {
     title: "GenAI Supercharges Your Vue Dev Workflow",
     event: "Vue.js Global Summit'25 AI Edition",
@@ -233,8 +233,6 @@ const events = [
   // },
 ];
 
-
-
 export function DefaultTemplate({
   userData,
   profiles,
@@ -250,7 +248,6 @@ export function DefaultTemplate({
   const router = useRouter();
   const pathname = usePathname();
 
-  
   // Get theme configuration
   const theme = THEMES[userData.theme as keyof typeof THEMES];
 
