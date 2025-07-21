@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import { Check, Copy, Menu, Moon, PanelLeftOpen, Sun } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -23,7 +23,6 @@ export function DashboardHeader({
   activeTab,
 }: HeaderProps) {
   const { data: user } = useCurrentUser();
-  const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
   const toggleTheme = () => {
@@ -37,8 +36,7 @@ export function DashboardHeader({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast({
-        title: "Profile URL copied!",
+      toast("Profile URL copied!", {
         description: url,
       });
 
@@ -47,10 +45,8 @@ export function DashboardHeader({
         setCopied(false);
       }, 2000);
     } catch (error) {
-      toast({
-        title: "Failed to copy URL",
+      toast("Failed to copy URL", {
         description: "Please try again",
-        variant: "destructive",
       });
     }
   };

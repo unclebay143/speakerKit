@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
 interface YouTubeModalProps {
@@ -24,6 +24,8 @@ export default function YouTubeModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='max-w-7xl w-[90vw] h-[80vh] p-0 bg-black'>
+        <DialogTitle className='sr-only'>{title}</DialogTitle>
+
         <div className='relative w-full h-full'>
           {/* Close button */}
           <button

@@ -3,11 +3,11 @@
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/modals/event-modal";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
 import { useEvents } from "@/lib/hooks/useEvents";
 import { type Event } from "@/lib/youtube-utils";
 import { Calendar, Plus } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { EventsDashboardSkeleton } from "./EventsDashboardSkeleton";
 
 interface EventsDashboardProps {
@@ -33,8 +33,7 @@ export default function EventsDashboard({
         });
 
         setEditingEvent(null);
-        toast({
-          title: "Event updated successfully!",
+        toast("Event updated successfully!", {
           description: "Your event has been updated.",
         });
       } else {
@@ -44,8 +43,7 @@ export default function EventsDashboard({
         }
 
         await createEvent.mutateAsync(formData);
-        toast({
-          title: "Event added successfully!",
+        toast("Event added successfully!", {
           description: "Your new event has been added.",
         });
       }
@@ -53,13 +51,11 @@ export default function EventsDashboard({
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving event:", error);
-      toast({
-        title: "Error",
+      toast("Error", {
         description:
           error instanceof Error
             ? error.message
             : "Failed to save event. Please try again.",
-        variant: "destructive",
       });
     }
   };
@@ -72,16 +68,13 @@ export default function EventsDashboard({
   const handleDelete = async (eventToDelete: Event) => {
     try {
       await deleteEvent.mutateAsync(eventToDelete._id!);
-      toast({
-        title: "Event deleted",
+      toast("Event deleted", {
         description: "The event has been removed.",
       });
     } catch (error) {
       console.error("Error deleting event:", error);
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Failed to delete event. Please try again.",
-        variant: "destructive",
       });
     }
   };

@@ -15,7 +15,7 @@ import {
 } from "@/lib/hooks/useCurrentUser";
 import { Check, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 const AVAILABLE_TOOLS = [
   {
@@ -55,11 +55,12 @@ export default function SpeakerToolsSection() {
       } else {
         // Limit to 5 tools maximum
         if (prev.length >= 5) {
-          toast({
-            title:
-              "You can only select up to 5 tools to display on your profile.",
-            description: "Please try again.",
-          });
+          toast(
+            "You can only select up to 5 tools to display on your profile.",
+            {
+              description: "Please try again.",
+            }
+          );
           return prev;
         }
         return [...prev, toolKey];
@@ -72,21 +73,20 @@ export default function SpeakerToolsSection() {
 
     try {
       await updateUser.mutateAsync({ tools: selectedTools });
-      toast({
-        title: "Speaker tools updated successfully!",
-        description: "Your speaker tools have been updated.",
-      });
+      toast("Speaker tools updated successfully!");
     } catch (error) {
       console.error("Error updating speaker tools:", error);
 
-      toast({
-        title: "Failed to update speaker tools.",
+      toast("Failed to update speaker tools.", {
         description: "Please try again.",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const isChanged =
+    JSON.stringify(selectedTools) !== JSON.stringify(user?.tools || []);
 
   return (
     <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm'>
@@ -139,7 +139,7 @@ export default function SpeakerToolsSection() {
         <div className='flex justify-end pt-4'>
           <Button
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isLoading || !isChanged}
             className='bg-purple-600 hover:bg-purple-700 text-white'
           >
             {isLoading ? "Saving..." : "Save Changes"}

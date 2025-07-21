@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
 import { eventSchema, type EventFormData } from "@/lib/schemas/event-schema";
 import { isYouTubeUrl, type Event } from "@/lib/youtube-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +20,7 @@ import { format, parse } from "date-fns";
 import { Edit, Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 // Utility function to parse date strings
 const parseDateString = (dateString: string): Date | undefined => {
@@ -224,10 +224,8 @@ export default function EventModal({
       onSave(eventData, formDataToSend);
     } catch (error) {
       console.error("Error saving event:", error);
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Failed to save event. Please try again.",
-        variant: "destructive",
       });
     }
 

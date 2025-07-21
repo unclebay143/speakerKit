@@ -14,20 +14,22 @@ import {
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function SocialMediaSection() {
   const { data: user, refetch } = useCurrentUser();
   const updateUser = useUpdateCurrentUser();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<null | {
-    text: string;
-    type: "success" | "error";
-  }>(null);
+  const [formState, setFormState] = useState({
+    twitter: user?.socialMedia?.twitter || "",
+    linkedin: user?.socialMedia?.linkedin || "",
+    instagram: user?.socialMedia?.instagram || "",
+    email: user?.socialMedia?.email || "",
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage(null);
 
     const formData = new FormData(e.currentTarget);
     const socialMedia = {
@@ -45,10 +47,15 @@ export default function SocialMediaSection() {
 
     try {
       await updateUser.mutateAsync({ socialMedia });
-      setMessage({ text: "Social media updated!", type: "success" });
+      toast("Social media updated!", {
+        description: "Your social media links have been updated.",
+      });
       refetch();
+      setFormState(socialMedia); // Update formState after successful save
     } catch (e) {
-      setMessage({ text: "Failed to update social media", type: "error" });
+      toast("Failed to update social media", {
+        description: "Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +87,9 @@ export default function SocialMediaSection() {
 
   if (!user) return null;
 
+  const isChanged =
+    JSON.stringify(formState) !== JSON.stringify(user?.socialMedia || {});
+
   return (
     <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm'>
       <CardHeader>
@@ -92,17 +102,6 @@ export default function SocialMediaSection() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {message && (
-            <div
-              className={`text-sm p-3 rounded-md ${
-                message.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
           <div className='flex flex-col gap-2'>
             <Label htmlFor='x' className='text-gray-900 dark:text-white'>
               X (Twitter)
@@ -163,7 +162,7 @@ export default function SocialMediaSection() {
           <div className='md:col-span-2 flex justify-end'>
             <Button
               type='submit'
-              disabled={isLoading}
+              disabled={isLoading || !isChanged}
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
               {isLoading ? "Saving..." : "Save Social Links"}

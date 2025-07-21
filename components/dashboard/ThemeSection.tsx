@@ -13,6 +13,7 @@ import {
 import { Check, Lock, Palette } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { UpgradeModal } from "../modals/upgrade-modal";
 
 const allThemeOptions = [
@@ -39,10 +40,7 @@ function ThemeSection() {
       mode: "onChange",
     }
   );
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
+
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const isPremiumUser = !!user?.isPro;
@@ -61,10 +59,12 @@ function ThemeSection() {
     try {
       const themeToSave = isPremiumUser ? values.theme : "teal";
       await updateUser.mutateAsync({ theme: themeToSave });
-      setMessage({ text: "Theme updated successfully!", type: "success" });
+      toast("Theme updated successfully!");
       refetch();
     } catch (error) {
-      setMessage({ text: "Failed to update theme", type: "error" });
+      toast("Failed to update theme", {
+        description: "Please try again.",
+      });
     }
   };
 
@@ -83,23 +83,11 @@ function ThemeSection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-6'>
-          {message && (
-            <div
-              className={`text-sm p-3 rounded-md ${
-                message.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
             {allThemeOptions.map((theme) => (
               <label
                 key={theme.key}
-                className={`relative p-4 rounded-lg border-2 transition-all ${
+                className={`relative p-4 rounded-lg border-2 transition-all group ${
                   isPremiumUser || theme.key === "teal"
                     ? "cursor-pointer"
                     : "cursor-not-allowed opacity-70"
@@ -124,7 +112,7 @@ function ThemeSection() {
                 </div>
                 {!isPremiumUser && theme.key !== "teal" && (
                   <div
-                    className='absolute inset-0 bg-black/40 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer'
+                    className='absolute inset-0 bg-black/40 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300'
                     onClick={() => setShowUpgradeModal(true)}
                   >
                     <Lock className='w-4 h-4 text-white' />

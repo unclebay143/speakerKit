@@ -16,6 +16,7 @@ import {
 import { Eye, Lock, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 function VisibilitySection() {
   const { data: user, refetch } = useCurrentUser();
@@ -24,10 +25,6 @@ function VisibilitySection() {
   const { control, handleSubmit, formState, setValue, watch } = useForm({
     mode: "onChange",
   });
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
 
   useEffect(() => {
     if (user && !isInitialized) {
@@ -41,17 +38,15 @@ function VisibilitySection() {
   const onSubmit = async (values: any) => {
     try {
       await updateUser.mutateAsync({ isPublic: values.isPublic });
-      setMessage({
-        text: `Profile visibility ${
+      toast(
+        `Profile visibility ${
           values.isPublic ? "enabled" : "disabled"
-        } successfully!`,
-        type: "success",
-      });
+        } successfully!`
+      );
       refetch();
     } catch (error) {
-      setMessage({
-        text: "Failed to update profile visibility",
-        type: "error",
+      toast("Failed to update profile visibility", {
+        description: "Please try again.",
       });
     }
   };
@@ -69,17 +64,6 @@ function VisibilitySection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-6'>
-          {message && (
-            <div
-              className={`text-sm p-3 rounded-md ${
-                message.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
           <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10'>
             <div className='flex items-center space-x-3'>
               {isPublic ? (

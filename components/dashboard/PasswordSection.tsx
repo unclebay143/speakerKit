@@ -12,6 +12,7 @@ import axios from "axios";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 function PasswordSection() {
   const { register, handleSubmit, formState, reset, watch } = useForm({
@@ -28,17 +29,14 @@ function PasswordSection() {
     confirm: false,
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
 
   const onSubmit = async (values: any) => {
     setLoading(true);
-    setMessage(null);
     try {
       if (values.newPassword !== values.confirmPassword) {
-        setMessage({ text: "New passwords don't match!", type: "error" });
+        toast("New passwords don't match!", {
+          description: "Please try again.",
+        });
         setLoading(false);
         return;
       }
@@ -46,12 +44,13 @@ function PasswordSection() {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
-      setMessage({ text: "Password updated successfully!", type: "success" });
+      toast("Password updated successfully!", {
+        description: "Your password has been updated.",
+      });
       reset();
     } catch (error: any) {
-      setMessage({
-        text: error?.response?.data?.error || "Failed to update password",
-        type: "error",
+      toast(error?.response?.data?.error || "Failed to update password", {
+        description: "Please try again.",
       });
     } finally {
       setLoading(false);
@@ -71,17 +70,6 @@ function PasswordSection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-4'>
-          {message && (
-            <div
-              className={`text-sm p-3 rounded-md ${
-                message.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
           <div className='space-y-2'>
             <Label
               htmlFor='currentPassword'
