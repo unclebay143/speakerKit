@@ -34,11 +34,11 @@ export const getYouTubeEmbedUrl = (url: string) => {
   if (!parsed) return null;
 
   if (parsed.type === "video" && parsed.videoId) {
-    return `https://www.youtube.com/embed/${parsed.videoId}?autoplay=1&rel=0`;
+    return `https://www.youtube.com/embed/${parsed.videoId}?rel=0`;
   }
 
   if (parsed.type === "playlist" && parsed.playlistId) {
-    return `https://www.youtube.com/embed/videoseries?list=${parsed.playlistId}&autoplay=1&rel=0`;
+    return `https://www.youtube.com/embed/videoseries?list=${parsed.playlistId}&rel=0`;
   }
 
   return null;
@@ -55,7 +55,7 @@ export const getHoverVideoUrl = (url: string) => {
   const parsed = parseYouTubeUrl(url);
   if (!parsed || parsed.type !== "video" || !parsed.videoId) return null;
 
-  return `https://www.youtube.com/embed/${parsed.videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${parsed.videoId}&rel=0`;
+  return `https://www.youtube.com/embed/${parsed.videoId}?mute=1&controls=0&rel=0`;
 };
 
 export const isYouTubeUrl = (url: string) => {

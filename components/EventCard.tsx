@@ -170,7 +170,6 @@ export default function EventCard({
                 className='relative w-full h-full cursor-pointer group'
                 onClick={() => openYouTubeModal(embedUrl, event.title)}
               >
-                {/* YouTube embed - shows preview by default, plays on hover */}
                 <iframe
                   src={embedUrl}
                   title={event.title}
@@ -179,20 +178,6 @@ export default function EventCard({
                   allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
                   allowFullScreen
                 />
-
-                {/* Hover video overlay - plays on hover */}
-                {hoverVideoUrl && (
-                  <div className='absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'>
-                    <iframe
-                      src={hoverVideoUrl}
-                      title={event.title}
-                      className='w-full h-full'
-                      frameBorder='0'
-                      allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                      allowFullScreen
-                    />
-                  </div>
-                )}
 
                 {/* Play button overlay */}
                 <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center'>
