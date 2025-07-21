@@ -13,53 +13,14 @@ import {
   useCurrentUser,
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function SocialMediaSection() {
   const { data: user, refetch } = useCurrentUser();
   const updateUser = useUpdateCurrentUser();
   const [isLoading, setIsLoading] = useState(false);
-  const [formState, setFormState] = useState({
-    twitter: user?.socialMedia?.twitter || "",
-    linkedin: user?.socialMedia?.linkedin || "",
-    instagram: user?.socialMedia?.instagram || "",
-    email: user?.socialMedia?.email || "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const socialMedia = {
-      twitter: (formData.get("x") as string)
-        ? `https://x.com/${formData.get("x")}`
-        : "",
-      linkedin: (formData.get("linkedin") as string)
-        ? `https://linkedin.com/in/${formData.get("linkedin")}`
-        : "",
-      instagram: (formData.get("instagram") as string)
-        ? `https://instagram.com/${formData.get("instagram")}`
-        : "",
-      email: (formData.get("email") as string) || "",
-    };
-
-    try {
-      await updateUser.mutateAsync({ socialMedia });
-      toast("Social media updated!", {
-        description: "Your social media links have been updated.",
-      });
-      refetch();
-      setFormState(socialMedia); // Update formState after successful save
-    } catch (e) {
-      toast("Failed to update social media", {
-        description: "Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Helper function to extract username from full URL
   const extractUsername = (url: string | undefined, platform: string) => {
@@ -85,10 +46,57 @@ export default function SocialMediaSection() {
     }
   };
 
-  if (!user) return null;
+  // Set up react-hook-form
+  const { register, handleSubmit, formState, reset } = useForm({
+    defaultValues: {
+      x: extractUsername(user?.socialMedia?.twitter, "x"),
+      linkedin: extractUsername(user?.socialMedia?.linkedin, "linkedin"),
+      instagram: extractUsername(user?.socialMedia?.instagram, "instagram"),
+      email: user?.socialMedia?.email || user?.email || "",
+    },
+    mode: "onChange",
+  });
 
-  const isChanged =
-    JSON.stringify(formState) !== JSON.stringify(user?.socialMedia || {});
+  // Reset form when user data changes
+  useEffect(() => {
+    reset({
+      x: extractUsername(user?.socialMedia?.twitter, "x"),
+      linkedin: extractUsername(user?.socialMedia?.linkedin, "linkedin"),
+      instagram: extractUsername(user?.socialMedia?.instagram, "instagram"),
+      email: user?.socialMedia?.email || user?.email || "",
+    });
+  }, [user, reset]);
+
+  const onSubmit = async (values: any) => {
+    setIsLoading(true);
+    const socialMedia = {
+      twitter: values.x ? `https://x.com/${values.x}` : "",
+      linkedin: values.linkedin
+        ? `https://linkedin.com/in/${values.linkedin}`
+        : "",
+      instagram: values.instagram
+        ? `https://instagram.com/${values.instagram}`
+        : "",
+      email: values.email || "",
+    };
+
+    try {
+      await updateUser.mutateAsync({ socialMedia });
+      toast("Social media updated!", {
+        description: "Your social media links have been updated.",
+      });
+      refetch();
+      reset(values); // Reset form dirty state
+    } catch (e) {
+      toast("Failed to update social media", {
+        description: "Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!user) return null;
 
   return (
     <Card className='bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 shadow-sm'>
@@ -100,7 +108,7 @@ export default function SocialMediaSection() {
           Update your social media profiles
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='flex flex-col gap-2'>
             <Label htmlFor='x' className='text-gray-900 dark:text-white'>
@@ -108,10 +116,9 @@ export default function SocialMediaSection() {
             </Label>
             <InputWithPrefix
               id='x'
-              name='x'
               prefix='x.com/'
-              defaultValue={extractUsername(user.socialMedia?.twitter, "x")}
               placeholder='yourhandle'
+              {...register("x")}
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -120,13 +127,9 @@ export default function SocialMediaSection() {
             </Label>
             <InputWithPrefix
               id='linkedin'
-              name='linkedin'
               prefix='linkedin.com/in/'
-              defaultValue={extractUsername(
-                user.socialMedia?.linkedin,
-                "linkedin"
-              )}
               placeholder='yourprofile'
+              {...register("linkedin")}
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -138,13 +141,9 @@ export default function SocialMediaSection() {
             </Label>
             <InputWithPrefix
               id='instagram'
-              name='instagram'
               prefix='instagram.com/'
-              defaultValue={extractUsername(
-                user.socialMedia?.instagram,
-                "instagram"
-              )}
               placeholder='yourhandle'
+              {...register("instagram")}
             />
           </div>
           <div className='flex flex-col gap-2'>
@@ -153,16 +152,15 @@ export default function SocialMediaSection() {
             </Label>
             <Input
               id='email'
-              name='email'
-              defaultValue={user.socialMedia?.email || user.email || ""}
-              placeholder='your@email.com'
               type='email'
+              placeholder='your@email.com'
+              {...register("email")}
             />
           </div>
           <div className='md:col-span-2 flex justify-end'>
             <Button
               type='submit'
-              disabled={isLoading || !isChanged}
+              disabled={isLoading || !formState.isDirty}
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
               {isLoading ? "Saving..." : "Save Social Links"}
