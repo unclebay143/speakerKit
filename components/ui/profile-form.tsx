@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface ProfileFormData {
@@ -233,13 +233,13 @@ export function ProfileForm({
           disabled={!profileData.title || !profileData.shortBio || isLoading}
           className='flex-1 bg-purple-600 hover:bg-purple-700 text-white'
         >
-          {isLoading
-            ? isEditing
-              ? "Updating..."
-              : "Creating"
-            : isEditing
-            ? "Update Profile"
-            : "Create Profile"}
+          {isLoading ? (
+            <Loader2 className='w-4 h-4 animate-spin' />
+          ) : isEditing ? (
+            "Update Profile"
+          ) : (
+            "Create Profile"
+          )}
         </Button>
       </div>
     </div>

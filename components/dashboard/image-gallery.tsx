@@ -465,7 +465,11 @@ export function ImageGallery() {
                 disabled={selectedFiles.length === 0 || uploading}
                 className='bg-purple-600 hover:bg-purple-700 text-white'
               >
-                {uploading ? "Uploading..." : "Upload"}
+                {uploading ? (
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                ) : (
+                  "Upload"
+                )}
               </Button>
             </div>
           )}

@@ -66,6 +66,7 @@ interface UltimateProfileProps {
   folders: Folder[];
   activeProfile: string;
   selectedFolder: string | null;
+  userSlug: string;
   // For now, events is optional and will use dummy data if not provided
   events?: Event[];
 }
@@ -237,6 +238,7 @@ export function DefaultTemplate({
   profiles,
   folders,
   activeProfile: initialActiveProfile,
+  userSlug,
 }: UltimateProfileProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [downloadingImage, setDownloadingImage] = useState<string | null>(null);
@@ -247,8 +249,7 @@ export function DefaultTemplate({
   const pathname = usePathname();
 
   // Get theme configuration
-  // const theme = THEMES[userData.theme as keyof typeof THEMES] || THEMES.teal;
-  const theme = THEMES.teal;
+  const theme = THEMES[userData.theme as keyof typeof THEMES];
 
   // Handle URL query parameter for profile selection
   useEffect(() => {
@@ -693,7 +694,7 @@ export function DefaultTemplate({
         {/* Conditional Content Rendering */}
         {searchParams.get("activities") ? (
           // Activities/Events Section
-          <EventsSection events={events} theme={theme} />
+          <EventsSection userSlug={userSlug} theme={theme} />
         ) : (
           // Profile Content
           <>

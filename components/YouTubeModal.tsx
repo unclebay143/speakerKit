@@ -1,13 +1,5 @@
 "use client";
 
-// YouTube Support Feature:
-// - Supports both individual videos (youtubeVideo) and playlists (youtubePlaylist)
-// - Automatically detects YouTube URLs and creates embeds
-// - Supports youtu.be, youtube.com/watch, and youtube.com/playlist formats
-// - Provides fallback to regular links for non-YouTube URLs
-// - Shows YouTube badges and red-themed buttons for YouTube content
-// - Responsive iframe embeds with hover effects
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 

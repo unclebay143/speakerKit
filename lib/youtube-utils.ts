@@ -64,6 +64,8 @@ export const isYouTubeUrl = (url: string) => {
 
 // Enhanced Event interface
 export interface Event {
+  _id?: string;
+  userId?: string;
   title: string;
   event: string;
   date: string;
@@ -73,4 +75,7 @@ export interface Event {
   link: string;
   youtubeVideo?: string; // YouTube video URL
   youtubePlaylist?: string; // YouTube playlist URL
+  isPublic?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

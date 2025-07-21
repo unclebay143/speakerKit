@@ -250,6 +250,7 @@ export default async function Page({ params }: PageProps) {
         profiles={transformedProfiles}
         folders={transformedFolders}
         activeProfile={activeProfile}
+        userSlug={slug}
       />
     );
   } catch (error) {

@@ -25,6 +25,7 @@ export default function Dashboard({ children }: DashboardProps) {
   const getActiveTab = () => {
     if (pathname.startsWith("/gallery")) return "gallery";
     if (pathname.startsWith("/settings")) return "settings";
+    if (pathname.startsWith("/events")) return "events";
     return "overview";
   };
 
@@ -41,6 +42,9 @@ export default function Dashboard({ children }: DashboardProps) {
         break;
       case "settings":
         router.push("/settings");
+        break;
+      case "events":
+        router.push("/events");
         break;
     }
     setMobileSidebarOpen(false);
@@ -98,7 +102,7 @@ export default function Dashboard({ children }: DashboardProps) {
       await update();
     } finally {
       setUpdatingSession(false);
-      setShowUsernameModal(false);
+      // setShowUsernameModal(false);
     }
   };
 

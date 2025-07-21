@@ -42,6 +42,7 @@ interface ProfilePreviewProps {
   profiles: Profile[];
   folders: Folder[];
   activeProfile: string;
+  userSlug: string;
 }
 
 export default function ProfilePreview({
@@ -49,6 +50,7 @@ export default function ProfilePreview({
   profiles,
   folders,
   activeProfile,
+  userSlug,
 }: ProfilePreviewProps) {
   return (
     <DefaultTemplate
@@ -57,6 +59,7 @@ export default function ProfilePreview({
       folders={folders}
       activeProfile={activeProfile}
       selectedFolder={null}
+      userSlug={userSlug}
     />
   );
 }
