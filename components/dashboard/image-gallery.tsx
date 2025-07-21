@@ -303,7 +303,7 @@ export function ImageGallery() {
   return (
     <div className='flex flex-col gap-4 mx-auto max-w-screen-lg'>
       {/* Header part */}
-     <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className={`flex ${!currentFolder ? 'flex-row items-center gap-3' : 'flex-col gap-4'} sm:flex-row sm:items-center sm:justify-between`}>
         {/* Title Section */}
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-2 flex-wrap'>
@@ -327,13 +327,13 @@ export function ImageGallery() {
         </div>
 
         {/* Actions Section */}
-        <div className='flex flex-col xs:flex-row gap-2 sm:gap-3 w-full sm:w-auto'>
+        <div className={`flex ${!currentFolder ? 'flex-row' : 'flex-col'} gap-2 sm:gap-3`}>
           {!currentFolder ? (
             <Button
               onClick={handleCreateFolder}
               variant='outline'
               size='sm'
-              className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10 w-full sm:w-auto justify-center sm:justify-center'
+              className='border-gray-300 dark:border-white/10 text-gray-700 dark:text-white bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/10'
             >
               <FolderPlus className='w-4 h-4 mr-2' />
               <span>New Folder</span>
@@ -341,7 +341,7 @@ export function ImageGallery() {
           ) : (
             <Button
               size='sm'
-              className='bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto justify-center sm:justify-center'
+              className='bg-purple-600 hover:bg-purple-700 text-white'
               onClick={() => {
                 if (!user?.isPro && currentFolder.images.length >= 3) {
                   setLimitData({
