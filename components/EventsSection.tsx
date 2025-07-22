@@ -6,7 +6,6 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import EventCard from "./EventCard";
 import EventCardSkeleton from "./EventCardSkeleton";
-import { dummy_events } from "./templates/default";
 
 interface EventsSectionProps {
   userSlug: string;
@@ -75,8 +74,8 @@ export default function EventsSection({ userSlug, theme }: EventsSectionProps) {
   }, [showAllEvents, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Flatten all events from all pages
-  const allEvents = data?.pages.flatMap((page) => dummy_events) || [];
-  const firstPageEvents = dummy_events;
+  const allEvents = data?.pages.flatMap((page) => page.events) || [];
+  const firstPageEvents = data?.pages[0]?.events || [];
   const displayedEvents = showAllEvents
     ? allEvents
     : firstPageEvents.slice(0, 10);

@@ -1,5 +1,6 @@
 "use client";
 
+import { UserExpertiseSection } from "@/components/dashboard/UserExpertiseSection";
 import PasswordSection from "./PasswordSection";
 import ProfileImageSection from "./ProfileImageSection";
 import ProfileInfoSection from "./ProfileInfoSection";
@@ -22,6 +23,7 @@ export function Settings() {
 
       <ProfileImageSection />
       <ProfileInfoSection />
+      <UserExpertiseSection />
       <SocialMediaSection />
       <SpeakerToolsSection />
       <ThemeSection />

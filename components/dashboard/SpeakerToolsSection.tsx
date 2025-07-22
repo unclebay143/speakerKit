@@ -13,7 +13,7 @@ import {
   useCurrentUser,
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
-import { Check, Wrench, X } from "lucide-react";
+import { Check, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
