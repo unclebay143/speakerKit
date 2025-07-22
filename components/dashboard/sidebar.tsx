@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import {
+  Calendar,
   CreditCard,
   ImageIcon,
   LayoutDashboard,
@@ -25,7 +26,8 @@ interface SidebarProps {
 
 const menuItems = [
   { slug: "overview", label: "Overview", icon: LayoutDashboard },
-  { slug: "gallery", label: "Image Gallery", icon: ImageIcon },
+  { slug: "gallery", label: "Gallery", icon: ImageIcon },
+  { slug: "events", label: "Events", icon: Calendar },
   { slug: "settings", label: "Settings", icon: Settings },
 ];
 

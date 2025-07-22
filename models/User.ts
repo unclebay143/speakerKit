@@ -1,10 +1,15 @@
 import { generateRandomSlug } from "@/utils/generateSlug";
 import { Schema, model, models } from "mongoose";
 
-const ALLOWED_PLAN = ["free", "pro", "lifetime"]
+const ALLOWED_PLAN = ["free", "pro", "lifetime"];
 
 const UserSchema = new Schema(
   {
+    authProvider: {
+      type: String,
+      enum: ["credentials", "google"],
+      default: "credentials",
+    },
     name: {
       type: String,
       required: true,
@@ -19,11 +24,15 @@ const UserSchema = new Schema(
     password: {
       type: String,
     },
-    slug: { 
+    hasPassword: {
+      type: Boolean,
+      default: false,
+    },
+    slug: {
       type: String,
       unique: true,
       required: true,
-      default: generateRandomSlug, 
+      default: generateRandomSlug,
     },
     // username: {
     //   type: String,
@@ -61,34 +70,44 @@ const UserSchema = new Schema(
       linkedin: { type: String, default: "" },
       instagram: { type: String, default: "" },
       email: { type: String, default: "" },
+      website: { type: String, default: "" },
+    },
+    tools: {
+      type: [String],
+      enum: ["notion", "canva", "google-docs", "figma", "powerpoint"],
+    },
+    expertise: {
+      type: [String],
+      default: [],
+    },
+    topics: {
+      type: [String],
+      default: [],
     },
     location: {
-      type: String,
-      default: "",
-    },
-    website: {
       type: String,
       default: "",
     },
     plan: {
       type: String,
       enum: ALLOWED_PLAN,
-      default: "free"
+      default: "free",
     },
     planLimits: {
       profiles: { type: Number, default: 1 },
       folders: { type: Number, default: 1 },
-      imagesPerFolder: { type: Number, default: 3 }
+      imagesPerFolder: { type: Number, default: 3 },
+      events: { type: Number, default: 2 },
     },
-    planExpiresAt: { type: Date, default: null  },
-     paystackCustomerId: {
+    planExpiresAt: { type: Date, default: null },
+    paystackCustomerId: {
       type: String,
-      default: null
+      default: null,
     },
-     paystackSubscriptionId: {
+    paystackSubscriptionId: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -102,18 +121,19 @@ UserSchema.pre("save", function (next) {
         profiles: 1,
         folders: 1,
         imagesPerFolder: 3,
+        events: 2,
       };
     } else if (this.plan === "pro" || this.plan === "lifetime") {
       this.planLimits = {
-        profiles: Infinity, 
-        folders: Infinity, 
-        imagesPerFolder: Infinity,  
+        profiles: Infinity,
+        folders: Infinity,
+        imagesPerFolder: Infinity,
+        events: Infinity,
       };
     }
   }
   next();
 });
-
 
 const User = models.User || model("User", UserSchema);
 

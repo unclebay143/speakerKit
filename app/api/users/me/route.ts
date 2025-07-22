@@ -22,12 +22,14 @@ export async function GET() {
   // Return user without password and __v
   const { password, __v, ...userWithoutPassword } = user.toObject();
 
-  const isPro = (user.plan === "pro" && (!user.planExpiresAt || new Date(user.planExpiresAt) > new Date()));
+  const isPro =
+    user.plan === "pro" &&
+    (!user.planExpiresAt || new Date(user.planExpiresAt) > new Date());
   const isLifetime = user.plan === "lifetime";
 
   return NextResponse.json({
     success: true,
-    user: {...userWithoutPassword, isPro, isLifetime},
+    user: { ...userWithoutPassword, isPro, isLifetime },
   });
 }
 
@@ -48,6 +50,10 @@ export async function PUT(req: Request) {
     "theme",
     "isPublic",
     "socialMedia",
+    "tools",
+    "expertise",
+    "topics",
+    "location",
   ];
   const updateData: Record<string, any> = {};
   for (const key of allowedFields) {

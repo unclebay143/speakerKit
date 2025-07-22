@@ -35,6 +35,20 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+     // Skip current password check if user is Google-authenticated without password
+    if (user.authProvider === "google" && !user.password) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      user.hasPassword = true;
+      user.authProvider = "credentials"; 
+      await user.save();
+
+      return NextResponse.json({
+        success: true,
+        message: "Password set successfully",
+      });
+    }
+
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return NextResponse.json(
@@ -45,6 +59,7 @@ export async function PUT(req: Request) {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
+    user.hasPassword = true;
     await user.save();
 
     return NextResponse.json({

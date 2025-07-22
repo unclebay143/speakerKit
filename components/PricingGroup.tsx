@@ -1,8 +1,8 @@
 import { Check, CircleAlert, X as XIcon } from "lucide-react";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface Plan {
@@ -35,41 +35,41 @@ export default function PricingGroup({
   const [error, setError] = useState("");
 
   useEffect(() => {
-     const params = new URLSearchParams(window.location.search);
-    const paymentSuccess = params.get('payment_success');
-    const plan = params.get('plan');
-    
+    const params = new URLSearchParams(window.location.search);
+    const paymentSuccess = params.get("payment_success");
+    const plan = params.get("plan");
+
     if (paymentSuccess) {
-      window.history.replaceState({}, '', window.location.pathname);
-      
+      window.history.replaceState({}, "", window.location.pathname);
+
       toast.success(`Successfully upgraded to ${plan} plan!`);
-      
+
       router.refresh();
-      
-      localStorage.removeItem('pendingPayment');
+
+      localStorage.removeItem("pendingPayment");
     }
-  const checkPaymentStatus = async () => {
-    const pendingPayment = localStorage.getItem('pendingPayment');
-    if (pendingPayment) {
-      const { plan, userId, timestamp } = JSON.parse(pendingPayment);
-      if (Date.now() - timestamp < 30 * 60 * 1000) { 
-        try {
-          const res = await fetch(`/api/verify-payment?reference=${reference}`);
-          if (res.ok) {
-            localStorage.removeItem('pendingPayment');
-            router.refresh(); 
+    const checkPaymentStatus = async () => {
+      const pendingPayment = localStorage.getItem("pendingPayment");
+      if (pendingPayment) {
+        const { plan, userId, timestamp } = JSON.parse(pendingPayment);
+        if (Date.now() - timestamp < 30 * 60 * 1000) {
+          try {
+            const res = await fetch(
+              `/api/verify-payment?reference=${reference}`
+            );
+            if (res.ok) {
+              localStorage.removeItem("pendingPayment");
+              router.refresh();
+            }
+          } catch (error) {
+            console.error("Payment verification failed:", error);
           }
-        } catch (error) {
-          console.error("Payment verification failed:", error);
         }
       }
-    }
-  };
-  
-  checkPaymentStatus();
-}, []);
+    };
 
-
+    checkPaymentStatus();
+  }, []);
 
   const handlePayment = async (plan: string) => {
     if (!session) {
@@ -81,15 +81,18 @@ export default function PricingGroup({
     setError("");
 
     try {
-       console.log("Initiating payment for:", plan);
+      console.log("Initiating payment for:", plan);
       const response = await fetch("/api/payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Cookie": document.cookie,
+          Cookie: document.cookie,
         },
         credentials: "include",
-        body: JSON.stringify({ plan: plan.toLowerCase(),  success_redirect_url: `${window.location.origin}/billing?payment_success=true&plan=${plan}` }),
+        body: JSON.stringify({
+          plan: plan.toLowerCase(),
+          success_redirect_url: `${window.location.origin}/billing?payment_success=true&plan=${plan}`,
+        }),
       });
 
       console.log("Payment API response status:", response.status);
@@ -100,14 +103,17 @@ export default function PricingGroup({
       }
 
       const data = await response.json();
-       console.log("Payment data:", data);
+      console.log("Payment data:", data);
 
       if (response.ok && data.data?.authorization_url) {
-        localStorage.setItem('pendingPayment', JSON.stringify({
-          plan,
-          userId: session.user.id,
-          timestamp: Date.now()
-        }));
+        localStorage.setItem(
+          "pendingPayment",
+          JSON.stringify({
+            plan,
+            userId: session.user.id,
+            timestamp: Date.now(),
+          })
+        );
         window.location.href = data.data.authorization_url;
       } else {
         setError(data.error || "Payment initialization failed");
@@ -129,10 +135,10 @@ export default function PricingGroup({
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-900/20 border border-red-800/30 text-red-100 px-4 py-3 rounded-lg max-w-4xl mx-auto">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <CircleAlert className="h-5 w-5 mr-2 text-red-400" />
+        <div className='mb-6 bg-red-900/20 border border-red-800/30 text-red-100 px-4 py-3 rounded-lg max-w-4xl mx-auto'>
+          <div className='flex justify-between items-center'>
+            <div className='flex items-center'>
+              <CircleAlert className='h-5 w-5 mr-2 text-red-400' />
               <span>{error}</span>
             </div>
             {/* <button
@@ -145,7 +151,7 @@ export default function PricingGroup({
         </div>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto'>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto'>
         {plans.map((plan) => (
           <div
             key={plan.name}
@@ -202,15 +208,13 @@ export default function PricingGroup({
                 loadingPlan === plan.name ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
-              {loadingPlan === plan.name ? (
-                "Processing..."
-              ) : plan.name === "Free" ? (
-                "Get Started"
-              ) : plan.name === "Pro" ? (
-                "Upgrade to Pro"
-              ) : (
-                "Go Lifetime"
-              )}
+              {loadingPlan === plan.name
+                ? "Processing..."
+                : plan.name === "Free"
+                ? "Get Started"
+                : plan.name === "Pro"
+                ? "Upgrade to Pro"
+                : "Go Lifetime"}
             </button>
 
             {plan.note && (

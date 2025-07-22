@@ -6,6 +6,8 @@ declare module "next-auth" {
     name: string;
     email: string;
     slug?: string;
+    authProvider?: "credentials" | "google";
+    hasPassword?: boolean;
     // username?: string;
     image?: string;
     isPublic?: boolean;
@@ -26,7 +28,9 @@ declare module "next-auth" {
       id: string;
       name: string;
       email: string;
-      slug?: string
+      slug?: string;
+      authProvider?: "credentials" | "google";
+      hasPassword?: boolean;
       // username?: string;
       image?: string;
       isPublic?: boolean;
@@ -50,6 +54,8 @@ declare module "next-auth/jwt" {
     name: string;
     email: string;
     slug: string;
+    authProvider?: "credentials" | "google";
+    hasPassword?: boolean;
     // username?: string;
     image?: string;
     isPublic?: boolean;

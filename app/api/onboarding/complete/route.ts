@@ -50,6 +50,7 @@ export async function POST(req: Request) {
           linkedin: socialMedia?.linkedin || "",
           instagram: socialMedia?.instagram || "",
           email: socialMedia?.email || session.user.email || "",
+          website: socialMedia?.website || "",
         },
         location: location || "",
         website: website || "",

@@ -11,14 +11,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { Camera, Upload } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 function ProfileImageSection() {
   const { data: user, refetch } = useCurrentUser();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -41,11 +38,13 @@ function ProfileImageSection() {
       }
 
       const data = await response.json();
-      setMessage({ text: "Profile image updated!", type: "success" });
+      toast("Profile image updated!");
       refetch();
     } catch (error) {
       console.error("Error uploading image:", error);
-      setMessage({ text: "Failed to upload image", type: "error" });
+      toast("Failed to upload image", {
+        description: "Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -62,11 +61,13 @@ function ProfileImageSection() {
         throw new Error("Failed to delete image");
       }
 
-      setMessage({ text: "Profile image removed!", type: "success" });
+      toast("Profile image removed!");
       refetch();
     } catch (error) {
       console.error("Error deleting image:", error);
-      setMessage({ text: "Failed to remove image", type: "error" });
+      toast("Failed to remove image", {
+        description: "Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -83,17 +84,6 @@ function ProfileImageSection() {
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-4'>
-        {message && (
-          <div
-            className={`text-sm p-3 rounded-md ${
-              message.type === "success"
-                ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
         <div className='flex items-center space-x-6'>
           <div className='relative'>
             <Avatar className='w-24 h-24 relative'>
@@ -115,13 +105,7 @@ function ProfileImageSection() {
                         : ""
                     }
                   />
-                  <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400'>
-                    {user?.name
-                      ?.split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .toUpperCase() || "US"}
-                  </AvatarFallback>
+                  <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400' />
                 </>
               )}
             </Avatar>

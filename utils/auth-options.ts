@@ -54,11 +54,14 @@ export const authOptions: AuthOptions = {
             email: user.email,
             name: user.name,
             slug: user.slug,
+            authProvider: "credentials",
+            hasPassword: !!user.password, 
             // username: user.username,
             image: user.image,
             isPublic: user.isPublic,
             theme: user.theme,
             plan: user.plan || "free",
+            socialMedia: user.socialMedia,
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -89,6 +92,8 @@ export const authOptions: AuthOptions = {
           const newUser = await User.create({
             name: user.name,
             email: user.email,
+            authProvider: "google",
+            hasPassword: false,
             slug: generateRandomSlug(),
             // username: null,
             image: user.image,
@@ -102,6 +107,8 @@ export const authOptions: AuthOptions = {
 
           user.id = newUser._id.toString();
           user.slug = newUser.slug;
+          user.authProvider = newUser.authProvider;
+          user.hasPassword = newUser.hasPassword;
           // user.username = newUser.username;
           user.image = newUser.image;
           user.isPublic = newUser.isPublic;
@@ -110,8 +117,14 @@ export const authOptions: AuthOptions = {
           user.website = newUser.website;
           user.socialMedia = newUser.socialMedia;
         } else {
+           await User.updateOne(
+            { email: user.email },
+            { authProvider: "google" }
+          );
           user.id = existingUser._id.toString();
           user.slug = existingUser.slug;
+          user.authProvider = "google";
+          user.hasPassword = !!existingUser.password;
           // user.username = existingUser.username;
           user.image = existingUser.image;
           user.isPublic = existingUser.isPublic;
@@ -120,6 +133,7 @@ export const authOptions: AuthOptions = {
           user.website = existingUser.website;
           user.socialMedia = existingUser.socialMedia;
           user.plan = existingUser.plan || "free";
+          
         }
       }
 
@@ -133,6 +147,8 @@ export const authOptions: AuthOptions = {
         session.user.location = token.location;
         session.user.slug = token.slug;
         session.user.website = token.website;
+        session.user.authProvider = token.authProvider;
+        session.user.hasPassword = token.hasPassword as boolean;
         session.user.socialMedia = token.socialMedia as {
           twitter?: string;
           linkedin?: string;
@@ -156,6 +172,8 @@ export const authOptions: AuthOptions = {
         token.location = user.location;
         token.website = user.website;
         token.socialMedia = user.socialMedia;
+        token.authProvider = user.authProvider;
+        token.hasPassword = user.hasPassword;
         token.name = user.name;
         token.email = user.email;
         token.image = user.image;
@@ -163,6 +181,11 @@ export const authOptions: AuthOptions = {
         token.theme = user.theme;
         token.plan = user.plan || "free";
       }
+
+      if (trigger === "update" && session) {
+      if (session.authProvider) token.authProvider = session.authProvider;
+      if (session.hasPassword !== undefined) token.hasPassword = session.hasPassword;
+    }
       if (trigger === "update" && session?.username) {
         token.username = session.username;
       }

@@ -1,3 +1,4 @@
+import type { UserData } from "@/types/user";
 import { Folder } from "lucide-react";
 import { DefaultTemplate } from "./templates/default";
 
@@ -26,22 +27,12 @@ interface Folder {
   createdAt: string;
 }
 
-interface UserData {
-  name: string;
-  email: string;
-  image: string;
-  location: string;
-  createdAt: string;
-  website: string;
-  country: string;
-  theme: string;
-}
-
 interface ProfilePreviewProps {
   userData: UserData;
   profiles: Profile[];
   folders: Folder[];
   activeProfile: string;
+  userSlug: string;
 }
 
 export default function ProfilePreview({
@@ -49,6 +40,7 @@ export default function ProfilePreview({
   profiles,
   folders,
   activeProfile,
+  userSlug,
 }: ProfilePreviewProps) {
   return (
     <DefaultTemplate
@@ -57,6 +49,7 @@ export default function ProfilePreview({
       folders={folders}
       activeProfile={activeProfile}
       selectedFolder={null}
+      userSlug={userSlug}
     />
   );
 }

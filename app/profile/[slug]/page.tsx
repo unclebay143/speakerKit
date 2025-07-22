@@ -187,10 +187,9 @@ export default async function Page({ params }: PageProps) {
       name: user.name,
       email: user.email,
       image: user.image,
-      location: "",
+      location: user.location,
       createdAt: user.createdAt.toISOString(),
-      website: "",
-      country: "",
+      tools: user.tools,
       theme: user.theme,
       isVerified: user.isVerified,
       socialMedia: user.socialMedia
@@ -199,6 +198,7 @@ export default async function Page({ params }: PageProps) {
             linkedin: user.socialMedia.linkedin || "",
             instagram: user.socialMedia.instagram || "",
             email: user.socialMedia.email || user.email || "",
+            website: user.socialMedia.website || "",
           }
         : {
             twitter: "",
@@ -206,6 +206,8 @@ export default async function Page({ params }: PageProps) {
             instagram: "",
             email: user.email || "",
           },
+      expertise: user.expertise || [],
+      topics: user.topics || [],
     };
 
     const transformedProfiles = publicProfiles.map((profile) => {
@@ -249,6 +251,7 @@ export default async function Page({ params }: PageProps) {
         profiles={transformedProfiles}
         folders={transformedFolders}
         activeProfile={activeProfile}
+        userSlug={slug}
       />
     );
   } catch (error) {

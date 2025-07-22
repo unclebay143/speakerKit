@@ -1,5 +1,6 @@
 // import { NextResponse } from "next/server";
 import connectViaMongoose from "@/lib/db";
+import Event from "@/models/Event";
 import Folder from "@/models/Folders";
 import Image from "@/models/Images";
 import Profile from "@/models/Profile";
@@ -7,7 +8,7 @@ import User from "@/models/User";
 
 interface CheckPlanLimitsParams {
   userId: string;
-  resourceType: "profile" | "folder" | "image";
+  resourceType: "profile" | "folder" | "image" | "event";
   folderId?: string;
 }
 
@@ -55,10 +56,10 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
       case "folder":
         const folderCount = await Folder.countDocuments({ userId });
         return {
-          allowed: folderCount < 2,
+          allowed: folderCount < 1,
           error:
             "Free plan limited to 2 folders. Upgrade to Pro for unlimited folders.",
-          limit: 2,
+          limit: 1,
           current: folderCount,
         };
 
@@ -73,6 +74,14 @@ export async function checkPlanLimits(params: CheckPlanLimitsParams) {
             current: imageCount,
           };
         }
+         case "event":
+          const eventCount = await Event.countDocuments({ userId });
+          return {
+            allowed: eventCount < 2,
+            error: "Free plan limited to 2 events. Upgrade to Pro for unlimited events.",
+            limit: 2,
+            current: eventCount,
+          };
         return { allowed: true };
 
       default:

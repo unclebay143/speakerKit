@@ -10,7 +10,7 @@ interface DeleteConfirmationModalProps {
   onConfirm: () => void;
   title?: string;
   description?: string;
-  type?: "profile" | "folder" | "image";
+  type?: "profile" | "folder" | "image" | "events";
   loading?: boolean;
 }
 
@@ -33,12 +33,16 @@ export function DeleteConfirmationModal({
     image: title
       ? `Are you sure you want to delete "${title}"?`
       : "Are you sure you want to delete this image?",
+    event: title
+      ? `Are you sure you want to delete the event "${title}"?`
+      : "Are you sure you want to delete this event?",
   };
 
   const modalTitle = {
     profile: "Delete Profile",
     folder: "Delete Folder",
     image: "Delete Image",
+    events: "Delete Event",
   }[type];
 
   const displayDescription = description || defaultDescriptions[type];

@@ -15,6 +15,7 @@ import {
 } from "@/lib/hooks/useCurrentUser";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { UpgradeModal } from "../modals/upgrade-modal";
 
 function ProfileInfoSection() {
@@ -24,10 +25,7 @@ function ProfileInfoSection() {
   const { register, handleSubmit, formState, setValue } = useForm({
     mode: "onChange",
   });
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
+
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const canEditSlug = user?.plan === "pro" || user?.plan === "lifetime";
@@ -54,14 +52,10 @@ function ProfileInfoSection() {
 
       await updateUser.mutateAsync(updateData);
 
-      setMessage({
-        text: "Profile information updated successfully!",
-        type: "success",
-      });
+      toast("Profile information updated successfully!");
     } catch (error) {
-      setMessage({
-        text: "Failed to update profile information",
-        type: "error",
+      toast("Failed to update profile information", {
+        description: "Please try again.",
       });
     }
   };
@@ -78,17 +72,6 @@ function ProfileInfoSection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-4'>
-          {message && (
-            <div
-              className={`text-sm p-3 rounded-md ${
-                message.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
           <div className='grid md:grid-cols-2 gap-4'>
             <div className='space-y-2'>
               <Label
@@ -105,12 +88,12 @@ function ProfileInfoSection() {
             <div className='space-y-2'>
               <Label
                 htmlFor='slug'
-                className='text-gray-900 dark:text-white flex items-center'
+                className='text-gray-900 dark:text-white flex items-center relative'
               >
                 Profile URL
                 <button
                   type='button'
-                  className='ml-2 px-2 py-0.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-yellow-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
+                  className='ml-2 px-2 py-0.5 absolute left-[4.5rem] rounded-full text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-yellow-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition'
                   onClick={() => setShowUpgradeModal(true)}
                   title='Upgrade to Pro to unlock this feature'
                 >

@@ -35,19 +35,18 @@ export async function POST(req: Request) {
       );
     }
 
-     const discount = await SubscriptionDiscount.findOne({ 
+    const discount = await SubscriptionDiscount.findOne({
       email: email.toLowerCase(),
-      usedAt: { $exists: false }
+      usedAt: { $exists: false },
     });
 
-
-     let userSlug;
-      let isUnique = false;
-      while (!isUnique) {
-        userSlug = generateRandomSlug();
-        const exists = await User.findOne({ slug: userSlug });
-        if (!exists) isUnique = true;
-      }
+    let userSlug;
+    let isUnique = false;
+    while (!isUnique) {
+      userSlug = generateRandomSlug();
+      const exists = await User.findOne({ slug: userSlug });
+      if (!exists) isUnique = true;
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -57,22 +56,24 @@ export async function POST(req: Request) {
       password: hashedPassword,
       slug: userSlug,
       plan: discount ? "pro" : "free",
-      planExpiresAt: discount ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null,
+      planExpiresAt: discount
+        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        : null,
       hasCompletedOnboarding: false,
       socialMedia: {
         twitter: "",
         linkedin: "",
         instagram: "",
         email: email,
+        website: "",
       },
-      website: "",
       location: "",
     });
     await user.save();
 
     if (discount) {
-      await SubscriptionDiscount.findByIdAndUpdate(discount._id, { 
-        usedAt: new Date() 
+      await SubscriptionDiscount.findByIdAndUpdate(discount._id, {
+        usedAt: new Date(),
       });
     }
 

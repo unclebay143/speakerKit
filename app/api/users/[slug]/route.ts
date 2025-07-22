@@ -26,6 +26,8 @@ export async function GET(
       theme: user.theme,
       isVerified: user.isVerified,
       socialMedia: user.socialMedia,
+      expertise: user.expertise,
+      topics: user.topics,
     });
   } catch (error) {
     console.error("Error fetching user:", error);
