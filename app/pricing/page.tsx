@@ -11,9 +11,9 @@ export const plans = [
     period: "",
     features: [
       { label: "Profiles", value: "1" },
-      { label: "Photos", value: "1" },
-      { label: "Talks", value: "2" },
-      { label: "Custom URLs", value: false },
+      { label: "Gallery", value: "1" },
+      { label: "Talk Showcase", value: "2" },
+      { label: "Custom Slug", value: false },
     ],
     highlight: false,
   },
@@ -25,25 +25,25 @@ export const plans = [
     note: "Equivalent to ₦4,000/month",
     features: [
       { label: "Profiles", value: "Unlimited" },
-      { label: "Photos", value: "Multiple" },
-      { label: "Talks", value: "Unlimited" },
-      { label: "Custom URLs", value: true },
+      { label: "Gallery", value: "Multiple" },
+      { label: "Talk Showcase", value: "Unlimited" },
+      { label: "Custom Slug", value: true },
     ],
     highlight: true,
   },
-  {
-    name: "Lifetime",
-    price: "₦100,000",
-    period: "once",
-    note: "Limited Slots (20 only)",
-    features: [
-      { label: "Profiles", value: "Unlimited" },
-      { label: "Photos", value: "Multiple" },
-      { label: "Talks", value: "Unlimited" },
-      { label: "Custom URLs", value: true },
-    ],
-    highlight: false,
-  },
+  // {
+  //   name: "Lifetime",
+  //   price: "₦100,000",
+  //   period: "once",
+  //   note: "Limited Slots (20 only)",
+  //   features: [
+  //     { label: "Profiles", value: "Unlimited" },
+  //     { label: "Photos", value: "Multiple" },
+  //     { label: "Talks", value: "Unlimited" },
+  //     { label: "Custom URLs", value: true },
+  //   ],
+  //   highlight: false,
+  // },
 ];
 
 export default function Pricing() {

@@ -63,19 +63,19 @@ export function UpgradeModal({
                 Upgrade Your Plan
               </DialogTitle>
             </div>
-            {limitType ? (
+            {/* {limitType ? (
               <p className='text-sm sm:text-base text-gray-600 text-center dark:text-gray-400 mt-2 px-2'>
                 {limitTypeText[limitType] ||
                   "Upgrade to Pro to unlock this feature"}
               </p>
-            ) : (
-              <p className='text-sm sm:text-base text-gray-600 text-center dark:text-gray-400 mt-2 px-2'>
-                Upgrade to Pro to unlock this feature
-              </p>
-            )}
+            ) : ( */}
+            <p className='text-sm sm:text-base text-gray-600 text-center dark:text-gray-400 mt-2 px-2'>
+              Upgrade to Pro to unlock this feature
+            </p>
+            {/* )} */}
           </DialogHeader>
 
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8'>
+          <div className='grid grid-cols-1 lg:grid-cols-1 mx-auto max-w-sm justify-center items-center gap-6 md:gap-8'>
             {proPlan && (
               <div
                 className={`rounded-xl p-8 sm:p-6 md:p-8 relative ${

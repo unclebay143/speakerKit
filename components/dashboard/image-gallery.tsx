@@ -315,14 +315,14 @@ export function ImageGallery() {
               <>
                 <Link href='/gallery'>
                   <h2 className='text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer truncate'>
-                    Image Gallery
+                    Gallery
                   </h2>
                 </Link>
                 <ChevronRight className='w-4 h-4 text-gray-600 dark:text-gray-400 flex-shrink-0' />
               </>
             )}
             <h2 className='text-lg sm:text-xl md:text-2xl font-bold text-gray-900/80 dark:text-white/80 truncate'>
-              {currentFolder ? currentFolder.name : "Image Gallery"}
+              {currentFolder ? currentFolder.name : "Gallery"}
             </h2>
           </div>
           <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1'>
