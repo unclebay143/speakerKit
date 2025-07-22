@@ -70,16 +70,21 @@ const UserSchema = new Schema(
       linkedin: { type: String, default: "" },
       instagram: { type: String, default: "" },
       email: { type: String, default: "" },
+      website: { type: String, default: "" },
     },
     tools: {
       type: [String],
       enum: ["notion", "canva", "google-docs", "figma", "powerpoint"],
     },
-    location: {
-      type: String,
-      default: "",
+    expertise: {
+      type: [String],
+      default: [],
     },
-    website: {
+    topics: {
+      type: [String],
+      default: [],
+    },
+    location: {
       type: String,
       default: "",
     },
@@ -92,7 +97,7 @@ const UserSchema = new Schema(
       profiles: { type: Number, default: 1 },
       folders: { type: Number, default: 1 },
       imagesPerFolder: { type: Number, default: 3 },
-      events: {type: Number, default: 2}
+      events: { type: Number, default: 2 },
     },
     planExpiresAt: { type: Date, default: null },
     paystackCustomerId: {
@@ -116,14 +121,14 @@ UserSchema.pre("save", function (next) {
         profiles: 1,
         folders: 1,
         imagesPerFolder: 3,
-        events: 2
+        events: 2,
       };
     } else if (this.plan === "pro" || this.plan === "lifetime") {
       this.planLimits = {
         profiles: Infinity,
         folders: Infinity,
         imagesPerFolder: Infinity,
-        events: Infinity
+        events: Infinity,
       };
     }
   }

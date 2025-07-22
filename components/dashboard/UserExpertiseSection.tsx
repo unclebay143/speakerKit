@@ -9,49 +9,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Controller, useForm } from "react-hook-form";
-
-const EXPERTISE_OPTIONS = [
-  { value: "agriculture", label: "Agriculture, Food & Forestry" },
-  { value: "arts", label: "Arts" },
-  { value: "business", label: "Business & Management" },
-  { value: "consumer", label: "Consumer Goods & Services" },
-  { value: "energy", label: "Energy & Basic Resources" },
-  { value: "environment", label: "Environment & Cleantech" },
-  { value: "finance", label: "Finance & Banking" },
-  { value: "government", label: "Government, Social Sector & Education" },
-  { value: "health", label: "Health & Medical" },
-  { value: "humanities", label: "Humanities & Social Sciences" },
-  { value: "ict", label: "Information & Communications Technology" },
-  { value: "law", label: "Law & Regulation" },
-  { value: "manufacturing", label: "Manufacturing & Industrial Materials" },
-  { value: "media", label: "Media & Information" },
-  { value: "sciences", label: "Physical & Life Sciences" },
-  { value: "realestate", label: "Real Estate & Architecture" },
-  { value: "region", label: "Region & Country" },
-  { value: "transport", label: "Transports & Logistics" },
-  { value: "travel", label: "Travel & Tourism" },
-];
-const TOPIC_OPTIONS = [
-  { value: "react", label: "React" },
-  { value: "graphql", label: "GraphQL" },
-  { value: "leadership", label: "Leadership" },
-  { value: "web3", label: "Web3" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "testing", label: "Testing" },
-];
-const CITY_OPTIONS = [
-  "Lagos",
-  "London",
-  "New York",
-  "San Francisco",
-  "Berlin",
-  "Nairobi",
-  "Paris",
-];
+import {
+  useCurrentUser,
+  useUpdateCurrentUser,
+} from "@/lib/hooks/useCurrentUser";
+import { useExpertise, useTopics } from "@/lib/hooks/useExpertiseAndTopics";
+import { CITY_OPTIONS } from "@/lib/utils";
+import { useEffect } from "react";
+import { Controller, useForm, useFormState } from "react-hook-form";
+import { toast } from "sonner";
 
 export function UserExpertiseSection() {
-  const { control, handleSubmit, formState, reset } = useForm({
+  const { data: user } = useCurrentUser();
+  const updateUser = useUpdateCurrentUser();
+
+  const { expertise: expertiseOptions, createExpertise } = useExpertise();
+
+  const { topics: topicOptions, createTopic } = useTopics();
+  const { control, handleSubmit, reset, watch } = useForm({
     defaultValues: {
       expertise: [],
       topics: [],
@@ -59,12 +34,39 @@ export function UserExpertiseSection() {
     },
     mode: "onChange",
   });
+  const { isDirty, isValid } = useFormState({ control });
 
-  const onSubmit = (values: any) => {
-    // TODO: Save to backend
-    // For now, just log
-    console.log("Expertise form values:", values);
-    reset(values); // Reset dirty state
+  useEffect(() => {
+    if (user) {
+      // Only reset if the loaded values are different from the current form values
+      const current = watch();
+      if (
+        JSON.stringify(current.expertise) !==
+          JSON.stringify(user.expertise || []) ||
+        JSON.stringify(current.topics) !== JSON.stringify(user.topics || []) ||
+        current.location !== (user.location || "")
+      ) {
+        reset({
+          expertise: user.expertise || [],
+          topics: user.topics || [],
+          location: user.location || "",
+        });
+      }
+    }
+  }, [user, reset, watch]);
+
+  const onSubmit = async (values: any) => {
+    try {
+      await updateUser.mutateAsync({
+        expertise: values.expertise,
+        topics: values.topics,
+        location: values.location,
+      });
+      toast("Expertise and topics updated!");
+      reset(values); // Reset dirty state
+    } catch (e) {
+      toast("Failed to update expertise", { description: "Please try again." });
+    }
   };
 
   return (
@@ -88,10 +90,16 @@ export function UserExpertiseSection() {
               name='expertise'
               render={({ field }) => (
                 <MultiSelect
-                  options={EXPERTISE_OPTIONS}
+                  options={expertiseOptions}
                   value={field.value}
                   onChange={field.onChange}
                   placeholder='Select your areas of expertise'
+                  onCreateOption={async (label) => {
+                    try {
+                      const newOpt = await createExpertise.mutateAsync(label);
+                      field.onChange([...(field.value || []), newOpt.label]);
+                    } catch (e) {}
+                  }}
                 />
               )}
             />
@@ -105,10 +113,16 @@ export function UserExpertiseSection() {
               name='topics'
               render={({ field }) => (
                 <MultiSelect
-                  options={TOPIC_OPTIONS}
+                  options={topicOptions}
                   value={field.value}
                   onChange={field.onChange}
                   placeholder='Select topics you are interested in'
+                  onCreateOption={async (label) => {
+                    try {
+                      const newOpt = await createTopic.mutateAsync(label);
+                      field.onChange([...(field.value || []), newOpt.label]);
+                    } catch (e) {}
+                  }}
                 />
               )}
             />
@@ -138,7 +152,7 @@ export function UserExpertiseSection() {
           <div className='flex justify-end'>
             <Button
               type='submit'
-              disabled={!formState.isDirty || !formState.isValid}
+              disabled={!isDirty || !isValid}
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
               Save Changes

@@ -13,6 +13,7 @@ interface MultiSelectProps {
   onChange: (value: string[]) => void;
   placeholder?: string;
   className?: string;
+  onCreateOption?: (label: string) => void;
 }
 
 export const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -21,10 +22,12 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   onChange,
   placeholder = "Select...",
   className = "",
+  onCreateOption,
 }) => {
   const [inputValue, setInputValue] = React.useState("");
   const [isOpen, setIsOpen] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const rootRef = React.useRef<HTMLDivElement>(null);
 
   const filteredOptions = options.filter(
     (opt) =>
@@ -43,8 +46,30 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     onChange(value.filter((v) => v !== val));
   };
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const canCreate =
+    !!onCreateOption &&
+    inputValue.trim().length > 0 &&
+    !options.some(
+      (opt) =>
+        opt.label.toLowerCase() === inputValue.trim().toLowerCase() ||
+        opt.value.toLowerCase() === inputValue.trim().toLowerCase()
+    );
+
   return (
-    <div className={cn("relative w-full", className)}>
+    <div ref={rootRef} className={cn("relative w-full", className)}>
       <div
         className={
           "flex flex-wrap items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-within:ring-2 ring-purple-500 min-h-[44px] cursor-text"
@@ -89,7 +114,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           placeholder={value.length === 0 ? placeholder : ""}
         />
       </div>
-      {isOpen && filteredOptions.length > 0 && (
+      {isOpen && (filteredOptions.length > 0 || canCreate) && (
         <div className='absolute left-0 right-0 mt-1 bg-white text-gray-900 dark:bg-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20 max-h-48 overflow-auto'>
           {filteredOptions.map((opt) => (
             <div
@@ -100,6 +125,24 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               {opt.label}
             </div>
           ))}
+          {canCreate && (
+            <div
+              className='px-4 py-2 cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 text-sm font-semibold text-purple-700 dark:text-purple-300'
+              onClick={() => {
+                if (onCreateOption) {
+                  onCreateOption(inputValue.trim());
+                } else {
+                  // fallback: add as value/label
+                  onChange([...value, inputValue.trim()]);
+                }
+                setInputValue("");
+                setIsOpen(false);
+                inputRef.current?.focus();
+              }}
+            >
+              Add "{inputValue.trim()}"
+            </div>
+          )}
         </div>
       )}
     </div>

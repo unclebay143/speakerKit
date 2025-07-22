@@ -1,3 +1,4 @@
+import type { UserData } from "@/types/user";
 import { Folder } from "lucide-react";
 import { DefaultTemplate } from "./templates/default";
 
@@ -24,17 +25,6 @@ interface Folder {
     uploadedAt: string;
   }[];
   createdAt: string;
-}
-
-interface UserData {
-  name: string;
-  email: string;
-  image: string;
-  location: string;
-  createdAt: string;
-  website: string;
-  country: string;
-  theme: string;
 }
 
 interface ProfilePreviewProps {

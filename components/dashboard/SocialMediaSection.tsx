@@ -53,6 +53,7 @@ export default function SocialMediaSection() {
       linkedin: extractUsername(user?.socialMedia?.linkedin, "linkedin"),
       instagram: extractUsername(user?.socialMedia?.instagram, "instagram"),
       email: user?.socialMedia?.email || user?.email || "",
+      website: user?.website || "",
     },
     mode: "onChange",
   });
@@ -64,6 +65,7 @@ export default function SocialMediaSection() {
       linkedin: extractUsername(user?.socialMedia?.linkedin, "linkedin"),
       instagram: extractUsername(user?.socialMedia?.instagram, "instagram"),
       email: user?.socialMedia?.email || user?.email || "",
+      website: user?.socialMedia?.website || "",
     });
   }, [user, reset]);
 
@@ -78,13 +80,12 @@ export default function SocialMediaSection() {
         ? `https://instagram.com/${values.instagram}`
         : "",
       email: values.email || "",
+      website: values.socialMedia.website || "",
     };
 
     try {
       await updateUser.mutateAsync({ socialMedia });
-      toast("Social media updated!", {
-        description: "Your social media links have been updated.",
-      });
+      toast("Social media updated!");
       refetch();
       reset(values); // Reset form dirty state
     } catch (e) {
@@ -155,6 +156,16 @@ export default function SocialMediaSection() {
               type='email'
               placeholder='your@email.com'
               {...register("email")}
+            />
+          </div>
+          <div className='flex flex-col gap-2 md:col-span-2'>
+            <Label htmlFor='website' className='text-gray-900 dark:text-white'>
+              Website
+            </Label>
+            <Input
+              id='website'
+              placeholder='https://yourwebsite.com'
+              {...register("website")}
             />
           </div>
           <div className='md:col-span-2 flex justify-end'>

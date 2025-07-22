@@ -51,6 +51,9 @@ export async function PUT(req: Request) {
     "isPublic",
     "socialMedia",
     "tools",
+    "expertise",
+    "topics",
+    "location",
   ];
   const updateData: Record<string, any> = {};
   for (const key of allowedFields) {

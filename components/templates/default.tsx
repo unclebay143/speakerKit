@@ -1,15 +1,19 @@
 "use client";
 
+import { useExpertise, useTopics } from "@/lib/hooks/useExpertiseAndTopics";
 import { slugify } from "@/lib/utils";
 import { type Event } from "@/lib/youtube-utils";
+import type { UserData } from "@/types/user";
 import {
   BadgeCheck,
   Check,
   Copy,
   Download,
+  Globe,
   Instagram,
   Linkedin,
   Mail,
+  MapPin,
   Mic,
   Twitter,
 } from "lucide-react";
@@ -40,24 +44,6 @@ interface Folder {
     uploadedAt: string;
   }[];
   createdAt: string;
-}
-
-interface UserData {
-  name: string;
-  email: string;
-  image: string;
-  location: string;
-  createdAt: string;
-  website: string;
-  country: string;
-  theme: string;
-  tools?: string[];
-  socialMedia?: {
-    twitter?: string;
-    linkedin?: string;
-    instagram?: string;
-    email?: string;
-  };
 }
 
 interface UltimateProfileProps {
@@ -240,6 +226,7 @@ export function DefaultTemplate({
   activeProfile: initialActiveProfile,
   userSlug,
 }: UltimateProfileProps) {
+  console.log(userData);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [downloadingImage, setDownloadingImage] = useState<string | null>(null);
   const [activeProfile, setActiveProfile] =
@@ -247,6 +234,8 @@ export function DefaultTemplate({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { expertise: expertiseOptions } = useExpertise();
+  const { topics: topicOptions } = useTopics();
 
   // Get theme configuration
   const theme = THEMES[userData.theme as keyof typeof THEMES];
@@ -577,18 +566,27 @@ export function DefaultTemplate({
           <h1 className={`text-3xl font-bold mb-2 text-center text-gray-900`}>
             {userData.name}
           </h1>
-          <h2
-            className={`text-xl text-center font-medium text-${theme.accent}-700 mb-4`}
+          {/* <h2
+            className={`text-xl text-center font-medium text-${theme.accent}-700 mb-2`}
           >
             {getActiveProfile()?.title}
-          </h2>
-
+          </h2> */}
+          {/* Location */}
+          {userData.location && (
+            <div className='flex flex-col items-center gap-2 mb-4'>
+              <div className='flex items-center gap-2 text-gray-600 text-sm'>
+                <MapPin className='w-4 h-4' />
+                <span>{userData.location}</span>
+              </div>
+            </div>
+          )}
           {/* Email and Social Links */}
           {userData.socialMedia &&
             (() => {
-              const { twitter, linkedin, instagram, email } =
+              const { twitter, linkedin, instagram, email, website } =
                 userData.socialMedia || {};
-              const hasAny = twitter || linkedin || instagram || email;
+              const hasAny =
+                twitter || linkedin || instagram || email || website;
               if (!hasAny) return null;
               return (
                 <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
@@ -633,6 +631,17 @@ export function DefaultTemplate({
                         aria-label='Email'
                       >
                         <Mail className='h-4 w-4' />
+                      </a>
+                    )}
+                    {website && (
+                      <a
+                        href={website}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className={socialStyles}
+                        aria-label='Website'
+                      >
+                        <Globe className='h-4 w-4' />
                       </a>
                     )}
                   </div>
@@ -758,15 +767,13 @@ export function DefaultTemplate({
             </section>
 
             {/* Image Gallery Section */}
-            <section className='mb-16'>
-              {folders.length > 0 ? (
-                <>
-                  <h2 className='text-2xl text-center font-bold mb-8 md:text-left'>
-                    Image Gallery
-                  </h2>
-
-                  <div className='space-y-8'>
-                    {folders.map((folder) => (
+            {folders.length > 0 ? (
+              <section className='mb-16'>
+                <h2 className='text-2xl font-bold mb-8 text-left'>Gallery</h2>
+                <div className='space-y-8'>
+                  {folders.map((folder) => {
+                    if (folder.images.length === 0) return null;
+                    return (
                       <div
                         key={folder._id}
                         className='bg-white rounded-xl shadow overflow-hidden'
@@ -778,57 +785,103 @@ export function DefaultTemplate({
                           <p className='text-gray-600'>{folder.description}</p>
                         </div>
 
-                        {folder.images.length > 0 ? (
-                          <div className='p-6'>
-                            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                              {folder.images.map((image) => (
-                                <div
-                                  key={image._id}
-                                  className='relative group rounded-lg overflow-hidden'
-                                >
-                                  <img
-                                    src={image.url}
-                                    alt={image.name}
-                                    className='w-full h-full object-cover'
-                                  />
-                                  <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
-                                    <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                                      <button
-                                        onClick={() =>
-                                          downloadImage(image.url, image.name)
-                                        }
-                                        disabled={
-                                          downloadingImage === image.name
-                                        }
-                                        className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
-                                      >
-                                        {downloadingImage === image.name ? (
-                                          <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
-                                        ) : (
-                                          <Download className='h-4 w-4' />
-                                        )}
-                                      </button>
-                                    </div>
+                        <div className='p-6'>
+                          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                            {folder.images.map((image) => (
+                              <div
+                                key={image._id}
+                                className='relative group rounded-lg overflow-hidden'
+                              >
+                                <img
+                                  src={image.url}
+                                  alt={image.name}
+                                  className='w-full h-full object-cover'
+                                />
+                                <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
+                                  <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                    <button
+                                      onClick={() =>
+                                        downloadImage(image.url, image.name)
+                                      }
+                                      disabled={downloadingImage === image.name}
+                                      className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
+                                    >
+                                      {downloadingImage === image.name ? (
+                                        <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
+                                      ) : (
+                                        <Download className='h-4 w-4' />
+                                      )}
+                                    </button>
                                   </div>
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
-                        ) : (
-                          <div className='p-6 text-center text-gray-500'>
-                            No images in this folder
-                          </div>
-                        )}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className='text-center text-gray-500 py-12'>
-                  <p>No image galleries available</p>
+                    );
+                  })}
                 </div>
-              )}
-            </section>
+              </section>
+            ) : null}
+
+            {/* Expertise & Topics Section */}
+            {userData?.expertise && userData.expertise.length > 0 && (
+              <section className='mb-16 bg-white rounded-xl shadow overflow-hidden'>
+                <div className='p-6 border-b border-gray-100'>
+                  <h3 className='text-xl font-semibold mb-2'>
+                    Areas of expertise
+                  </h3>
+                  {/* <p className='text-gray-600'>Areas of expertise</p> */}
+                </div>
+                <div className='flex flex-col gap-2 mb-2 p-6'>
+                  <div className='flex flex-wrap gap-2 mb-2'>
+                    {(userData.expertise || []).map((val: string) => {
+                      const label =
+                        expertiseOptions.find((opt: any) => opt.value === val)
+                          ?.label || val;
+                      return (
+                        <span
+                          key={val}
+                          className='bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-semibold'
+                        >
+                          {label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            )}
+            {userData?.topics && userData.topics.length > 0 && (
+              <section className='mb-16 bg-white rounded-xl shadow overflow-hidden'>
+                <div className='p-6 border-b border-gray-100'>
+                  <h3 className='text-xl font-semibold mb-2'>
+                    Topics of Interest
+                  </h3>
+                  {/* <p className='text-gray-600'>
+      Topics of interest
+                </p> */}
+                </div>
+                <div className='flex flex-col gap-2 mb-2 p-6'>
+                  <div className='flex flex-wrap gap-2 mb-2'>
+                    {(userData.topics || []).map((val: string) => {
+                      const label =
+                        topicOptions.find((opt: any) => opt.value === val)
+                          ?.label || val;
+                      return (
+                        <span
+                          key={val}
+                          className='bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full text-xs font-semibold'
+                        >
+                          {label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            )}
           </>
         )}
 
