@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,14 +15,13 @@ import {
   useCurrentUser,
   useUpdateCurrentUser,
 } from "@/lib/hooks/useCurrentUser";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function SocialMediaSection() {
-  const { data: user, refetch } = useCurrentUser();
+  const { data: user } = useCurrentUser();
   const updateUser = useUpdateCurrentUser();
-  const [isLoading, setIsLoading] = useState(false);
 
   // Helper function to extract username from full URL
   const extractUsername = (url: string | undefined, platform: string) => {
@@ -53,7 +54,7 @@ export default function SocialMediaSection() {
       linkedin: extractUsername(user?.socialMedia?.linkedin, "linkedin"),
       instagram: extractUsername(user?.socialMedia?.instagram, "instagram"),
       email: user?.socialMedia?.email || user?.email || "",
-      website: user?.website || "",
+      website: user?.socialMedia?.website || "",
     },
     mode: "onChange",
   });
@@ -70,7 +71,7 @@ export default function SocialMediaSection() {
   }, [user, reset]);
 
   const onSubmit = async (values: any) => {
-    setIsLoading(true);
+    console.log(values);
     const socialMedia = {
       twitter: values.x ? `https://x.com/${values.x}` : "",
       linkedin: values.linkedin
@@ -80,22 +81,21 @@ export default function SocialMediaSection() {
         ? `https://instagram.com/${values.instagram}`
         : "",
       email: values.email || "",
-      website: values.socialMedia.website || "",
+      website: values.website || "",
     };
 
     try {
       await updateUser.mutateAsync({ socialMedia });
       toast("Social media updated!");
-      refetch();
       reset(values); // Reset form dirty state
     } catch (e) {
       toast("Failed to update social media", {
         description: "Please try again.",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  console.log(formState.errors);
 
   if (!user) return null;
 
@@ -171,10 +171,10 @@ export default function SocialMediaSection() {
           <div className='md:col-span-2 flex justify-end'>
             <Button
               type='submit'
-              disabled={isLoading || !formState.isDirty}
+              disabled={updateUser.isPending || !formState.isDirty}
               className='bg-purple-600 hover:bg-purple-700 text-white'
             >
-              {isLoading ? "Saving..." : "Save Social Links"}
+              {updateUser.isPending ? "Saving..." : "Save Social Links"}
             </Button>
           </div>
         </CardContent>
