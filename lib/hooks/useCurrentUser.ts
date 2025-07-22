@@ -12,6 +12,7 @@ export function useCurrentUser() {
 }
 
 export function useUpdateCurrentUser() {
+  console.log("useUpdateCurrentUser");
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (updates: Record<string, any>) => {
@@ -23,4 +24,3 @@ export function useUpdateCurrentUser() {
     },
   });
 }
-
