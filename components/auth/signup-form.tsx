@@ -146,7 +146,7 @@ export default function SignupForm() {
               <Separator className='w-full bg-white/10' />
             </div>
             <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-black/40 px-2 text-gray-400'>
+              <span className='bg-black px-2 text-gray-400'>
                 Or continue with email
               </span>
             </div>
@@ -197,7 +197,6 @@ export default function SignupForm() {
             <div className='space-y-2'>
               <Label htmlFor='password' className='text-white'>
                 Password{" "}
-                <span className='text-gray-500'>(Atleast 8 characters)</span>
               </Label>
               <div className='relative'>
                 <Lock className='absolute left-3 top-3 h-4 w-4 text-gray-400' />
