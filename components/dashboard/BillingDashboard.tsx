@@ -10,8 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CheckCircle, Clock, CreditCard, XCircle } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { UpgradeModal } from "../modals/upgrade-modal";
+import { Button } from "../ui/button";
 
 type Transaction = {
   id: string;
@@ -21,10 +22,7 @@ type Transaction = {
 };
 
 export function BillingDashboard() {
-  // const { data: session } = useSession();
-  // const router = useRouter();
-  // const [loading, setLoading] = useState(false);
-  // const [, setError] = useState("");
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [currentPlan, setCurrentPlan] = useState({
     name: "Free",
     price: "₦0",
@@ -105,12 +103,12 @@ export function BillingDashboard() {
           </Button> */}
           <div className='flex flex-col gap-3 max-w-xs'>
             {currentPlan.name.toLowerCase() !== "pro" && (
-              <Link
-                href='/pricing'
+              <Button
+                onClick={() => setUpgradeModalOpen(true)}
                 className='relative bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-medium px-6 py-1.5 rounded-md shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 flex items-center justify-center text-sm'
               >
                 Upgrade
-              </Link>
+              </Button>
             )}
           </div>
         </CardContent>
@@ -182,6 +180,10 @@ export function BillingDashboard() {
           )}
         </CardContent>
       </Card>
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+      />
     </div>
   );
 }
