@@ -61,7 +61,7 @@ export async function DELETE() {
 
     const user = await User.findOne({ email: session.user.email });
 
-    if (!user || !user.image || user.image === "/placeholder.svg") {
+    if (!user || !user.image) {
       return NextResponse.json(
         { error: "No image to delete" },
         { status: 400 }
@@ -77,7 +77,6 @@ export async function DELETE() {
       await deleteFromCloudinary(publicId);
     }
 
-    user.image = "/placeholder.svg";
     await user.save();
 
     return NextResponse.json({ success: true, image: user.image });

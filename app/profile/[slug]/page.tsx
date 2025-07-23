@@ -91,7 +91,7 @@ export async function generateMetadata({
         siteName: "SpeakerKit",
         images: [
           {
-            url: user.image || "/placeholder.svg",
+            url: user.image,
             width: 1200,
             height: 630,
             alt: `${user.name}'s profile image`,
@@ -103,7 +103,7 @@ export async function generateMetadata({
         card: "summary_large_image",
         title,
         description,
-        images: [user.image || "/placeholder.svg"],
+        images: [user.image],
         creator: "@speakerkit",
         site: "@speakerkit",
       },

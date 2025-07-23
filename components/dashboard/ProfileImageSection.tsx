@@ -93,18 +93,7 @@ function ProfileImageSection() {
                 </div>
               ) : (
                 <>
-                  <AvatarImage
-                    src={
-                      user?.image && user.image !== "/placeholder.svg"
-                        ? user.image
-                        : "/dark-placeholder.svg"
-                    }
-                    className={
-                      !user?.image || user.image === "/placeholder.svg"
-                        ? "opacity-80"
-                        : ""
-                    }
-                  />
+                  <AvatarImage src={user.image} />
                   <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400' />
                 </>
               )}

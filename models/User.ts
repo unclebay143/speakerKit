@@ -44,7 +44,6 @@ const UserSchema = new Schema(
     },
     image: {
       type: String,
-      default: "/placeholder.svg",
     },
     theme: {
       type: String,

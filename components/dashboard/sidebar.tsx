@@ -62,7 +62,7 @@ function SidebarNavSection({
       >
         <Avatar>
           {user?.image && <AvatarImage src={user.image} />}
-          <AvatarFallback className='bg-gray-100' />
+          <AvatarFallback className='bg-gray-100 dark:bg-gray-900' />
         </Avatar>
         {mobile ? (
           <PanelLeftClose
@@ -193,7 +193,7 @@ export function DashboardSidebar({
           >
             <Link href='/billing'>
               <CreditCard className='w-5 h-5' />
-              <span>Billing</span>
+              {isOpen && <span>Billing</span>}
             </Link>
           </Button>
           <Button

@@ -114,7 +114,7 @@ export async function POST(req: Request) {
     await folder.save();
 
     const user = await User.findById(session.user.id);
-    if (user && (!user.image || user.image === "/placeholder.svg")) {
+    if (user && !user.image) {
       user.image = image.url;
       await user.save();
     }
