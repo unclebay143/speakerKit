@@ -34,7 +34,6 @@ function ProfileInfoSection() {
     if (user && !isInitialized) {
       setValue("fullName", user.name || "");
       setValue("slug", user.slug || "");
-      // setValue("username", user.username || "");
       setValue("email", user.email || "");
       setIsInitialized(true);
     }
@@ -51,12 +50,14 @@ function ProfileInfoSection() {
       }
 
       await updateUser.mutateAsync(updateData);
-
       toast("Profile information updated successfully!");
-    } catch (error) {
-      toast("Failed to update profile information", {
-        description: "Please try again.",
-      });
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.error ||
+        (error instanceof Error
+          ? error.message
+          : "Failed to update profile information");
+      toast(errorMessage);
     }
   };
 
