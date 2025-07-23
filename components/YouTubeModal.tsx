@@ -23,7 +23,7 @@ export default function YouTubeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='max-w-7xl w-[90vw] h-[80vh] p-0 bg-black'>
+      <DialogContent className='max-w-7xl w-[90vw] h-[80vh] p-0 bg-black border border-gray-400 dark:border-gray-950'>
         <DialogTitle className='sr-only'>{title}</DialogTitle>
 
         <div className='relative w-full h-full'>

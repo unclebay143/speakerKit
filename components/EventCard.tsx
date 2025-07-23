@@ -12,8 +12,8 @@ import {
 } from "@/lib/youtube-utils";
 import { Edit, ExternalLink, Play, Trash2, Youtube } from "lucide-react";
 import { useState } from "react";
-import YouTubeModal from "./YouTubeModal";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
+import YouTubeModal from "./YouTubeModal";
 
 interface EventCardProps {
   event: Event;
@@ -40,7 +40,6 @@ export default function EventCard({
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const [currentVideoTitle, setCurrentVideoTitle] = useState<string>("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-
 
   const hasYouTubeVideo =
     event.youtubeVideo && isYouTubeUrl(event.youtubeVideo);
@@ -70,7 +69,7 @@ export default function EventCard({
     setCurrentVideoTitle("");
   };
 
-   const handleDeleteClick = () => {
+  const handleDeleteClick = () => {
     setDeleteModalOpen(true);
   };
 
@@ -130,10 +129,11 @@ export default function EventCard({
                 </div>
               )}
             </div>
-
-            <h4 className='font-semibold text-xl text-gray-900 dark:text-white mb-2 line-clamp-2'>
-              {event.title}
-            </h4>
+            <div className='mb-1'>
+              <h4 className='font-semibold text-xl text-gray-900 dark:text-white line-clamp-2'>
+                {event.title}
+              </h4>
+            </div>
 
             <p className='text-gray-600 dark:text-gray-400 mb-3 flex-shrink-0'>
               {event.event}
@@ -223,7 +223,7 @@ export default function EventCard({
         onOpenChange={setDeleteModalOpen}
         onConfirm={handleConfirmDelete}
         title={event.title}
-        type="event"
+        type='event'
         loading={isDeleting}
       />
     </>
