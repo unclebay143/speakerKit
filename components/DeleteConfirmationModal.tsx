@@ -10,7 +10,7 @@ interface DeleteConfirmationModalProps {
   onConfirm: () => void;
   title?: string;
   description?: string;
-  type?: "profile" | "folder" | "image" | "events";
+  type?: "profile" | "folder" | "image" | "event";
   loading?: boolean;
 }
 
@@ -42,7 +42,7 @@ export function DeleteConfirmationModal({
     profile: "Delete Profile",
     folder: "Delete Folder",
     image: "Delete Image",
-    events: "Delete Event",
+    event: "Delete Event",
   }[type];
 
   const displayDescription = description || defaultDescriptions[type];

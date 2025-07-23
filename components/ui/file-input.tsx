@@ -1,5 +1,6 @@
 "use client";
 
+import { formatMaxFileSize } from "@/lib/file-constants";
 import { cn } from "@/lib/utils";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
@@ -105,7 +106,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
             <div className='flex items-center space-x-2'>
               {selectedFile && (
                 <span className='text-xs text-gray-500 dark:text-gray-400'>
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  {formatMaxFileSize(selectedFile.size)}
                 </span>
               )}
               {existingImage && !selectedFile && (

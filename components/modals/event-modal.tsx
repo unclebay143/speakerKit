@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatMaxFileSize, MAX_FILE_SIZE } from "@/lib/file-constants";
 import { eventSchema, type EventFormData } from "@/lib/schemas/event-schema";
 import { isYouTubeUrl, type Event } from "@/lib/youtube-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,13 +27,13 @@ import { toast } from "sonner";
 const parseDateString = (dateString: string): Date | undefined => {
   if (!dateString) return undefined;
 
-  // Try direct parsing first
+  // direct parsing first
   const directParse = new Date(dateString);
   if (!isNaN(directParse.getTime())) {
     return directParse;
   }
 
-  // Try common date formats
+  // common date formats
   const formats = [
     "MMMM do, yyyy",
     "MMM do, yyyy",
@@ -266,6 +267,9 @@ export default function EventModal({
       <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black/95 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white'>
         <div className='space-y-6'>
           <div>
+            <DialogTitle className='sr-only'>
+              {editingEvent ? "Edit Event" : "Add New Event"}
+            </DialogTitle>
             <h2 className='text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
               {editingEvent ? (
                 <Edit className='w-5 h-5' />
@@ -280,7 +284,6 @@ export default function EventModal({
                 : "Add a new speaking engagement or event"}
             </p>
           </div>
-
           <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div className='space-y-2'>
@@ -404,7 +407,7 @@ export default function EventModal({
               <div className='flex items-center gap-2 justify-between'>
                 <Label htmlFor='coverImage'>Cover Image</Label>
                 <span className='text-xs text-gray-500 dark:text-gray-400 ml-1'>
-                  (JPG, PNG, WebP up to 10MB)
+                  (JPG, PNG, WebP up to {formatMaxFileSize(MAX_FILE_SIZE)})
                 </span>
               </div>
 

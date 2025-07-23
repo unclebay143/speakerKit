@@ -10,6 +10,7 @@ import {
   isYouTubeUrl,
   type Event,
 } from "@/lib/youtube-utils";
+import { format, parse } from "date-fns";
 import { Edit, ExternalLink, Play, Trash2, Youtube } from "lucide-react";
 import { useState } from "react";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
@@ -25,6 +26,24 @@ interface EventCardProps {
   onEdit?: (event: Event) => void;
   onDelete?: (event: Event) => void;
   isDeleting?: boolean;
+}
+
+function getDisplayDate(dateString: string | undefined) {
+  if (!dateString) return "";
+  let date: Date | undefined;
+  // Try ISO parse
+  date = new Date(dateString);
+  if (!isNaN(date.getTime())) {
+    return format(date, "MMMM do, yyyy");
+  }
+  // Try parsing as 'MMMM do, yyyy'
+  try {
+    date = parse(dateString, "MMMM do, yyyy", new Date());
+    if (!isNaN(date.getTime())) {
+      return format(date, "MMMM do, yyyy");
+    }
+  } catch {}
+  return "";
 }
 
 export default function EventCard({
@@ -142,7 +161,7 @@ export default function EventCard({
             <div className='flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4 flex-shrink-0'>
               <div className='flex items-center gap-2'>
                 <span className='text-gray-500'>📅</span>
-                <span>{event.date}</span>
+                <span>{getDisplayDate(event.date)}</span>
               </div>
               <div className='flex items-center gap-2 min-w-0 flex-1'>
                 <span className='text-gray-500 flex-shrink-0'>📍</span>
