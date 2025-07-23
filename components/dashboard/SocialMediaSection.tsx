@@ -71,7 +71,6 @@ export default function SocialMediaSection() {
   }, [user, reset]);
 
   const onSubmit = async (values: any) => {
-    console.log(values);
     const socialMedia = {
       twitter: values.x ? `https://x.com/${values.x}` : "",
       linkedin: values.linkedin
@@ -94,8 +93,6 @@ export default function SocialMediaSection() {
       });
     }
   };
-
-  console.log(formState.errors);
 
   if (!user) return null;
 

@@ -1,18 +1,15 @@
 import { uploadToCloudinary } from "@/lib/cloudinary-utils";
 import connectViaMongoose from "@/lib/db";
+import {
+  ALLOWED_FILE_TYPES,
+  formatMaxFileSize,
+  MAX_FILE_SIZE,
+} from "@/lib/file-constants";
 import Event from "@/models/Event";
 import User from "@/models/User";
 import { authOptions } from "@/utils/auth-options";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_FILE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
 
 export async function PUT(
   request: NextRequest,
@@ -75,9 +72,9 @@ export async function PUT(
       if (coverImageFile.size > MAX_FILE_SIZE) {
         return NextResponse.json(
           {
-            error: `File size exceeds the limit of ${
-              MAX_FILE_SIZE / 1024 / 1024
-            }MB`,
+            error: `File size exceeds the limit of ${formatMaxFileSize(
+              MAX_FILE_SIZE
+            )}`,
           },
           { status: 400 }
         );

@@ -29,6 +29,7 @@ interface DatePickerProps {
   className?: string;
   minYear?: number;
   maxYear?: number;
+  defaultDate?: string | Date;
 }
 
 export const DatePicker: React.FC<DatePickerProps> = ({
@@ -40,18 +41,28 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   className = "",
   minYear = 1900,
   maxYear = 2100,
+  defaultDate,
 }) => {
-  // Robust ISO parsing
-  const selectedDate = React.useMemo(() => {
-    if (!value) return undefined;
-    if (value instanceof Date) return value;
-    // Try ISO parse
-    const iso = Date.parse(value);
+  // Robust ISO and legacy parsing
+  const parseAnyDate = (input: string | Date | undefined): Date | undefined => {
+    if (!input) return undefined;
+    if (input instanceof Date) return input;
+    const iso = Date.parse(input);
     if (!isNaN(iso)) return new Date(iso);
-    // Fallback to previous parse
-    const parsed = new Date(value);
-    return isNaN(parsed.getTime()) ? undefined : parsed;
-  }, [value]);
+    try {
+      const parsed = require("date-fns/parse").parse(
+        input,
+        "MMMM do, yyyy",
+        new Date()
+      );
+      if (!isNaN(parsed.getTime())) return parsed;
+    } catch {}
+    return undefined;
+  };
+
+  const selectedDate = React.useMemo(() => {
+    return parseAnyDate(value) || parseAnyDate(defaultDate);
+  }, [value, defaultDate]);
 
   return (
     <Popover>

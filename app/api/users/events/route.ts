@@ -1,19 +1,16 @@
 import { uploadToCloudinary } from "@/lib/cloudinary-utils";
 import connectViaMongoose from "@/lib/db";
+import {
+  ALLOWED_FILE_TYPES,
+  formatMaxFileSize,
+  MAX_FILE_SIZE,
+} from "@/lib/file-constants";
 import { checkPlanLimits } from "@/middleware/planLimits";
 import Event from "@/models/Event";
 import User from "@/models/User";
 import { authOptions } from "@/utils/auth-options";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_FILE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
 
 export async function GET() {
   try {
@@ -60,23 +57,21 @@ export async function POST(request: NextRequest) {
 
     const limitCheck = await checkPlanLimits({
       userId: user._id.toString(),
-      resourceType: "event"
+      resourceType: "event",
     });
 
     if (!limitCheck.allowed) {
-      return NextResponse.json(
-        { error: limitCheck.error },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: limitCheck.error }, { status: 403 });
     }
 
     if (user.plan === "free") {
       const eventCount = await Event.countDocuments({ userId: user._id });
       if (eventCount >= 2) {
         return NextResponse.json(
-          { 
-            error: "Free plan limited to 2 events. Upgrade to Pro for unlimited events.",
-            limitReached: true
+          {
+            error:
+              "Free plan limited to 2 events. Upgrade to Pro for unlimited events.",
+            limitReached: true,
           },
           { status: 403 }
         );
@@ -118,9 +113,9 @@ export async function POST(request: NextRequest) {
       if (coverImageFile.size > MAX_FILE_SIZE) {
         return NextResponse.json(
           {
-            error: `File size exceeds the limit of ${
-              MAX_FILE_SIZE / 1024 / 1024
-            }MB`,
+            error: `File size exceeds the limit of ${formatMaxFileSize(
+              MAX_FILE_SIZE
+            )}`,
           },
           { status: 400 }
         );

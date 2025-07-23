@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatMaxFileSize, MAX_FILE_SIZE } from "@/lib/file-constants";
 import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
@@ -61,7 +62,9 @@ export function UploadModal({
     onDropRejected: (rejectedFiles) => {
       const firstError = rejectedFiles[0].errors[0];
       if (firstError.code === "file-too-large") {
-        alert(`File is too large. Max size is 10MB`);
+        alert(
+          `File is too large. Max size is ${Math.round(MAX_FILE_SIZE / 1024)}KB`
+        );
       } else if (firstError.code === "file-invalid-type") {
         alert("Only JPG, PNG, and WebP images are allowed");
       }
@@ -117,7 +120,8 @@ export function UploadModal({
               : "Drag & drop images here, or click to select"}
           </p>
           <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
-            Supported formats: JPG, PNG, WebP. Max size: 10MB
+            Supported formats: JPG, PNG, WebP. Max size:{" "}
+            {formatMaxFileSize(MAX_FILE_SIZE)}
           </p>
           <Button
             type='button'

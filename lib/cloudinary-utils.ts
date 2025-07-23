@@ -1,3 +1,4 @@
+import { MAX_FILE_SIZE, formatMaxFileSize } from "@/lib/file-constants";
 import type { UploadApiResponse } from "cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -26,6 +27,11 @@ export async function uploadToCloudinary(
     allowedFormats = ["jpg", "png", "webp"],
     format = "auto",
   } = options;
+
+  // Enforce max file size
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File is too large. Max size is ${formatMaxFileSize()}`);
+  }
 
   // Convert file to buffer
   const bytes = await file.arrayBuffer();
