@@ -37,15 +37,16 @@ export default function EventsDashboard({
     try {
       if (editingEvent) {
         // Update existing event
+        if (!formData) {
+          throw new Error("FormData is required for updating events");
+        }
         await updateEvent.mutateAsync({
           id: editingEvent._id!,
-          eventData,
+          formData,
         });
 
         setEditingEvent(null);
-        toast("Event updated successfully!", {
-          description: "Your event has been updated.",
-        });
+        toast("Event updated successfully!");
       } else {
         // Create new event with FormData (including file)
         if (!formData) {
@@ -141,11 +142,7 @@ export default function EventsDashboard({
           <EmptyState
             icon={Calendar}
             title='No events yet'
-            description={
-              user?.plan === "free"
-                ? "Free plan allows up to 2 events"
-                : "Start by adding your first speaking engagement"
-            }
+            description='Showcase your speaking experience by uploading past events. These will be featured on your public profile.'
             action={{
               label: "Add Event",
               onClick: handleAddEvent,

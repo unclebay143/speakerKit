@@ -47,9 +47,17 @@ export function useEvents() {
 
   // Update event
   const updateEvent = useMutation({
-    mutationFn: async ({ id, eventData }: { id: string; eventData: Event }) => {
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
       try {
-        const response = await axios.put(`/api/users/events/${id}`, eventData);
+        const response = await axios.put(`/api/users/events/${id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         return response.data;
       } catch (error) {
         if (error instanceof AxiosError) {
