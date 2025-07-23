@@ -45,7 +45,7 @@ export async function PUT(req: Request) {
   // Only allow updating certain fields
   const allowedFields = [
     "name",
-    "username",
+    "slug",
     "image",
     "theme",
     "isPublic",
@@ -73,6 +73,17 @@ export async function PUT(req: Request) {
       } else {
         updateData[key] = updateFields[key];
       }
+    }
+  }
+
+  // If slug is being updated, check for duplicates
+  if (updateData.slug) {
+    const existing = await User.findOne({ slug: updateData.slug });
+    if (existing && existing.email !== session.user.email) {
+      return NextResponse.json(
+        { error: "Slug is already taken. Please choose another." },
+        { status: 409 }
+      );
     }
   }
 
