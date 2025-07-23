@@ -2,6 +2,7 @@
 
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/modals/event-modal";
+import ShowMoreInfinite from "@/components/ShowMoreInfinite";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useEvents } from "@/lib/hooks/useEvents";
@@ -10,42 +11,43 @@ import { Calendar, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "../EmptyState";
+import EventCardSkeleton from "../EventCardSkeleton";
 import { UpgradeModal } from "../modals/upgrade-modal";
+import { THEMES } from "../templates/default";
 import { EventsDashboardSkeleton } from "./EventsDashboardSkeleton";
 
-interface EventsDashboardProps {
-  initialEvents?: Event[];
-}
-
-export default function EventsDashboard({
-  initialEvents = [],
-}: EventsDashboardProps) {
+export default function EventsDashboard() {
   const { data: user } = useCurrentUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  const [limitData, setLimitData] = useState({
-    limitType: "",
-    current: 0,
-    limit: 0,
-  });
 
-  const { events, isLoading, createEvent, updateEvent, deleteEvent } =
-    useEvents();
+  const {
+    allEvents,
+    totalEvents,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+  } = useEvents({ userSlug: user?.slug, limit: 5 });
 
   const handleSaveEvent = async (eventData: Event, formData?: FormData) => {
     try {
       if (editingEvent) {
         // Update existing event
+        if (!formData) {
+          throw new Error("FormData is required for updating events");
+        }
         await updateEvent.mutateAsync({
           id: editingEvent._id!,
-          eventData,
+          formData,
         });
 
         setEditingEvent(null);
-        toast("Event updated successfully!", {
-          description: "Your event has been updated.",
-        });
+        toast("Event updated successfully!");
       } else {
         // Create new event with FormData (including file)
         if (!formData) {
@@ -90,12 +92,7 @@ export default function EventsDashboard({
   };
 
   const handleAddEvent = () => {
-    if (user?.plan === "free" && events?.length >= 2) {
-      setLimitData({
-        limitType: "events",
-        current: events?.length || 0,
-        limit: 2,
-      });
+    if (user?.plan === "free" && allEvents?.length >= 2) {
       setUpgradeModalOpen(true);
     } else {
       setEditingEvent(null);
@@ -112,12 +109,15 @@ export default function EventsDashboard({
     return <EventsDashboardSkeleton />;
   }
 
+  // Get theme configuration
+  const theme = THEMES[user?.theme as keyof typeof THEMES];
+
   return (
     <div className='space-y-6 mx-auto max-w-screen-lg'>
       <div className='flex items-center justify-between'>
         <div>
           <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
-            Events Management ({events?.length || 0})
+            Events Management ({totalEvents || 0})
           </h2>
           <p className='text-gray-600 dark:text-gray-400'>
             Manage your speaking engagements and events
@@ -137,15 +137,11 @@ export default function EventsDashboard({
 
       {/* Events List */}
       <div className='space-y-4'>
-        {!events || events.length === 0 ? (
+        {!allEvents || allEvents.length === 0 ? (
           <EmptyState
             icon={Calendar}
             title='No events yet'
-            description={
-              user?.plan === "free"
-                ? "Free plan allows up to 2 events"
-                : "Start by adding your first speaking engagement"
-            }
+            description='Showcase your speaking experience by uploading past events. These will be featured on your public profile.'
             action={{
               label: "Add Event",
               onClick: handleAddEvent,
@@ -153,8 +149,14 @@ export default function EventsDashboard({
             className='text-center py-12'
           />
         ) : (
-          <div className='space-y-4'>
-            {events.map((event, index) => (
+          <ShowMoreInfinite
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            buttonClassName={`bg-${theme.accent}-600 hover:bg-${theme.accent}-700`}
+            className='space-y-4'
+          >
+            {allEvents.map((event, index) => (
               <EventCard
                 key={event._id || index}
                 event={event}
@@ -163,9 +165,21 @@ export default function EventsDashboard({
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 isDeleting={deleteEvent.isPending}
+                theme={theme}
               />
             ))}
-          </div>
+            {/* Infinite Scroll Loading */}
+            {isFetchingNextPage && (
+              <div className='space-y-6'>
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <EventCardSkeleton
+                    key={`loading-${index}`}
+                    showActions={false}
+                  />
+                ))}
+              </div>
+            )}
+          </ShowMoreInfinite>
         )}
       </div>
 
@@ -180,9 +194,6 @@ export default function EventsDashboard({
       <UpgradeModal
         open={upgradeModalOpen}
         onOpenChange={setUpgradeModalOpen}
-        limitType={limitData.limitType}
-        currentCount={limitData.current}
-        limit={limitData.limit}
       />
     </div>
   );

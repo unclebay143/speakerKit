@@ -57,7 +57,7 @@ interface UltimateProfileProps {
   events?: Event[];
 }
 
-const THEMES = {
+export const THEMES = {
   light: {
     bg: "bg-white",
     text: "text-gray-900",

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatMaxFileSize, MAX_FILE_SIZE } from "@/lib/file-constants";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useFolders } from "@/lib/hooks/useFolders";
 import { useImage } from "@/lib/hooks/useImage";
@@ -93,7 +94,9 @@ export function ImageGallery() {
     onDropRejected: (rejectedFiles) => {
       const firstError = rejectedFiles[0].errors[0];
       if (firstError.code === "file-too-large") {
-        alert(`File is too large. Max size is 10MB`);
+        alert(
+          `File is too large. Max size is ${Math.round(MAX_FILE_SIZE / 1024)}KB`
+        );
       } else if (firstError.code === "file-invalid-type") {
         alert("Only JPG, PNG, and WebP images are allowed");
       }
@@ -349,9 +352,7 @@ export function ImageGallery() {
               className='bg-purple-600 hover:bg-purple-700 text-white'
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("triggered");
                 if (!user?.isPro && currentFolder.images.length >= 3) {
-                  console.log("not allowed");
                   setLimitData({
                     limitType: "images",
                     current: currentFolder.images.length,
@@ -359,7 +360,6 @@ export function ImageGallery() {
                   });
                   setUpgradeModalOpen(true);
                 } else {
-                  console.log("allowed");
                   openFileDialog();
                 }
               }}
@@ -389,7 +389,8 @@ export function ImageGallery() {
               : "Drag & drop images here, or click to select"}
           </p>
           <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
-            Supported formats: JPG, PNG, WebP. Max size: 10MB
+            Supported formats: JPG, PNG, WebP. Max size:{" "}
+            {formatMaxFileSize(MAX_FILE_SIZE)}
           </p>
           <Button
             type='button'

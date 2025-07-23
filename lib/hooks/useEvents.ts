@@ -1,25 +1,57 @@
 import { type Event } from "@/lib/youtube-utils";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { useSession } from "next-auth/react";
 
-export function useEvents() {
-  const { data: session } = useSession();
+interface PaginatedEventsResponse {
+  events: Event[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalEvents: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
+export function useEvents({
+  userSlug,
+  limit = 5,
+}: {
+  userSlug?: string;
+  limit: number;
+}) {
   const queryClient = useQueryClient();
 
-  // Fetch all events
   const {
-    data: events,
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
     error,
-  } = useQuery<Event[]>({
-    queryKey: ["events"],
-    queryFn: async () => {
-      const { data } = await axios.get("/api/users/events");
-      return data.events || [];
+  } = useInfiniteQuery<PaginatedEventsResponse>({
+    queryKey: ["events", userSlug, limit],
+    queryFn: async ({ pageParam = 1 }) => {
+      const url = `/api/users/${userSlug}/events?page=${pageParam}&limit=${limit}`;
+      const { data } = await axios.get(url);
+      return data;
     },
-    enabled: !!session?.user?.id,
+    getNextPageParam: (lastPage) => {
+      return lastPage?.pagination?.hasMore
+        ? lastPage.pagination.page + 1
+        : undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!userSlug,
   });
+
+  // Flatten all events from all pages
+  const allEvents = data?.pages.flatMap((page) => page.events) || [];
+  const totalEvents = data?.pages[0].pagination.totalEvents || 0;
 
   // Create event
   const createEvent = useMutation({
@@ -47,9 +79,17 @@ export function useEvents() {
 
   // Update event
   const updateEvent = useMutation({
-    mutationFn: async ({ id, eventData }: { id: string; eventData: Event }) => {
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
       try {
-        const response = await axios.put(`/api/users/events/${id}`, eventData);
+        const response = await axios.put(`/api/users/events/${id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         return response.data;
       } catch (error) {
         if (error instanceof AxiosError) {
@@ -86,7 +126,11 @@ export function useEvents() {
   });
 
   return {
-    events,
+    totalEvents,
+    allEvents,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading,
     error,
     createEvent,

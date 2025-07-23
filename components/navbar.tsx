@@ -35,7 +35,7 @@ export default function Navbar() {
       <div className='md:container md:px-6 mx-auto flex items-center justify-between w-full'>
         <div className='flex items-center space-x-8'>
           <Link href='/' className='flex items-center space-x-2'>
-            <svg
+            {/* <svg
               width='30'
               height='24'
               viewBox='0 0 50 40'
@@ -57,7 +57,7 @@ export default function Navbar() {
                 fill='#A78BFA'
                 fillOpacity='0.3'
               ></path>
-            </svg>
+            </svg> */}
             <span className='text-white font-medium text-xl'>SpeakerKit</span>
           </Link>
           <div className='hidden md:flex items-center space-x-4'>

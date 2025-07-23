@@ -88,7 +88,7 @@ export default function Hero() {
               </span>
             </h1> */}
 
-            <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6'>
+            {/* <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6'>
               Stop using{" "}
               <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600'>
                 Google Docs
@@ -97,7 +97,27 @@ export default function Hero() {
               <span className='text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600'>
                 speaker profile
               </span>
+            </h1> */}
+            <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6'>
+              Your{" "}
+              <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600'>
+                All-in-One
+              </span>{" "}
+              for Your{" "}
+              <span className='text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600'>
+                Speaker Brand
+              </span>
             </h1>
+            {/* <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6'>
+              One{" "}
+              <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600'>
+                Home
+              </span>{" "}
+              for Your{" "}
+              <span className='text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600'>
+                Speaker Brand
+              </span>
+            </h1> */}
 
             {/* <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6'>
               Stop using{" "}
@@ -127,7 +147,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className='flex flex-col sm:flex-row items-center justify-center gap-2 text-gray-400 mb-8'
           >
-            <div className='flex -space-x-2'>
+            {/* <div className='flex -space-x-2'>
               {speakers.map((speaker) => (
                 <Link
                   key={speaker.id}
@@ -141,12 +161,13 @@ export default function Hero() {
                   />
                 </Link>
               ))}
-            </div>
+            </div> */}
             {/* <Users className='h-5 w-5' /> */}
             <span className='text-sm'>
               Join{" "}
               <span className='text-purple-400 font-semibold'>
-                2,800+ speakers
+                {/* 2,800+ speakers */}
+                speakers
               </span>{" "}
               who&apos;ve made the switch.
             </span>

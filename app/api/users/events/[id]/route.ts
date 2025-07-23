@@ -1,4 +1,10 @@
+import { uploadToCloudinary } from "@/lib/cloudinary-utils";
 import connectViaMongoose from "@/lib/db";
+import {
+  ALLOWED_FILE_TYPES,
+  formatMaxFileSize,
+  MAX_FILE_SIZE,
+} from "@/lib/file-constants";
 import Event from "@/models/Event";
 import User from "@/models/User";
 import { authOptions } from "@/utils/auth-options";
@@ -15,21 +21,6 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const eventData = await request.json();
-
-    if (
-      !eventData.title ||
-      !eventData.event ||
-      !eventData.date ||
-      !eventData.location ||
-      !eventData.type
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
     await connectViaMongoose();
     const user = await User.findOne({ email: session.user.email });
 
@@ -37,29 +28,101 @@ export async function PUT(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Find and update the event
-    const event = await Event.findOne({ _id: params.id, userId: user._id });
+    // Accept FormData for updates
+    const formData = await request.formData();
+    const title = formData.get("title") as string;
+    const event = formData.get("event") as string;
+    const date = formData.get("date") as string;
+    const location = formData.get("location") as string;
+    const type = formData.get("type") as string;
+    const link = formData.get("link") as string;
+    const youtubeVideo = formData.get("youtubeVideo") as string;
+    const youtubePlaylist = formData.get("youtubePlaylist") as string;
+    const coverImageFile = formData.get("coverImage") as File | null;
+    const coverImageUrl = formData.get("coverImage") as string | null;
 
-    if (!event) {
+    if (!title || !event || !date || !location || !type) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Find and update the event
+    const eventDoc = await Event.findOne({ _id: params.id, userId: user._id });
+    if (!eventDoc) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Update event fields
-    event.title = eventData.title;
-    event.event = eventData.event;
-    event.date = eventData.date;
-    event.location = eventData.location;
-    event.type = eventData.type;
-    event.coverImage = eventData.coverImage || "";
-    event.link = eventData.link || "";
-    event.youtubeVideo = eventData.youtubeVideo || "";
-    event.youtubePlaylist = eventData.youtubePlaylist || "";
+    let finalCoverImageUrl = "";
+    // Handle image upload if provided as a file
+    if (
+      coverImageFile &&
+      typeof coverImageFile !== "string" &&
+      coverImageFile.size > 0
+    ) {
+      // Validate file type
+      if (!ALLOWED_FILE_TYPES.includes(coverImageFile.type)) {
+        return NextResponse.json(
+          { error: "Only JPG, PNG, and WebP images are allowed" },
+          { status: 400 }
+        );
+      }
+      // Validate file size
+      if (coverImageFile.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          {
+            error: `File size exceeds the limit of ${formatMaxFileSize(
+              MAX_FILE_SIZE
+            )}`,
+          },
+          { status: 400 }
+        );
+      }
+      try {
+        const result = await uploadToCloudinary(coverImageFile, {
+          folder: "event-covers",
+          publicId: `event-${user._id}-${Date.now()}`,
+          overwrite: true,
+        });
+        finalCoverImageUrl = result.secure_url;
+      } catch (error) {
+        console.error("Image upload error:", error);
+        return NextResponse.json(
+          { error: "Failed to upload image" },
+          { status: 500 }
+        );
+      }
+    } else if (
+      coverImageUrl &&
+      typeof coverImageUrl === "string" &&
+      coverImageUrl.trim() &&
+      coverImageUrl !== "https://via.placeholder.com/400x300?text=Event+Image"
+    ) {
+      // Use existing image URL (but not placeholder)
+      finalCoverImageUrl = coverImageUrl;
+    } else {
+      // Use placeholder if no image is provided or if it's the placeholder
+      finalCoverImageUrl =
+        "https://via.placeholder.com/400x300?text=Event+Image";
+    }
 
-    await event.save();
+    // Update event fields
+    eventDoc.title = title;
+    eventDoc.event = event;
+    eventDoc.date = date;
+    eventDoc.location = location;
+    eventDoc.type = type;
+    eventDoc.coverImage = finalCoverImageUrl;
+    eventDoc.link = link || "";
+    eventDoc.youtubeVideo = youtubeVideo || "";
+    eventDoc.youtubePlaylist = youtubePlaylist || "";
+
+    await eventDoc.save();
 
     return NextResponse.json({
       message: "Event updated successfully",
-      event,
+      event: eventDoc,
     });
   } catch (error) {
     console.error("Error updating event:", error);

@@ -127,13 +127,13 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   try {
-    // Await params to get the username
+    // Await params to get the slug
     const { slug } = await params;
 
     // Connect to database
     await connectViaMongoose();
 
-    // Find user by username
+    // Find user by slug
     const user = await User.findOne({ slug }).select("-password");
 
     if (!user || user.isPublic === false) {

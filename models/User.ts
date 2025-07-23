@@ -34,16 +34,6 @@ const UserSchema = new Schema(
       required: true,
       default: generateRandomSlug,
     },
-    // username: {
-    //   type: String,
-    //   trim: true,
-    //   lowercase: true,
-    //   sparse: true,
-    //   match: [
-    //     /^[a-z0-9-]{3,30}$/,
-    //     "Username must be 3-30 characters with only letters, numbers, and hyphens",
-    //   ],
-    // },
     hasCompletedOnboarding: {
       type: Boolean,
       default: false,

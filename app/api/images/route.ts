@@ -1,4 +1,5 @@
 import connectViaMongoose from "@/lib/db";
+import { formatMaxFileSize } from "@/lib/file-constants";
 import { CLOUDINARY_FOLDER } from "@/lib/utils";
 import { checkPlanLimits } from "@/middleware/planLimits";
 import Folder from "@/models/Folders";
@@ -69,9 +70,9 @@ export async function POST(req: Request) {
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          error: `File size exceeds the limit of ${
-            MAX_FILE_SIZE / 1024 / 1024
-          }MB`,
+          error: `File size exceeds the limit of ${formatMaxFileSize(
+            MAX_FILE_SIZE
+          )}MB`,
         },
         { status: 400 }
       );

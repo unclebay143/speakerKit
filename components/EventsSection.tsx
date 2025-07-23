@@ -1,9 +1,9 @@
 "use client";
 
+import ShowMoreInfinite from "@/components/ShowMoreInfinite";
+import { useEvents } from "@/lib/hooks/useEvents";
 import { type Event } from "@/lib/youtube-utils";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import EventCard from "./EventCard";
 import EventCardSkeleton from "./EventCardSkeleton";
 
@@ -26,37 +26,19 @@ interface PaginatedEventsResponse {
 }
 
 export default function EventsSection({ userSlug, theme }: EventsSectionProps) {
-  const [showAllEvents, setShowAllEvents] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
 
   const {
-    data,
+    allEvents,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
     error,
-  } = useInfiniteQuery<PaginatedEventsResponse>({
-    queryKey: ["events", userSlug],
-    queryFn: async ({ pageParam = 1 }) => {
-      const { data } = await axios.get(
-        `/api/users/${userSlug}/events?page=${pageParam}&limit=10`
-      );
-      return data;
-    },
-    getNextPageParam: (lastPage) => {
-      return lastPage.pagination.hasMore
-        ? lastPage.pagination.page + 1
-        : undefined;
-    },
-    initialPageParam: 1,
-    enabled: !!userSlug,
-  });
+  } = useEvents({ userSlug, limit: 5 });
 
   // Infinite scroll observer
   useEffect(() => {
-    if (!showAllEvents) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -71,14 +53,10 @@ export default function EventsSection({ userSlug, theme }: EventsSectionProps) {
     }
 
     return () => observer.disconnect();
-  }, [showAllEvents, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Flatten all events from all pages
-  const allEvents = data?.pages.flatMap((page) => page.events) || [];
-  const firstPageEvents = data?.pages[0]?.events || [];
-  const displayedEvents = showAllEvents
-    ? allEvents
-    : firstPageEvents.slice(0, 10);
+  const displayedEvents = allEvents;
 
   if (isLoading) {
     return (
@@ -112,54 +90,31 @@ export default function EventsSection({ userSlug, theme }: EventsSectionProps) {
 
   return (
     <div className='space-y-6 max-w-4xl mx-auto'>
-      {displayedEvents.map((event, idx) => (
-        <EventCard
-          key={event._id || idx}
-          event={event}
-          index={idx}
-          theme={theme}
-          isDashboard={false}
-        />
-      ))}
-
-      {/* Show More Button */}
-      {!showAllEvents && firstPageEvents.length > 10 && (
-        <div className='text-center py-6'>
-          <button
-            onClick={() => setShowAllEvents(true)}
-            className={`inline-flex items-center gap-2 px-6 py-3 bg-${theme.accent}-600 text-white rounded-lg font-semibold hover:bg-${theme.accent}-700 transition-colors`}
-          >
-            Show More Events
-            <svg
-              className='w-4 h-4'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M19 9l-7 7-7-7'
-              />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {/* Infinite Scroll Loading */}
-      {showAllEvents && isFetchingNextPage && (
-        <div className='space-y-6'>
-          {Array.from({ length: 2 }).map((_, index) => (
-            <EventCardSkeleton key={`loading-${index}`} showActions={false} />
-          ))}
-        </div>
-      )}
-
-      {/* Infinite Scroll Observer */}
-      {showAllEvents && hasNextPage && (
-        <div ref={observerRef} className='h-4' />
-      )}
+      <ShowMoreInfinite
+        hasNextPage={hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        buttonClassName={`bg-${theme.accent}-600 hover:bg-${theme.accent}-700`}
+        className='space-y-4'
+      >
+        {displayedEvents.map((event, idx) => (
+          <EventCard
+            key={event._id || idx}
+            event={event}
+            index={idx}
+            theme={theme}
+            isDashboard={false}
+          />
+        ))}
+        {/* Infinite Scroll Loading */}
+        {isFetchingNextPage && (
+          <div className='space-y-6'>
+            {Array.from({ length: 2 }).map((_, index) => (
+              <EventCardSkeleton key={`loading-${index}`} showActions={false} />
+            ))}
+          </div>
+        )}
+      </ShowMoreInfinite>
     </div>
   );
 }
