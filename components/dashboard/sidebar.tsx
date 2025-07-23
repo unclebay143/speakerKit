@@ -61,8 +61,13 @@ function SidebarNavSection({
         )}
       >
         <Avatar>
-          {user?.image && <AvatarImage src={user.image} />}
-          <AvatarFallback className='bg-gray-100 dark:bg-gray-900' />
+          <AvatarImage
+            src={
+              user?.image ||
+              `https://api.dicebear.com/9.x/micah/svg?seed=${user?.slug}`
+            }
+          />
+          <AvatarFallback className='bg-gray-100 dark:bg-gray-700' />
         </Avatar>
         {mobile ? (
           <PanelLeftClose
