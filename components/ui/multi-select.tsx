@@ -32,6 +32,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const filteredOptions = options.filter(
     (opt) =>
       !value.includes(opt.value) &&
+      !value.includes(opt.label) &&
       opt.label.toLowerCase().includes(inputValue.toLowerCase())
   );
 
@@ -128,9 +129,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           {canCreate && (
             <div
               className='px-4 py-2 cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 text-sm font-semibold text-purple-700 dark:text-purple-300'
-              onClick={() => {
+              onClick={async () => {
                 if (onCreateOption) {
-                  onCreateOption(inputValue.trim());
+                  await onCreateOption(inputValue.trim());
+                  onChange([...(value || []), inputValue.trim()]);
                 } else {
                   // fallback: add as value/label
                   onChange([...value, inputValue.trim()]);
