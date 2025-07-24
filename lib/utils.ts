@@ -18,7 +18,7 @@ export function slugify(text: string): string {
 }
 
 export const OG_IMAGE =
-  "https://res.cloudinary.com/dyfitpyrx/image/upload/v1753336076/speakerkit/ynz7taczoubmcyk2vgjs.png";
+  "https://res.cloudinary.com/dyfitpyrx/image/upload/v1753336893/og-image_f240iq.png";
 
 export const CLOUDINARY_FOLDER = "speakerkit";
 
