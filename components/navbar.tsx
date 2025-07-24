@@ -136,9 +136,9 @@ export default function Navbar() {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className='fixed inset-0 z-30 bg-black/70 flex justify-end'>
-          <div className='w-64 bg-white dark:bg-black h-full p-6 flex flex-col space-y-6 relative'>
+          <div className='w-64 bg-black h-full p-6 flex flex-col space-y-6 relative'>
             <button
-              className='absolute top-4 right-4 text-gray-700 dark:text-white'
+              className='absolute top-4 right-4 text-white'
               onClick={() => setMobileMenuOpen(false)}
               aria-label='Close menu'
             >
@@ -151,7 +151,7 @@ export default function Navbar() {
                 className={`transition-colors ${
                   featuresActive
                     ? "text-purple-400 font-semibold"
-                    : "text-gray-900 dark:text-white hover:text-purple-400"
+                    : "text-white hover:text-purple-400"
                 }`}
               >
                 Features
@@ -162,7 +162,7 @@ export default function Navbar() {
                 className={`transition-colors ${
                   pathname === "/pricing"
                     ? "text-purple-400 font-semibold"
-                    : "text-gray-900 dark:text-white hover:text-purple-400"
+                    : "text-white hover:text-purple-400"
                 }`}
               >
                 Pricing
