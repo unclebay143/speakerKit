@@ -226,7 +226,6 @@ export function DefaultTemplate({
   activeProfile: initialActiveProfile,
   userSlug,
 }: UltimateProfileProps) {
-  console.log(userData);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [downloadingImage, setDownloadingImage] = useState<string | null>(null);
   const [activeProfile, setActiveProfile] =
@@ -505,441 +504,397 @@ export function DefaultTemplate({
   const socialStyles = `rounded-full p-2 border border-${theme.accent}-600 bg-white text-${theme.accent}-700 hover:bg-white hover:text-opacity-70 transition focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${theme.bg}`}>
-      {/* Hero Banner */}
-      <div
-        className={`relative w-full h-48 md:h-56 bg-gradient-to-br ${theme.heroBg} flex items-end justify-center`}
-      >
-        {/* Scattered Speaker Tools - Limited to 5 tools */}
-        {userIcons.map((icon, index) => {
-          // 5 well-spaced positions for mobile and desktop
-          const positions = [
-            "top-2 left-4 md:top-4 md:left-8", // notion
-            "top-2 right-10 md:top-4 md:right-16", // canva
-            "top-8 left-1/4 md:top-12 md:left-72", // doc
-            "top-8 right-1/4 md:top-12 md:right-1/3", // figma
-            "top-[-10px] left-[56%] md:top-12 md:left-1/3", // ppt
-          ];
+    <div
+      className={`min-h-screen bg-gradient-to-br flex flex-col justify-between ${theme.bg}`}
+    >
+      <div>
+        {/* Hero Banner */}
+        <div
+          className={`relative w-full h-48 md:h-56 bg-gradient-to-br ${theme.heroBg} flex items-end justify-center`}
+        >
+          {/* Scattered Speaker Tools - Limited to 5 tools */}
+          {userIcons.map((icon, index) => {
+            // 5 well-spaced positions for mobile and desktop
+            const positions = [
+              "top-2 left-4 md:top-4 md:left-8", // notion
+              "top-2 right-10 md:top-4 md:right-16", // canva
+              "top-8 left-1/4 md:top-12 md:left-72", // doc
+              "top-8 right-1/4 md:top-12 md:right-1/3", // figma
+              "top-[-10px] left-[56%] md:top-12 md:left-1/3", // ppt
+            ];
 
-          const position = positions[index];
-          const rotation = (index * 18) % 360; // 18° increments for 5 tools
-          const scale = 0.8 + index * 0.06; // Scale between 0.8 and 1.1
+            const position = positions[index];
+            const rotation = (index * 18) % 360; // 18° increments for 5 tools
+            const scale = 0.8 + index * 0.06; // Scale between 0.8 and 1.1
 
-          return (
-            <div
-              key={icon}
-              className={`absolute opacity-20 hover:opacity-40 transition-opacity duration-300 group ${position}`}
-              style={{
-                transform: `rotate(${rotation}deg) scale(${scale * 0.4})`, // Even smaller scale on mobile
-              }}
-            >
-              <div className='w-6 h-6 md:w-12 md:h-12 relative'>
-                {brandIcons[icon as keyof typeof brandIcons]}
-                {/* Tooltip */}
-                <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-900 text-white text-lg font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-lg z-[9999]'>
-                  {iconDisplayNames[icon as keyof typeof iconDisplayNames]}
-                  <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'></div>
+            return (
+              <div
+                key={icon}
+                className={`absolute opacity-20 hover:opacity-40 transition-opacity duration-300 group ${position}`}
+                style={{
+                  transform: `rotate(${rotation}deg) scale(${scale * 0.4})`, // Even smaller scale on mobile
+                }}
+              >
+                <div className='w-6 h-6 md:w-12 md:h-12 relative'>
+                  {brandIcons[icon as keyof typeof brandIcons]}
+                  {/* Tooltip */}
+                  <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-900 text-white text-lg font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-lg z-[9999]'>
+                    {iconDisplayNames[icon as keyof typeof iconDisplayNames]}
+                    <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'></div>
+                  </div>
                 </div>
               </div>
+            );
+          })}
+
+          {/* Profile Card overlaps bottom edge of hero */}
+          <div className='absolute left-1/2 transform -translate-x-1/2 translate-y-1/2 z-20'>
+            <div className='w-36 h-36 md:w-44 md:h-44 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-white'>
+              <img
+                src={userData.image || "/placeholder-user.jpg"}
+                alt={userData.name}
+                className='w-full h-full object-cover rounded-full'
+              />
             </div>
-          );
-        })}
-
-        {/* Profile Card overlaps bottom edge of hero */}
-        <div className='absolute left-1/2 transform -translate-x-1/2 translate-y-1/2 z-20'>
-          <div className='w-36 h-36 md:w-44 md:h-44 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-white'>
-            <img
-              src={userData.image || "/placeholder-user.jpg"}
-              alt={userData.name}
-              className='w-full h-full object-cover rounded-full'
-            />
+            {getActiveProfile()?.isVerified && (
+              <span
+                className={`absolute bottom-2 right-2 bg-${theme.accent}-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow`}
+              >
+                <BadgeCheck className='h-4 w-4' /> Verified
+              </span>
+            )}
           </div>
-          {getActiveProfile()?.isVerified && (
-            <span
-              className={`absolute bottom-2 right-2 bg-${theme.accent}-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow`}
-            >
-              <BadgeCheck className='h-4 w-4' /> Verified
-            </span>
-          )}
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className='max-w-4xl mx-auto pt-24 px-4 md:px-8'>
-        {/* Profile Header */}
-        <div className='text-center md:text-left mb-6'>
-          <h1 className={`text-3xl font-bold mb-2 text-center text-gray-900`}>
-            {userData.name}
-          </h1>
-          {/* <h2
+        {/* Main Content */}
+        <div className='max-w-4xl mx-auto pt-24 px-4 md:px-8'>
+          {/* Profile Header */}
+          <div className='text-center md:text-left mb-6'>
+            <h1 className={`text-3xl font-bold mb-2 text-center text-gray-900`}>
+              {userData.name}
+            </h1>
+            {/* <h2
             className={`text-xl text-center font-medium text-${theme.accent}-700 mb-2`}
           >
             {getActiveProfile()?.title}
           </h2> */}
-          {/* Location */}
-          {userData.location && (
-            <div className='flex flex-col items-center gap-2 mb-4'>
-              <div className='flex items-center gap-2 text-gray-600 text-sm'>
-                <MapPin className='w-4 h-4' />
-                <span>{userData.location}</span>
+            {/* Location */}
+            {userData.location && (
+              <div className='flex flex-col items-center gap-2 mb-4'>
+                <div className='flex items-center gap-2 text-gray-600 text-sm'>
+                  <MapPin className='w-4 h-4' />
+                  <span>{userData.location}</span>
+                </div>
               </div>
-            </div>
-          )}
-          {/* Email and Social Links */}
-          {userData.socialMedia &&
-            (() => {
-              const { twitter, linkedin, instagram, email, website } =
-                userData.socialMedia || {};
-              const hasAny =
-                twitter || linkedin || instagram || email || website;
-              if (!hasAny) return null;
+            )}
+            {/* Email and Social Links */}
+            {userData.socialMedia &&
+              (() => {
+                const { twitter, linkedin, instagram, email, website } =
+                  userData.socialMedia || {};
+                const hasAny =
+                  twitter || linkedin || instagram || email || website;
+                if (!hasAny) return null;
+                return (
+                  <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
+                    <div className='flex gap-2'>
+                      {linkedin && (
+                        <a
+                          href={linkedin}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={socialStyles}
+                          aria-label='LinkedIn'
+                        >
+                          <Linkedin className='h-4 w-4' />
+                        </a>
+                      )}
+                      {twitter && (
+                        <a
+                          href={twitter}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={socialStyles}
+                          aria-label='Twitter'
+                        >
+                          <Twitter className='h-4 w-4' />
+                        </a>
+                      )}
+                      {instagram && (
+                        <a
+                          href={instagram}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={socialStyles}
+                          aria-label='Instagram'
+                        >
+                          <Instagram className='h-4 w-4' />
+                        </a>
+                      )}
+                      {email && (
+                        <a
+                          href={`mailto:${email}`}
+                          className={socialStyles}
+                          aria-label='Email'
+                        >
+                          <Mail className='h-4 w-4' />
+                        </a>
+                      )}
+                      {website && (
+                        <a
+                          href={website}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className={socialStyles}
+                          aria-label='Website'
+                        >
+                          <Globe className='h-4 w-4' />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+          </div>
+
+          {/* Profile Selector */}
+          <div className='flex flex-wrap gap-2 justify-center mb-8'>
+            {profiles.map((profile) => {
+              if (!profile.isPublic) return null;
               return (
-                <div className='flex flex-col sm:flex-row items-center gap-4 justify-center'>
-                  <div className='flex gap-2'>
-                    {linkedin && (
-                      <a
-                        href={linkedin}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={socialStyles}
-                        aria-label='LinkedIn'
-                      >
-                        <Linkedin className='h-4 w-4' />
-                      </a>
-                    )}
-                    {twitter && (
-                      <a
-                        href={twitter}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={socialStyles}
-                        aria-label='Twitter'
-                      >
-                        <Twitter className='h-4 w-4' />
-                      </a>
-                    )}
-                    {instagram && (
-                      <a
-                        href={instagram}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={socialStyles}
-                        aria-label='Instagram'
-                      >
-                        <Instagram className='h-4 w-4' />
-                      </a>
-                    )}
-                    {email && (
-                      <a
-                        href={`mailto:${email}`}
-                        className={socialStyles}
-                        aria-label='Email'
-                      >
-                        <Mail className='h-4 w-4' />
-                      </a>
-                    )}
-                    {website && (
-                      <a
-                        href={website}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={socialStyles}
-                        aria-label='Website'
-                      >
-                        <Globe className='h-4 w-4' />
-                      </a>
-                    )}
-                  </div>
-                </div>
+                <button
+                  key={profile._id}
+                  type='button'
+                  onClick={() => {
+                    setActiveProfile(profile._id);
+                    updateProfileInUrl(profile._id);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                    activeProfile === profile._id && !searchParams.get("tab")
+                      ? `bg-${theme.accent}-600 text-white shadow`
+                      : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
+                  } focus:outline-none focus:ring-2 focus:ring-${
+                    theme.accent
+                  }-400`}
+                  aria-pressed={
+                    activeProfile === profile._id && !searchParams.get("tab")
+                  }
+                >
+                  {profile.title}
+                </button>
               );
-            })()}
-        </div>
+            })}
 
-        {/* Profile Selector */}
-        <div className='flex flex-wrap gap-2 justify-center mb-8'>
-          {profiles.map((profile) => {
-            if (!profile.isPublic) return null;
-            return (
-              <button
-                key={profile._id}
-                type='button'
-                onClick={() => {
-                  setActiveProfile(profile._id);
-                  updateProfileInUrl(profile._id);
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
-                  activeProfile === profile._id && !searchParams.get("tab")
-                    ? `bg-${theme.accent}-600 text-white shadow`
-                    : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
-                } focus:outline-none focus:ring-2 focus:ring-${
-                  theme.accent
-                }-400`}
-                aria-pressed={
-                  activeProfile === profile._id && !searchParams.get("tab")
-                }
-              >
-                {profile.title}
-              </button>
-            );
-          })}
+            {/* Activities Tab */}
+            <button
+              type='button'
+              onClick={() => {
+                const params = new URLSearchParams(searchParams);
+                params.delete("profile");
+                params.set("tab", "talks");
+                router.push(`${pathname}?${params.toString()}`);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition ${
+                searchParams.get("tab")
+                  ? `bg-${theme.accent}-600 text-white shadow`
+                  : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
+              } focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
+              aria-pressed={!!searchParams.get("tab")}
+            >
+              <Mic className='h-4 w-4' /> My Talks
+            </button>
+          </div>
 
-          {/* Activities Tab */}
-          <button
-            type='button'
-            onClick={() => {
-              const params = new URLSearchParams(searchParams);
-              params.delete("profile");
-              params.set("tab", "talks");
-              router.push(`${pathname}?${params.toString()}`);
-            }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition ${
-              searchParams.get("tab")
-                ? `bg-${theme.accent}-600 text-white shadow`
-                : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
-            } focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
-            aria-pressed={!!searchParams.get("tab")}
-          >
-            <Mic className='h-4 w-4' /> My Talks
-          </button>
-        </div>
-
-        {/* Conditional Content Rendering */}
-        {searchParams.get("tab") ? (
-          // Activities/Events Section
-          <EventsSection userSlug={userSlug} theme={theme} />
-        ) : (
-          // Profile Content
-          <>
-            {/* Bios */}
-            <section className='mb-16'>
-              <div className='space-y-4 mb-8'>
-                {getActiveProfile()?.shortBio && (
-                  <div
-                    className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
-                  >
-                    <div className='flex items-center justify-between mb-3'>
-                      <h3 className='text-lg font-bold'>Quick Bio</h3>
-                      <CopyButton
-                        text={getActiveProfile()?.shortBio || ""}
-                        type='short'
-                        label='Copy'
-                      />
-                    </div>
-                    <p className='text-gray-700 leading-relaxed'>
-                      {getActiveProfile()?.shortBio}
-                    </p>
-                  </div>
-                )}
-
-                {getActiveProfile()?.mediumBio && (
-                  <div
-                    className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
-                  >
-                    <div className='flex items-center justify-between mb-3'>
-                      <h3 className='text-lg font-bold'>Medium Bio</h3>
-                      <CopyButton
-                        text={getActiveProfile()?.mediumBio || ""}
-                        type='medium'
-                        label='Copy'
-                      />
-                    </div>
-                    <p className='text-gray-700 leading-relaxed'>
-                      {getActiveProfile()?.mediumBio}
-                    </p>
-                  </div>
-                )}
-
-                {getActiveProfile()?.longBio && (
-                  <div
-                    className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
-                  >
-                    <div className='flex items-center justify-between mb-3'>
-                      <h3 className='text-lg font-bold'>Full Bio</h3>
-                      <CopyButton
-                        text={getActiveProfile()?.longBio || ""}
-                        type='long'
-                        label='Copy'
-                      />
-                    </div>
-                    <p className='text-gray-700 leading-relaxed'>
-                      {getActiveProfile()?.longBio}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Image Gallery Section */}
-            {folders.length > 0 ? (
+          {/* Conditional Content Rendering */}
+          {searchParams.get("tab") ? (
+            // Activities/Events Section
+            <EventsSection userSlug={userSlug} theme={theme} />
+          ) : (
+            // Profile Content
+            <>
+              {/* Bios */}
               <section className='mb-16'>
-                <h2 className='text-2xl font-bold mb-8 text-left'>Gallery</h2>
-                <div className='space-y-8'>
-                  {folders.map((folder) => {
-                    if (folder.images.length === 0) return null;
-                    return (
-                      <div
-                        key={folder._id}
-                        className='bg-white rounded-xl shadow overflow-hidden'
-                      >
-                        <div className='p-6 border-b border-gray-100'>
-                          <h3 className='text-xl font-semibold mb-2'>
-                            {folder.name}
-                          </h3>
-                          <p className='text-gray-600'>{folder.description}</p>
-                        </div>
-
-                        <div className='p-6'>
-                          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                            {folder.images.map((image) => (
-                              <div
-                                key={image._id}
-                                className='relative group rounded-lg overflow-hidden'
-                              >
-                                <img
-                                  src={image.url}
-                                  alt={image.name}
-                                  className='w-full h-full object-cover'
-                                />
-                                <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
-                                  <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                                    <button
-                                      onClick={() =>
-                                        downloadImage(image.url, image.name)
-                                      }
-                                      disabled={downloadingImage === image.name}
-                                      className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
-                                    >
-                                      {downloadingImage === image.name ? (
-                                        <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
-                                      ) : (
-                                        <Download className='h-4 w-4' />
-                                      )}
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                <div className='space-y-4 mb-8'>
+                  {getActiveProfile()?.shortBio && (
+                    <div
+                      className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
+                    >
+                      <div className='flex items-center justify-between mb-3'>
+                        <h3 className='text-lg font-bold'>Quick Bio</h3>
+                        <CopyButton
+                          text={getActiveProfile()?.shortBio || ""}
+                          type='short'
+                          label='Copy'
+                        />
                       </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ) : null}
+                      <p className='text-gray-700 leading-relaxed'>
+                        {getActiveProfile()?.shortBio}
+                      </p>
+                    </div>
+                  )}
 
-            {/* Expertise & Topics Section */}
-            {userData?.expertise && userData.expertise.length > 0 && (
-              <section className='mb-16 bg-white rounded-xl shadow overflow-hidden'>
-                <div className='p-6 border-b border-gray-100'>
-                  <h3 className='text-xl font-semibold mb-2'>
-                    Areas of expertise
-                  </h3>
-                  {/* <p className='text-gray-600'>Areas of expertise</p> */}
-                </div>
-                <div className='flex flex-col gap-2 mb-2 p-6'>
-                  <div className='flex flex-wrap gap-2 mb-2'>
-                    {(userData.expertise || []).map((val: string) => {
-                      const label =
-                        expertiseOptions.find((opt: any) => opt.value === val)
-                          ?.label || val;
-                      return (
-                        <span
-                          key={val}
-                          className='bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-semibold'
-                        >
-                          {label}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              </section>
-            )}
-            {userData?.topics && userData.topics.length > 0 && (
-              <section className='mb-16 bg-white rounded-xl shadow overflow-hidden'>
-                <div className='p-6 border-b border-gray-100'>
-                  <h3 className='text-xl font-semibold mb-2'>
-                    Topics of Interest
-                  </h3>
-                  {/* <p className='text-gray-600'>
-      Topics of interest
-                </p> */}
-                </div>
-                <div className='flex flex-col gap-2 mb-2 p-6'>
-                  <div className='flex flex-wrap gap-2 mb-2'>
-                    {(userData.topics || []).map((val: string) => {
-                      const label =
-                        topicOptions.find((opt: any) => opt.value === val)
-                          ?.label || val;
-                      return (
-                        <span
-                          key={val}
-                          className='bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full text-xs font-semibold'
-                        >
-                          {label}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              </section>
-            )}
-          </>
-        )}
+                  {getActiveProfile()?.mediumBio && (
+                    <div
+                      className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
+                    >
+                      <div className='flex items-center justify-between mb-3'>
+                        <h3 className='text-lg font-bold'>Medium Bio</h3>
+                        <CopyButton
+                          text={getActiveProfile()?.mediumBio || ""}
+                          type='medium'
+                          label='Copy'
+                        />
+                      </div>
+                      <p className='text-gray-700 leading-relaxed'>
+                        {getActiveProfile()?.mediumBio}
+                      </p>
+                    </div>
+                  )}
 
-        {/* Events Section */}
-        {/* <section className='mb-16'>
-          <h2 className='text-2xl font-bold mb-8 text-center md:text-left'>
-            Events
-          </h2>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {eventList.map((event, idx) => (
-              <div
-                key={idx}
-                className='rounded-xl bg-white shadow border border-teal-200 overflow-hidden flex flex-col'
-              >
-                <div className='relative h-32 w-full overflow-hidden'>
-                  <img
-                    src={event.coverImage}
-                    alt={event.topic}
-                    className='w-full h-full object-cover'
-                  />
-                  <a
-                    href={event.link}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='absolute top-2 right-2 bg-teal-600 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow hover:bg-teal-700 transition'
-                  >
-                    <ExternalLink className='h-3 w-3' /> Event Link
-                  </a>
-                </div>
-                <div className='p-4 flex-1 flex flex-col gap-2'>
-                  <h4 className='font-semibold text-lg mb-1'>{event.topic}</h4>
-                  <div className='flex flex-wrap gap-2 text-xs text-gray-600'>
-                    {event.organizers.map((org, i) => (
-                      <span
-                        key={i}
-                        className='bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full'
-                      >
-                        {org}
-                      </span>
-                    ))}
-                  </div>
-                  {event.date && (
-                    <div className='text-xs text-gray-500 mt-1 flex items-center gap-1'>
-                      <Calendar className='h-3 w-3 text-teal-500' />
-                      {format(new Date(event.date), "MMM d, yyyy")}
+                  {getActiveProfile()?.longBio && (
+                    <div
+                      className={`bg-white rounded-xl shadow p-6 border-t-4 border-${theme.accent}-400`}
+                    >
+                      <div className='flex items-center justify-between mb-3'>
+                        <h3 className='text-lg font-bold'>Full Bio</h3>
+                        <CopyButton
+                          text={getActiveProfile()?.longBio || ""}
+                          type='long'
+                          label='Copy'
+                        />
+                      </div>
+                      <p className='text-gray-700 leading-relaxed'>
+                        {getActiveProfile()?.longBio}
+                      </p>
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </section> */}
-      </div>
+              </section>
 
+              {/* Image Gallery Section */}
+              {folders.length > 0 ? (
+                <section className='mb-16'>
+                  <h2 className='text-2xl font-bold mb-8 text-left'>Gallery</h2>
+                  <div className='space-y-8'>
+                    {folders.map((folder) => {
+                      if (folder.images.length === 0) return null;
+                      return (
+                        <div
+                          key={folder._id}
+                          className='bg-white rounded-xl shadow overflow-hidden'
+                        >
+                          <div className='p-6 border-b border-gray-100'>
+                            <h3 className='text-xl font-semibold mb-2'>
+                              {folder.name}
+                            </h3>
+                            <p className='text-gray-600'>
+                              {folder.description}
+                            </p>
+                          </div>
+
+                          <div className='p-6'>
+                            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                              {folder.images.map((image) => (
+                                <div
+                                  key={image._id}
+                                  className='relative group rounded-lg overflow-hidden'
+                                >
+                                  <img
+                                    src={image.url}
+                                    alt={image.name}
+                                    className='w-full h-full object-cover'
+                                  />
+                                  <div className='absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-lg'>
+                                    <div className='absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                                      <button
+                                        onClick={() =>
+                                          downloadImage(image.url, image.name)
+                                        }
+                                        disabled={
+                                          downloadingImage === image.name
+                                        }
+                                        className={`bg-white/90 text-${theme.accent}-900 hover:bg-white rounded-full p-2 shadow`}
+                                      >
+                                        {downloadingImage === image.name ? (
+                                          <div className='h-4 w-4 animate-spin rounded-full border-2 border-gray-900 border-t-transparent' />
+                                        ) : (
+                                          <Download className='h-4 w-4' />
+                                        )}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null}
+
+              {/* Expertise & Topics Section */}
+              {userData?.expertise && userData.expertise.length > 0 && (
+                <section className='mb-16 bg-white rounded-xl shadow overflow-hidden'>
+                  <div className='p-6 border-b border-gray-100'>
+                    <h3 className='text-xl font-semibold mb-2'>
+                      Areas of expertise
+                    </h3>
+                    {/* <p className='text-gray-600'>Areas of expertise</p> */}
+                  </div>
+                  <div className='flex flex-col gap-2 mb-2 p-6'>
+                    <div className='flex flex-wrap gap-2 mb-2'>
+                      {(userData.expertise || []).map((val: string) => {
+                        const label =
+                          expertiseOptions.find((opt: any) => opt.value === val)
+                            ?.label || val;
+                        return (
+                          <span
+                            key={val}
+                            className='bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-semibold'
+                          >
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </section>
+              )}
+              {userData?.topics && userData.topics.length > 0 && (
+                <section className='mb-16 bg-white rounded-xl shadow overflow-hidden'>
+                  <div className='p-6 border-b border-gray-100'>
+                    <h3 className='text-xl font-semibold mb-2'>
+                      Topics of Interest
+                    </h3>
+                    {/* <p className='text-gray-600'>
+      Topics of interest
+                </p> */}
+                  </div>
+                  <div className='flex flex-col gap-2 mb-2 p-6'>
+                    <div className='flex flex-wrap gap-2 mb-2'>
+                      {(userData.topics || []).map((val: string) => {
+                        const label =
+                          topicOptions.find((opt: any) => opt.value === val)
+                            ?.label || val;
+                        return (
+                          <span
+                            key={val}
+                            className='bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full text-xs font-semibold'
+                          >
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </div>
+      </div>
       {/* Footer */}
       <footer className='mt-16 py-8 border-t border-gray-200'>
         <div className='max-w-4xl mx-auto px-4 md:px-8'>

@@ -117,15 +117,6 @@ export default function EventModal({
 
   const watchedValues = watch();
 
-  console.log(
-    "isValid:",
-    isValid,
-    "errors:",
-    errors,
-    "coverImage:",
-    watch("coverImage")
-  );
-
   // Check if visual content requirement is met
   const hasVisualContent = () => {
     const hasImage =
