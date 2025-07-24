@@ -262,7 +262,7 @@ export function DefaultTemplate({
     const profile = profiles.find((p) => p._id === profileId);
     if (profile && profile.isPublic) {
       const params = new URLSearchParams(searchParams);
-      params.delete("activities");
+      params.delete("tab");
       params.set("profile", slugify(profile.title));
       router.push(`${pathname}?${params.toString()}`);
     }
@@ -352,6 +352,7 @@ export function DefaultTemplate({
       <svg
         width={241}
         height={250}
+        className='w-[120px] md:w-[241px]'
         viewBox='0 0 241 250'
         fill='none'
         xmlns='http://www.w3.org/2000/svg'
@@ -377,6 +378,7 @@ export function DefaultTemplate({
         y='0px'
         width={241}
         height={250}
+        className='w-[120px] md:w-[241px]'
         viewBox='0 0 48 48'
       >
         <linearGradient
@@ -413,6 +415,7 @@ export function DefaultTemplate({
         y='0px'
         width={241}
         height={250}
+        className='w-[120px] md:w-[241px]'
         viewBox='0 0 48 48'
       >
         <path
@@ -434,6 +437,7 @@ export function DefaultTemplate({
         y='0px'
         width={241}
         height={250}
+        className='w-[120px] md:w-[241px]'
         viewBox='0 0 48 48'
       >
         <path
@@ -462,6 +466,7 @@ export function DefaultTemplate({
         y='0px'
         width={241}
         height={250}
+        className='w-[120px] md:w-[241px]'
         viewBox='0 0 30 30'
       >
         <circle cx='17.5' cy='15.5' r={12} fill='#f78f8f' />
@@ -510,7 +515,7 @@ export function DefaultTemplate({
           // 5 well-spaced positions for mobile and desktop
           const positions = [
             "top-2 left-4 md:top-4 md:left-8", // notion
-            "top-2 right-4 md:top-4 md:right-16", // canva
+            "top-2 right-10 md:top-4 md:right-16", // canva
             "top-8 left-1/4 md:top-12 md:left-72", // doc
             "top-8 right-1/4 md:top-12 md:right-1/3", // figma
             "top-[-10px] left-[56%] md:top-12 md:left-1/3", // ppt
@@ -663,16 +668,14 @@ export function DefaultTemplate({
                   updateProfileInUrl(profile._id);
                 }}
                 className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
-                  activeProfile === profile._id &&
-                  !searchParams.get("activities")
+                  activeProfile === profile._id && !searchParams.get("tab")
                     ? `bg-${theme.accent}-600 text-white shadow`
                     : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
                 } focus:outline-none focus:ring-2 focus:ring-${
                   theme.accent
                 }-400`}
                 aria-pressed={
-                  activeProfile === profile._id &&
-                  !searchParams.get("activities")
+                  activeProfile === profile._id && !searchParams.get("tab")
                 }
               >
                 {profile.title}
@@ -686,22 +689,22 @@ export function DefaultTemplate({
             onClick={() => {
               const params = new URLSearchParams(searchParams);
               params.delete("profile");
-              params.set("activities", "true");
+              params.set("tab", "talks");
               router.push(`${pathname}?${params.toString()}`);
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition ${
-              searchParams.get("activities")
+              searchParams.get("tab")
                 ? `bg-${theme.accent}-600 text-white shadow`
                 : `bg-white text-${theme.accent}-700 border border-${theme.accent}-200 hover:bg-${theme.accent}-50`
             } focus:outline-none focus:ring-2 focus:ring-${theme.accent}-400`}
-            aria-pressed={!!searchParams.get("activities")}
+            aria-pressed={!!searchParams.get("tab")}
           >
             <Mic className='h-4 w-4' /> My Talks
           </button>
         </div>
 
         {/* Conditional Content Rendering */}
-        {searchParams.get("activities") ? (
+        {searchParams.get("tab") ? (
           // Activities/Events Section
           <EventsSection userSlug={userSlug} theme={theme} />
         ) : (
