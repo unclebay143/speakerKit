@@ -1,6 +1,7 @@
 import { OG_IMAGE, SPEAKERKIT_BASE_URL } from "@/lib/utils";
 import AuthProvider from "@/providers/SessionProvider";
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -86,6 +87,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
+      <head>
+        <Script
+          defer
+          data-website-id='6881d4b0e5245ab401861033'
+          data-domain='speakerkit.org'
+          src='https://datafa.st/js/script.js'
+        />
+      </head>
       <body>
         <Providers>
           <AuthProvider>{children}</AuthProvider>
