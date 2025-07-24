@@ -13,6 +13,7 @@ import {
   PanelLeftClose,
   Settings,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 interface SidebarProps {
@@ -153,6 +154,9 @@ export function DashboardSidebar({
               </Link>
             </Button>
             <Button
+              onClick={() => {
+                signOut();
+              }}
               variant='ghost'
               className='w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
             >
@@ -202,6 +206,9 @@ export function DashboardSidebar({
             </Link>
           </Button>
           <Button
+            onClick={() => {
+              signOut();
+            }}
             variant='ghost'
             className={`w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 ${
               !isOpen && "px-2"
