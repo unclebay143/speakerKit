@@ -407,7 +407,7 @@ export default function EventModal({
               <div className='flex items-center gap-2 justify-between'>
                 <Label htmlFor='coverImage'>Cover Image</Label>
                 <span className='text-xs text-gray-500 dark:text-gray-400 ml-1'>
-                  (JPG, PNG, WebP up to {formatMaxFileSize(MAX_FILE_SIZE)})
+                  (Max {formatMaxFileSize(MAX_FILE_SIZE)})
                 </span>
               </div>
 

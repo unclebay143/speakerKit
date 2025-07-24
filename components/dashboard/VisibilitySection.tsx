@@ -64,12 +64,12 @@ function VisibilitySection() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='space-y-6'>
-          <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10'>
-            <div className='flex items-center space-x-3'>
+          <div className='flex flex-col sm:flex-row gap-4 sm:items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10'>
+            <div className='flex items-center gap-3'>
               {isPublic ? (
-                <Eye className='w-5 h-5 text-green-400' />
+                <Eye className='w-5 h-5 text-green-400 hidden sm:block' />
               ) : (
-                <Lock className='w-5 h-5 text-orange-400' />
+                <Lock className='w-5 h-5 text-orange-400 hidden sm:block' />
               )}
               <div>
                 <Label className='text-gray-900 dark:text-white'>
@@ -82,7 +82,7 @@ function VisibilitySection() {
                 </p>
               </div>
             </div>
-            <div className='flex items-center space-x-2'>
+            <div className='flex items-center gap-2'>
               <Badge
                 variant={isPublic ? "default" : "secondary"}
                 className={

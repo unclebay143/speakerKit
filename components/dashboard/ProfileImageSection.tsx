@@ -84,7 +84,7 @@ function ProfileImageSection() {
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-4'>
-        <div className='flex items-center space-x-6'>
+        <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-6'>
           <div className='relative'>
             <Avatar className='w-24 h-24 relative'>
               {isLoading ? (
@@ -115,7 +115,7 @@ function ProfileImageSection() {
             </div>
           </div>
           <div className='flex-1'>
-            <h3 className='font-medium text-gray-900 dark:text-white mb-1'>
+            <h3 className='hidden sm:block font-medium text-gray-900 dark:text-white mb-1'>
               Upload new picture
             </h3>
             <div className='flex space-x-2'>

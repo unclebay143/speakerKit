@@ -103,7 +103,7 @@ export default function EventCard({
         <div className='flex flex-col md:flex-row h-auto md:h-64'>
           {/* Content Section */}
           <div className='flex-1 p-6 flex flex-col order-2 md:order-1'>
-            <div className='flex items-center justify-between mb-3'>
+            <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3'>
               <div className='flex items-center gap-3'>
                 <span className='flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-sm font-bold'>
                   {index + 1}

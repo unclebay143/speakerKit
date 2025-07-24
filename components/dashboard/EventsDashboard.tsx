@@ -114,10 +114,10 @@ export default function EventsDashboard() {
 
   return (
     <div className='space-y-6 mx-auto max-w-screen-lg'>
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-col items-start sm:flex-row gap-4 sm:items-center sm:justify-between'>
         <div>
           <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
-            Events Management ({totalEvents || 0})
+            Events ({totalEvents || 0})
           </h2>
           <p className='text-gray-600 dark:text-gray-400'>
             Manage your speaking engagements and events

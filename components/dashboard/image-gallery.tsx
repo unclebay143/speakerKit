@@ -307,9 +307,7 @@ export function ImageGallery() {
     <div className='flex flex-col gap-4 mx-auto max-w-screen-lg'>
       {/* Header part */}
       <div
-        className={`flex ${
-          !currentFolder ? "flex-row items-center gap-3" : "flex-col gap-4"
-        } sm:flex-row sm:items-center sm:justify-between`}
+        className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4`}
       >
         {/* Title Section */}
         <div className='flex-1 min-w-0'>
