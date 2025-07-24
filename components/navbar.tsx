@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +11,7 @@ import { Button } from "./ui/button";
 export default function Navbar() {
   const pathname = usePathname();
   const [featuresActive, setFeaturesActive] = useState(false);
+  const { data: user, isLoading } = useCurrentUser();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -84,22 +86,42 @@ export default function Navbar() {
           </div>
         </div>
         <div className='hidden md:flex items-center space-x-4'>
-          <Button
-            className='bg-purple-600 hover:bg-purple-700 text-white'
-            asChild
-          >
-            <Link href='/signup'>Create Profile</Link>
-          </Button>
-          <Link
-            className={`transition-colors ${
-              pathname === "/login"
-                ? "text-purple-400 font-semibold"
-                : "text-white hover:text-purple-400"
-            }`}
-            href='/login'
-          >
-            Sign In
-          </Link>
+          {user && !isLoading ? (
+            <>
+              <Button
+                className='bg-purple-600 hover:bg-purple-700 text-white'
+                asChild
+              >
+                <Link href='/overview'>Dashboard</Link>
+              </Button>
+              <Button
+                variant='outline'
+                className='border-purple-600 text-white hover:bg-purple-600/20'
+                asChild
+              >
+                <Link href={`/@${user.slug}`}>View Profile</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className='bg-purple-600 hover:bg-purple-700 text-white'
+                asChild
+              >
+                <Link href='/signup'>Create Profile</Link>
+              </Button>
+              <Link
+                className={`transition-colors ${
+                  pathname === "/login"
+                    ? "text-purple-400 font-semibold"
+                    : "text-white hover:text-purple-400"
+                }`}
+                href='/login'
+              >
+                Sign In
+              </Link>
+            </>
+          )}
         </div>
         <Button variant='ghost' size='icon' className='md:hidden text-white'>
           <Menu className='w-6 h-6' />

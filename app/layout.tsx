@@ -22,7 +22,13 @@ export const metadata: Metadata = {
     "SpeakerKit",
     "speaking business",
   ],
-  authors: [{ name: "SpeakerKit Team" }],
+  authors: [
+    { name: "SpeakerKit Team", url: SPEAKERKIT_BASE_URL },
+    {
+      name: "UncleBigBay",
+      url: "https://unclebigbay.com",
+    },
+  ],
   creator: "SpeakerKit",
   publisher: "SpeakerKit",
   robots: {
