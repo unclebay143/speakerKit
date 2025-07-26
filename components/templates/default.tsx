@@ -772,7 +772,8 @@ export function DefaultTemplate({
               </section>
 
               {/* Image Gallery Section */}
-              {folders.length > 0 ? (
+              {folders.length > 0 &&
+              folders.some((folder) => folder.images.length > 0) ? (
                 <section className='mb-16'>
                   <h2 className='text-2xl font-bold mb-8 text-left'>Gallery</h2>
                   <div className='space-y-8'>
