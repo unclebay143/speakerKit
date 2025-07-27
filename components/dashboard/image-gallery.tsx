@@ -448,12 +448,9 @@ export function ImageGallery() {
                         <MoreVertical className='w-4 h-4' />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align='end'
-                      className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                    >
+                    <DropdownMenuContent align='end'>
                       <DropdownMenuItem
-                        className='text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        className='text-red-400'
                         onClick={() => {
                           setDeleteModalState({
                             open: true,
@@ -517,14 +514,8 @@ export function ImageGallery() {
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align='end'
-                      className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                    >
-                      <DropdownMenuItem
-                        asChild
-                        className='hover:bg-gray-100 dark:hover:bg-gray-700'
-                      >
+                    <DropdownMenuContent align='end'>
+                      <DropdownMenuItem asChild>
                         <Link href={`/gallery/${folder._id}`}>
                           <Eye className='w-4 h-4' />
                           Open
@@ -538,7 +529,6 @@ export function ImageGallery() {
                             name: folder.name,
                           });
                         }}
-                        className='hover:bg-gray-100 dark:hover:bg-gray-700'
                       >
                         <Edit className='w-4 h-4' />
                         Rename
@@ -553,7 +543,7 @@ export function ImageGallery() {
                             name: folder.name,
                           });
                         }}
-                        className='text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        className='text-red-400'
                         disabled={deletingId === folder._id}
                       >
                         <Trash2 className='w-4 h-4' />
