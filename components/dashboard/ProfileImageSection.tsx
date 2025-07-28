@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { MAX_FILE_SIZE } from "@/lib/file-constants";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { Camera, Upload } from "lucide-react";
 import { useState } from "react";
@@ -22,6 +23,16 @@ function ProfileImageSection() {
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast("File is too large", {
+        description: `Max size is ${Math.round(MAX_FILE_SIZE / 1024)}KB`,
+        position: "top-center",
+      });
+      event.target.value = "";
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -47,6 +58,8 @@ function ProfileImageSection() {
       });
     } finally {
       setIsLoading(false);
+      // Reset the input value after processing
+      event.target.value = "";
     }
   };
 
@@ -93,7 +106,7 @@ function ProfileImageSection() {
                 </div>
               ) : (
                 <>
-                  <AvatarImage src={user.image} />
+                  <AvatarImage src={user?.image} />
                   <AvatarFallback className='text-2xl bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400' />
                 </>
               )}

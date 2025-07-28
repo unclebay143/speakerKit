@@ -13,6 +13,7 @@ import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { toast } from "sonner";
 
 interface UploadModalProps {
   open: boolean;
@@ -57,16 +58,20 @@ export function UploadModal({
       "image/png": [".png"],
       "image/webp": [".webp"],
     },
-    maxSize: 10 * 1024 * 1024,
+    maxSize: MAX_FILE_SIZE,
     multiple: true,
     onDropRejected: (rejectedFiles) => {
       const firstError = rejectedFiles[0].errors[0];
       if (firstError.code === "file-too-large") {
-        alert(
-          `File is too large. Max size is ${Math.round(MAX_FILE_SIZE / 1024)}KB`
-        );
+        toast("File is too large", {
+          description: `Max size is ${Math.round(MAX_FILE_SIZE / 1024)}KB`,
+          position: "top-center",
+        });
       } else if (firstError.code === "file-invalid-type") {
-        alert("Only JPG, PNG, and WebP images are allowed");
+        toast("Invalid file type", {
+          description: "Only JPG, PNG, and WebP images are allowed",
+          position: "top-center",
+        });
       }
     },
   });

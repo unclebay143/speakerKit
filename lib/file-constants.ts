@@ -1,4 +1,4 @@
-export const MAX_FILE_SIZE = 300 * 1024; // 300KB
+export const MAX_FILE_SIZE = 500 * 1024; // 300KB
 export const ALLOWED_FILE_TYPES = [
   "image/jpeg",
   "image/jpg",
